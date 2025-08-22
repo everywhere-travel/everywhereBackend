@@ -8,22 +8,22 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 @Data
 @Entity
-@Table(name = "role")
-public class Role {
+@Table(name = "operador")
+public class Operador {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "role_id")
-    private Integer id;
+    @Column(name = "opr_id_int")
+    private Long id;
 
-    @Column(name = "rol_nam_vc", length = 100)
+    @Column(name = "opr_nomb_int", length = 150)
     private String nombre;
 
     @CreationTimestamp
-    @Column(name = "prov_cre_tmp", updatable = false)
+    @Column(name = "opr_cre_tmp", updatable = false)
     private LocalDateTime creado;
 
     @UpdateTimestamp
-    @Column(name = "prov_upd_tmp")
+    @Column(name = "opr_upd_tmp")
     private LocalDateTime actualizado;
 }
