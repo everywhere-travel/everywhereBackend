@@ -1,4 +1,56 @@
 package com.everywhere.backend.model.entity;
 
-public class Viajero  {
+import jakarta.persistence.*;
+import lombok.Data;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+@Data
+@Entity
+@Table(name = "viajeros")
+public class Viajero {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "via_id_int")
+    private Long id;
+
+    @Column(name = "via_nomb_vac", length = 150)
+    private String nombres;
+
+    @Column(name = "via_ap_pat_vac", length = 100)
+    private String apellidoPaterno;
+
+    @Column(name = "via_ap_mat_vac", length = 100)
+    private String apellidoMaterno;
+
+    @Column(name = "via_fec_nac_tmp")
+    private LocalDate fechaNacimiento;
+
+    @Column(name = "via_nacio_vac", length = 100)
+    private String nacionalidad;
+
+    @Column(name = "via_resi_vac", length = 200)
+    private String residencia;
+
+    @Column(name = "via_tip_doc_vac", length = 50)
+    private String tipoDocumento;
+
+    @Column(name = "via_num_doc_vac", length = 50)
+    private String numeroDocumento;
+
+    @Column(name = "via_fec_emi_doc_tmp")
+    private LocalDate fechaEmisionDocumento;
+
+    @Column(name = "via_fec_venc_doc_tmp")
+    private LocalDate fechaVencimientoDocumento;
+
+    @Column(name = "via_cre_tmp", updatable = false)
+    private LocalDateTime creado;
+
+    @Column(name = "via_upd_tmp")
+    private LocalDateTime actualizado;
+
+    @Column(name = "per_id_int", nullable = false)
+    private Long personaId;
 }
