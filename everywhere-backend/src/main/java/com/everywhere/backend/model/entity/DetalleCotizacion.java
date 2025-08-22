@@ -33,12 +33,15 @@ public class DetalleCotizacion {
     @Column(name = "dcot_upd_tmp")
     private LocalDateTime actualizado;
 
-    @Column(name = "cot_id_int", nullable = false)
-    private Long cotizacionId;
+    @ManyToOne
+    @JoinColumn(name = "cot_id_int", nullable = false)
+    private Cotizacion cotizacion;
 
-    @Column(name = "prod_id_int", nullable = false)
-    private Long productoId;
+    @ManyToOne
+    @JoinColumn(name = "prod_id_int", nullable = false)
+    private Producto producto;
 
-    @Column(name = "prov_id_int", nullable = false)
-    private Long proveedorId;
+    @ManyToOne
+    @JoinColumn(name = "prov_id_int", nullable = false)
+    private Proveedor proveedor;
 }

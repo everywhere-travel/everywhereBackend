@@ -48,15 +48,19 @@ public class Cotizacion {
     @Column(name = "cot_obs_vac", length = 300)
     private String observacion;
 
-    @Column(name = "cou_id_int", nullable = false)
-    private Long counterId;
+    @ManyToOne
+    @JoinColumn(name = "cou_id_int", nullable = false)
+    private Counter counter;
 
-    @Column(name = "form_id_int", nullable = false)
-    private Long formaPagoId;
+    @ManyToOne
+    @JoinColumn(name = "form_id_int", nullable = false)
+    private FormaPago formaPago;
 
-    @Column(name = "est_cot_id_int", nullable = false)
-    private Long estadoCotizacionId;
+    @ManyToOne
+    @JoinColumn(name = "est_cot_id_int", nullable = false)
+    private EstadoCotizacion estadoCotizacion;
 
-    @Column(name = "suc_id_int", nullable = false)
-    private Long sucursalId;
+    @ManyToOne
+    @JoinColumn(name = "suc_id_int", nullable = false)
+    private Sucursal sucursal;
 }

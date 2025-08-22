@@ -3,7 +3,9 @@ package com.everywhere.backend.model.entity;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "liquidacion")
 public class Liquidacion {
@@ -37,13 +39,16 @@ public class Liquidacion {
     @Column(name = "liq_fec_upd_tmp")
     private LocalDateTime actualizado;
 
-    @Column(name = "cot_id_int", nullable = false)
-    private Long cotizacionId;
+    @ManyToOne
+    @JoinColumn(name = "cot_id_int", nullable = false)
+    private Cotizacion cotizacion;
 
-    @Column(name = "prod_id_int", nullable = false)
-    private Long productoId;
+    @ManyToOne
+    @JoinColumn(name = "prod_id_int", nullable = false)
+    private Producto producto;
 
-    @Column(name = "form_id_int", nullable = false)
-    private Long formaPagoId;
+    @ManyToOne
+    @JoinColumn(name = "form_id_int", nullable = false)
+    private FormaPago formaPago;
 
 }

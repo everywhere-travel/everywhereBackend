@@ -37,6 +37,7 @@ public class ObservacionLiquidacion {
     @Column(name = "obliq_fec_upd_tmp")
     private LocalDateTime actualizado;
 
-    @Column(name = "liq_id_int")
-    private Long liquidacionId;
+    @ManyToOne
+    @JoinColumn(name = "liq_id_int", nullable = false)
+    private Liquidacion liquidacion;
 }

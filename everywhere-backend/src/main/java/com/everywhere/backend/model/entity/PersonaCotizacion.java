@@ -6,13 +6,16 @@ import lombok.Data;
 @Entity
 @Table(name = "personas_cotizaciones")
 @Data
+@IdClass(PersonaCotizacionId.class)
 public class PersonaCotizacion {
 
     @Id
-    @Column(name = "per_id_int")
-    private Long personaId;
+    @ManyToOne
+    @JoinColumn(name = "per_id_int", nullable = false)
+    private Persona persona;
 
     @Id
-    @Column(name = "cot_id_int")
-    private Long cotizacionId;
+    @ManyToOne
+    @JoinColumn(name = "cot_id_int", nullable = false)
+    private Cotizacion cotizacion;
 }

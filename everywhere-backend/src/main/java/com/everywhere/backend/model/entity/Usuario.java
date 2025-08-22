@@ -19,6 +19,12 @@ public class Usuario {
     @Column(name = "rol_nam_vc", length = 100)
     private String nombre;
 
+    @Column(name="usr_email_vc", length = 150)
+    private String email;
+
+    @Column(name = "usr_pass_vc", length = 255)
+    private String password;
+
     @CreationTimestamp
     @Column(name = "prov_cre_tmp", updatable = false)
     private LocalDateTime creado;
@@ -27,6 +33,8 @@ public class Usuario {
     @Column(name = "prov_upd_tmp")
     private LocalDateTime actualizado;
 
-    @Column(name = "role_id", nullable = false)
-    private Integer roleId;
+    @ManyToOne
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role role;
+
 }
