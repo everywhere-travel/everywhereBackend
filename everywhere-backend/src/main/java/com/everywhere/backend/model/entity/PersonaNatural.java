@@ -29,6 +29,7 @@ public class PersonaNatural {
     @Column(name = "per_nat_upd_tmp")
     private LocalDateTime actualizado;
 
-    @Column(name = "per_id_int", nullable = false)
-    private Long personaId;
+    @ManyToOne
+    @JoinColumn(name = "per_id_int", nullable = false)
+    private Persona persona;
 }
