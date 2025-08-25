@@ -12,7 +12,7 @@ public class PersonaJuridica {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "per_jurd_id_int")
-    private Long id;
+    private Integer id;
 
     @Column(name = "per_jurd_ruc_int")
     private String ruc;
@@ -28,6 +28,5 @@ public class PersonaJuridica {
 
     @ManyToOne
     @JoinColumn(name = "per_id_int", nullable = false)
-    private Persona persona;
+    private Personas personas;
 }
-

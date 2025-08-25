@@ -12,7 +12,7 @@ public class PersonaCotizacion {
     @Id
     @ManyToOne
     @JoinColumn(name = "per_id_int", nullable = false)
-    private Persona persona;
+    private Personas personas;
 
     @Id
     @ManyToOne
