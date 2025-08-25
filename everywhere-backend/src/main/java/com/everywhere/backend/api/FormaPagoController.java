@@ -15,7 +15,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/formas-pago")
 @AllArgsConstructor
-@CrossOrigin(origins = "*")
 public class FormaPagoController {
 
     @Autowired
