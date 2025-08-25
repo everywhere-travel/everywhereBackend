@@ -14,7 +14,7 @@ public class Operador {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "opr_id_int")
-    private Long id;
+    private int id;
 
     @Column(name = "opr_nomb_int", length = 150)
     private String nombre;
