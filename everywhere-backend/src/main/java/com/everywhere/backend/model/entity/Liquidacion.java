@@ -51,4 +51,7 @@ public class Liquidacion {
     @JoinColumn(name = "form_id_int", nullable = false)
     private FormaPago formaPago;
 
+    @ManyToOne
+    @JoinColumn (name = "carp_id_padr_int", nullable = false)
+    private Carpeta carpeta;
 }
