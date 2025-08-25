@@ -63,4 +63,9 @@ public class Cotizacion {
     @ManyToOne
     @JoinColumn(name = "suc_id_int", nullable = false)
     private Sucursal sucursal;
+
+    @ManyToOne
+    @JoinColumn (name = "carp_id_padr_int", nullable = false)
+    private Carpeta carpeta;
+
 }
