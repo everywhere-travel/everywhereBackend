@@ -1,4 +1,69 @@
 package com.everywhere.backend.api;
 
+import com.everywhere.backend.mapper.ProveedorMapper;
+import com.everywhere.backend.model.dto.ProveedorRequestDto;
+import com.everywhere.backend.model.dto.ProveedorResponseDto;
+import com.everywhere.backend.model.entity.Proveedor;
+import com.everywhere.backend.service.ProveedorService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/proveedores")
 public class ProveedorController {
+
+    private final ProveedorService proveedorService;
+
+    public ProveedorController(ProveedorService proveedorService){
+        this.proveedorService = proveedorService;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ProveedorResponseDto>> findAll(){
+        List<ProveedorResponseDto> response = proveedorService.findAll()
+                .stream()
+                .map(ProveedorMapper::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ProveedorResponseDto> getById(@PathVariable Integer id) {
+        return proveedorService.findById(id)
+                .map(ProveedorMapper::toResponse)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping
+    public ResponseEntity<ProveedorResponseDto> create(@RequestBody ProveedorRequestDto dto) {
+        Proveedor proveedor = ProveedorMapper.toEntity(dto);
+        Proveedor nuevoProveedor = proveedorService.save(proveedor);
+        return new ResponseEntity<>(ProveedorMapper.toResponse(nuevoProveedor), HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProveedorResponseDto> update(@PathVariable Integer id,
+                                                       @RequestBody ProveedorRequestDto dto) {
+        return proveedorService.findById(id)
+                .map(existing -> {
+                    existing.setNombre(dto.getNombre());
+                    Proveedor updated = proveedorService.update(existing);
+                    return ResponseEntity.ok(ProveedorMapper.toResponse(updated));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+        if (proveedorService.findById(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        proveedorService.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 }
