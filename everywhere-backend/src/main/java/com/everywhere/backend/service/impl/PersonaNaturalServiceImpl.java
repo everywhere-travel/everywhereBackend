@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,15 +43,19 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
 
     @Override
     public List<PersonaNaturalResponseDTO> findByDocumento(String documento) {
-        List<PersonaNatural> personas = personaNaturalRepository.findByDocumentoContainingIgnoreCase(documento);
-        return personas.stream()
-                .map(personaNaturalMapper::toResponseDTO)
-                .collect(Collectors.toList());
+        Optional<PersonaNatural> persona = personaNaturalRepository.findByDocumentoIgnoreCase(documento);
+        if (persona.isEmpty()) {
+            throw new ResourceNotFoundException("No se encontró persona natural con documento: " + documento);
+        }
+        return List.of(personaNaturalMapper.toResponseDTO(persona.get()));
     }
 
     @Override
     public List<PersonaNaturalResponseDTO> findByNombres(String nombres) {
-        List<PersonaNatural> personas = personaNaturalRepository.findByNombresContainingIgnoreCase(nombres);
+        List<PersonaNatural> personas = personaNaturalRepository.findByNombresIgnoreCase(nombres);
+        if (personas.isEmpty()) {
+            throw new ResourceNotFoundException("No se encontraron personas naturales con nombres: " + nombres);
+        }
         return personas.stream()
                 .map(personaNaturalMapper::toResponseDTO)
                 .collect(Collectors.toList());
@@ -58,7 +63,10 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
 
     @Override
     public List<PersonaNaturalResponseDTO> findByApellidos(String apellidos) {
-        List<PersonaNatural> personas = personaNaturalRepository.findByApellidosContainingIgnoreCase(apellidos);
+        List<PersonaNatural> personas = personaNaturalRepository.findByApellidosIgnoreCase(apellidos);
+        if (personas.isEmpty()) {
+            throw new ResourceNotFoundException("No se encontraron personas naturales con apellidos: " + apellidos);
+        }
         return personas.stream()
                 .map(personaNaturalMapper::toResponseDTO)
                 .collect(Collectors.toList());

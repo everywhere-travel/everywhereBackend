@@ -8,6 +8,7 @@ import com.everywhere.backend.repository.ViajeroRepository;
 import com.everywhere.backend.repository.PersonaRepository;
 import com.everywhere.backend.service.ViajeroService;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
+import com.everywhere.backend.exceptions.BadRequestException;
 import com.everywhere.backend.mapper.ViajeroMapper;
 import com.everywhere.backend.mapper.PersonaMapper;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,6 +46,9 @@ public class ViajeroServiceImpl implements ViajeroService {
     @Override
     public List<ViajeroResponseDTO> findByNombres(String nombres) {
         List<Viajero> viajeros = viajeroRepository.findByNombresContainingIgnoreCase(nombres);
+        if (viajeros.isEmpty()) {
+            throw new ResourceNotFoundException("No se encontraron viajeros con nombres: " + nombres);
+        }
         return viajeros.stream()
                 .map(viajeroMapper::toResponseDTO)
                 .collect(Collectors.toList());
@@ -51,15 +56,19 @@ public class ViajeroServiceImpl implements ViajeroService {
 
     @Override
     public List<ViajeroResponseDTO> findByNumeroDocumento(String numeroDocumento) {
-        List<Viajero> viajeros = viajeroRepository.findByNumeroDocumentoContainingIgnoreCase(numeroDocumento);
-        return viajeros.stream()
-                .map(viajeroMapper::toResponseDTO)
-                .collect(Collectors.toList());
+        Optional<Viajero> viajero = viajeroRepository.findByNumeroDocumentoIgnoreCase(numeroDocumento);
+        if (viajero.isEmpty()) {
+            throw new ResourceNotFoundException("No se encontró viajero con número de documento: " + numeroDocumento);
+        }
+        return List.of(viajeroMapper.toResponseDTO(viajero.get()));
     }
 
     @Override
     public List<ViajeroResponseDTO> findByNacionalidad(String nacionalidad) {
-        List<Viajero> viajeros = viajeroRepository.findByNacionalidadContainingIgnoreCase(nacionalidad);
+        List<Viajero> viajeros = viajeroRepository.findByNacionalidadIgnoreCase(nacionalidad);
+        if (viajeros.isEmpty()) {
+            throw new ResourceNotFoundException("No se encontraron viajeros con nacionalidad: " + nacionalidad);
+        }
         return viajeros.stream()
                 .map(viajeroMapper::toResponseDTO)
                 .collect(Collectors.toList());
@@ -67,7 +76,10 @@ public class ViajeroServiceImpl implements ViajeroService {
 
     @Override
     public List<ViajeroResponseDTO> findByResidencia(String residencia) {
-        List<Viajero> viajeros = viajeroRepository.findByResidenciaContainingIgnoreCase(residencia);
+        List<Viajero> viajeros = viajeroRepository.findByResidenciaIgnoreCase(residencia);
+        if (viajeros.isEmpty()) {
+            throw new ResourceNotFoundException("No se encontraron viajeros con residencia: " + residencia);
+        }
         return viajeros.stream()
                 .map(viajeroMapper::toResponseDTO)
                 .collect(Collectors.toList());
@@ -91,6 +103,20 @@ public class ViajeroServiceImpl implements ViajeroService {
 
     @Override
     public ViajeroResponseDTO save(ViajeroRequestDTO viajeroRequestDTO) {
+        // Validar que el número de documento no exista (si se proporciona)
+        if (viajeroRequestDTO.getNumeroDocumento() != null &&
+            !viajeroRequestDTO.getNumeroDocumento().trim().isEmpty()) {
+
+            boolean existeNumeroDocumento = viajeroRepository.existsByNumeroDocumentoIgnoreCase(
+                viajeroRequestDTO.getNumeroDocumento().trim()
+            );
+
+            if (existeNumeroDocumento) {
+                throw new BadRequestException("Ya existe un viajero con el número de documento: " +
+                    viajeroRequestDTO.getNumeroDocumento().trim());
+            }
+        }
+
         // Crear la persona base
         Personas persona = null;
         if (viajeroRequestDTO.getPersona() != null) {
@@ -114,6 +140,23 @@ public class ViajeroServiceImpl implements ViajeroService {
     public ViajeroResponseDTO update(Integer id, ViajeroRequestDTO viajeroRequestDTO) {
         Viajero existingViajero = viajeroRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Viajero no encontrado con ID: " + id));
+
+        // Validar que el número de documento no exista (si se está cambiando)
+        if (viajeroRequestDTO.getNumeroDocumento() != null &&
+            !viajeroRequestDTO.getNumeroDocumento().trim().isEmpty()) {
+
+            String nuevoNumeroDocumento = viajeroRequestDTO.getNumeroDocumento().trim();
+
+            // Solo validar si el número de documento cambió
+            if (existingViajero.getNumeroDocumento() == null ||
+                !nuevoNumeroDocumento.equalsIgnoreCase(existingViajero.getNumeroDocumento())) {
+                boolean existeNumeroDocumento = viajeroRepository.existsByNumeroDocumentoIgnoreCase(nuevoNumeroDocumento);
+
+                if (existeNumeroDocumento) {
+                    throw new BadRequestException("Ya existe un viajero con el número de documento: " + nuevoNumeroDocumento);
+                }
+            }
+        }
 
         viajeroMapper.updateEntityFromDTO(viajeroRequestDTO, existingViajero);
         existingViajero = viajeroRepository.save(existingViajero);
