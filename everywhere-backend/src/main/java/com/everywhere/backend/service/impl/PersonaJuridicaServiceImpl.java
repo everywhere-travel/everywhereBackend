@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,15 +43,19 @@ public class PersonaJuridicaServiceImpl implements PersonaJuridicaService {
 
     @Override
     public List<PersonaJuridicaResponseDTO> findByRuc(String ruc) {
-        List<PersonaJuridica> personas = personaJuridicaRepository.findByRucContainingIgnoreCase(ruc);
-        return personas.stream()
-                .map(personaJuridicaMapper::toResponseDTO)
-                .collect(Collectors.toList());
+        Optional<PersonaJuridica> persona = personaJuridicaRepository.findByRucIgnoreCase(ruc);
+        if (persona.isEmpty()) {
+            throw new ResourceNotFoundException("No se encontró persona jurídica con RUC: " + ruc);
+        }
+        return List.of(personaJuridicaMapper.toResponseDTO(persona.get()));
     }
 
     @Override
     public List<PersonaJuridicaResponseDTO> findByRazonSocial(String razonSocial) {
-        List<PersonaJuridica> personas = personaJuridicaRepository.findByRazonSocialContainingIgnoreCase(razonSocial);
+        List<PersonaJuridica> personas = personaJuridicaRepository.findByRazonSocialIgnoreCase(razonSocial);
+        if (personas.isEmpty()) {
+            throw new ResourceNotFoundException("No se encontraron personas jurídicas con razón social: " + razonSocial);
+        }
         return personas.stream()
                 .map(personaJuridicaMapper::toResponseDTO)
                 .collect(Collectors.toList());
