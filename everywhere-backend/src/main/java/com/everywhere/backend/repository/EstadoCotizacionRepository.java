@@ -1,4 +1,7 @@
 package com.everywhere.backend.repository;
 
-public interface EstadoCotizacionRepository {
+import com.everywhere.backend.model.entity.EstadoCotizacion;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface EstadoCotizacionRepository extends JpaRepository<EstadoCotizacion,Integer> {
 }

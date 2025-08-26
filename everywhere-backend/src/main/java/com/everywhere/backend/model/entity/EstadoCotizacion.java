@@ -11,7 +11,7 @@ public class EstadoCotizacion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "est_cot_id_int")
-    private Long id;
+    private int id;
 
     @Column(name = "est_cot_desc_vac", length = 200)
     private String descripcion;
