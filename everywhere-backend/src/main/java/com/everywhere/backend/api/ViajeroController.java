@@ -20,38 +20,32 @@ public class ViajeroController {
     private final ViajeroService viajeroService;
 
     @GetMapping
-    public ResponseEntity<List<ViajeroResponseDTO>> getAllViajeros(
-            @RequestParam(required = false) String numeroDocumento,
-            @RequestParam(required = false) String nombres,
-            @RequestParam(required = false) String nacionalidad,
-            @RequestParam(required = false) String residencia) {
-
-        // Si se proporciona número de documento, buscar por número de documento
-        if (numeroDocumento != null && !numeroDocumento.trim().isEmpty()) {
-            List<ViajeroResponseDTO> viajeros = viajeroService.findByNumeroDocumento(numeroDocumento.trim());
-            return ResponseEntity.ok(viajeros);
-        }
-
-        // Si se proporciona nombres, buscar por nombres (maneja espacios correctamente)
-        if (nombres != null && !nombres.trim().isEmpty()) {
-            List<ViajeroResponseDTO> viajeros = viajeroService.findByNombres(nombres.trim());
-            return ResponseEntity.ok(viajeros);
-        }
-
-        // Si se proporciona nacionalidad, buscar por nacionalidad
-        if (nacionalidad != null && !nacionalidad.trim().isEmpty()) {
-            List<ViajeroResponseDTO> viajeros = viajeroService.findByNacionalidad(nacionalidad.trim());
-            return ResponseEntity.ok(viajeros);
-        }
-
-        // Si se proporciona residencia, buscar por residencia
-        if (residencia != null && !residencia.trim().isEmpty()) {
-            List<ViajeroResponseDTO> viajeros = viajeroService.findByResidencia(residencia.trim());
-            return ResponseEntity.ok(viajeros);
-        }
-
-        // Si no se proporciona ningún parámetro, devolver todos
+    public ResponseEntity<List<ViajeroResponseDTO>> getAllViajeros() {
         List<ViajeroResponseDTO> viajeros = viajeroService.findAll();
+        return ResponseEntity.ok(viajeros);
+    }
+
+    @GetMapping("/nombres")
+    public ResponseEntity<List<ViajeroResponseDTO>> getViajeroByNombres(@RequestParam String nombres) {
+        List<ViajeroResponseDTO> viajeros = viajeroService.findByNombres(nombres.trim());
+        return ResponseEntity.ok(viajeros);
+    }
+
+    @GetMapping("/numeroDocumento")
+    public ResponseEntity<List<ViajeroResponseDTO>> getViajeroByNumDoc(@RequestParam String numeroDocumento) {
+        List<ViajeroResponseDTO> viajeros = viajeroService.findByNumeroDocumento(numeroDocumento.trim());
+        return ResponseEntity.ok(viajeros);
+    }
+
+    @GetMapping("/nacionalidad")
+    public ResponseEntity<List<ViajeroResponseDTO>> getViajeroByNacionalidad(@RequestParam String nacionalidad) {
+        List<ViajeroResponseDTO> viajeros = viajeroService.findByNacionalidad(nacionalidad.trim());
+        return ResponseEntity.ok(viajeros);
+    }
+
+    @GetMapping("/residencia")
+    public ResponseEntity<List<ViajeroResponseDTO>> getViajeroByResidencia(@RequestParam String residencia) {
+        List<ViajeroResponseDTO> viajeros = viajeroService.findByResidencia(residencia.trim());
         return ResponseEntity.ok(viajeros);
     }
 

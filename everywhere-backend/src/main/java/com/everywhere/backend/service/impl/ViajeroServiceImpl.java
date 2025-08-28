@@ -45,7 +45,7 @@ public class ViajeroServiceImpl implements ViajeroService {
 
     @Override
     public List<ViajeroResponseDTO> findByNombres(String nombres) {
-        List<Viajero> viajeros = viajeroRepository.findByNombresContainingIgnoreCase(nombres);
+        List<Viajero> viajeros = viajeroRepository.findByNombresIgnoreAccents(nombres);
         if (viajeros.isEmpty()) {
             throw new ResourceNotFoundException("No se encontraron viajeros con nombres: " + nombres);
         }
@@ -65,7 +65,7 @@ public class ViajeroServiceImpl implements ViajeroService {
 
     @Override
     public List<ViajeroResponseDTO> findByNacionalidad(String nacionalidad) {
-        List<Viajero> viajeros = viajeroRepository.findByNacionalidadIgnoreCase(nacionalidad);
+        List<Viajero> viajeros = viajeroRepository.findByNacionalidadIgnoreAccents(nacionalidad);
         if (viajeros.isEmpty()) {
             throw new ResourceNotFoundException("No se encontraron viajeros con nacionalidad: " + nacionalidad);
         }
@@ -76,7 +76,7 @@ public class ViajeroServiceImpl implements ViajeroService {
 
     @Override
     public List<ViajeroResponseDTO> findByResidencia(String residencia) {
-        List<Viajero> viajeros = viajeroRepository.findByResidenciaIgnoreCase(residencia);
+        List<Viajero> viajeros = viajeroRepository.findByResidenciaIgnoreAccents(residencia);
         if (viajeros.isEmpty()) {
             throw new ResourceNotFoundException("No se encontraron viajeros con residencia: " + residencia);
         }

@@ -2,6 +2,7 @@ package com.everywhere.backend.api;
 
 import com.everywhere.backend.model.dto.PersonaNaturalRequestDTO;
 import com.everywhere.backend.model.dto.PersonaNaturalResponseDTO;
+import com.everywhere.backend.model.dto.PersonaResponseDTO;
 import com.everywhere.backend.service.PersonaNaturalService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,33 +20,28 @@ public class PersonaNaturalController {
     private final PersonaNaturalService personaNaturalService;
 
     @GetMapping
-    public ResponseEntity<List<PersonaNaturalResponseDTO>> getAllPersonasNaturales(
-            @RequestParam(required = false) String documento,
-            @RequestParam(required = false) String nombres,
-            @RequestParam(required = false) String apellidos) {
-
-        // Si se proporciona documento, buscar por documento
-        if (documento != null && !documento.trim().isEmpty()) {
-            List<PersonaNaturalResponseDTO> personas = personaNaturalService.findByDocumento(documento.trim());
-            return ResponseEntity.ok(personas);
-        }
-
-        // Si se proporciona nombres, buscar por nombres
-        if (nombres != null && !nombres.trim().isEmpty()) {
-            List<PersonaNaturalResponseDTO> personas = personaNaturalService.findByNombres(nombres.trim());
-            return ResponseEntity.ok(personas);
-        }
-
-        // Si se proporciona apellidos, buscar por apellidos
-        if (apellidos != null && !apellidos.trim().isEmpty()) {
-            List<PersonaNaturalResponseDTO> personas = personaNaturalService.findByApellidos(apellidos.trim());
-            return ResponseEntity.ok(personas);
-        }
-
-        // Si no se proporciona ningún parámetro, devolver todos
+    public ResponseEntity<List<PersonaNaturalResponseDTO>> getAllPersonasNaturales() {
         List<PersonaNaturalResponseDTO> personas = personaNaturalService.findAll();
         return ResponseEntity.ok(personas);
     }
+
+    @GetMapping("/documento")
+    public ResponseEntity<List<PersonaNaturalResponseDTO>> getPersonasNaturalesByDocumento(@RequestParam String documento) {
+        List<PersonaNaturalResponseDTO> personas = personaNaturalService.findByDocumento(documento.trim());
+        return ResponseEntity.ok(personas);
+    }
+
+    @GetMapping("/nombres")
+    public ResponseEntity<List<PersonaNaturalResponseDTO>> getPersonasNaturalesByNombre(@RequestParam String nombres) {
+        List<PersonaNaturalResponseDTO> personas = personaNaturalService.findByNombres(nombres.trim());
+        return ResponseEntity.ok(personas);
+    }
+
+    @GetMapping("/apellidos")
+    public ResponseEntity<List<PersonaNaturalResponseDTO>> getPersonasNaturalesByApellido(@RequestParam String apellidos) {
+        List<PersonaNaturalResponseDTO> personas = personaNaturalService.findByApellidos(apellidos.trim());
+        return ResponseEntity.ok(personas);
+    } 
 
     @GetMapping("/{id}")
     public ResponseEntity<PersonaNaturalResponseDTO> getPersonaNaturalById(@PathVariable Integer id) {

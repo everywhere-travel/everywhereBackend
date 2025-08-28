@@ -1,5 +1,6 @@
 package com.everywhere.backend.service.impl;
 
+import com.everywhere.backend.exceptions.BadRequestException;
 import com.everywhere.backend.model.dto.PersonaJuridicaRequestDTO;
 import com.everywhere.backend.model.dto.PersonaJuridicaResponseDTO;
 import com.everywhere.backend.model.entity.PersonaJuridica;
@@ -52,7 +53,7 @@ public class PersonaJuridicaServiceImpl implements PersonaJuridicaService {
 
     @Override
     public List<PersonaJuridicaResponseDTO> findByRazonSocial(String razonSocial) {
-        List<PersonaJuridica> personas = personaJuridicaRepository.findByRazonSocialIgnoreCase(razonSocial);
+        List<PersonaJuridica> personas = personaJuridicaRepository.findByRazonSocialIgnoreAccents(razonSocial);
         if (personas.isEmpty()) {
             throw new ResourceNotFoundException("No se encontraron personas jurídicas con razón social: " + razonSocial);
         }
@@ -63,6 +64,14 @@ public class PersonaJuridicaServiceImpl implements PersonaJuridicaService {
 
     @Override
     public PersonaJuridicaResponseDTO save(PersonaJuridicaRequestDTO personaJuridicaRequestDTO) {
+        // Validar que no exista ya una persona con el mismo RUC (solo si el RUC no es null/vacío)
+        if (personaJuridicaRequestDTO.getRuc() != null && !personaJuridicaRequestDTO.getRuc().trim().isEmpty()) {
+            Optional<PersonaJuridica> existingPersona = personaJuridicaRepository.findByRucIgnoreCase(personaJuridicaRequestDTO.getRuc().trim());
+            if (existingPersona.isPresent()) {
+                throw new BadRequestException("Ya existe una persona jurídica con el RUC: " + personaJuridicaRequestDTO.getRuc());
+            }
+        }
+
         // Crear la persona base
         Personas persona = null;
         if (personaJuridicaRequestDTO.getPersona() != null) {
@@ -86,6 +95,14 @@ public class PersonaJuridicaServiceImpl implements PersonaJuridicaService {
     public PersonaJuridicaResponseDTO update(Integer id, PersonaJuridicaRequestDTO personaJuridicaRequestDTO) {
         PersonaJuridica existingPersonaJuridica = personaJuridicaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Persona jurídica no encontrada con ID: " + id));
+
+        // Validar que no exista otra persona con el mismo RUC (solo si el RUC no es null/vacío)
+        if (personaJuridicaRequestDTO.getRuc() != null && !personaJuridicaRequestDTO.getRuc().trim().isEmpty()) {
+            Optional<PersonaJuridica> personaConMismoRuc = personaJuridicaRepository.findByRucIgnoreCase(personaJuridicaRequestDTO.getRuc().trim());
+            if (personaConMismoRuc.isPresent() && !personaConMismoRuc.get().getId().equals(id)) {
+                throw new BadRequestException("Ya existe otra persona jurídica con el RUC: " + personaJuridicaRequestDTO.getRuc());
+            }
+        }
 
         personaJuridicaMapper.updateEntityFromDTO(personaJuridicaRequestDTO, existingPersonaJuridica);
         existingPersonaJuridica = personaJuridicaRepository.save(existingPersonaJuridica);

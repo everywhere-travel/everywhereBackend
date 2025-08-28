@@ -2,6 +2,8 @@ package com.everywhere.backend.repository;
 
 import com.everywhere.backend.model.entity.PersonaJuridica;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -12,6 +14,10 @@ public interface PersonaJuridicaRepository extends JpaRepository<PersonaJuridica
     // Campo único - solo puede haber uno
     Optional<PersonaJuridica> findByRucIgnoreCase(String ruc);
 
-    // Campo que puede repetirse - pueden haber varias empresas con la misma razón social exacta
+    // Búsqueda que ignora tildes/acentos
+    @Query(value = "SELECT * FROM persona_juridica WHERE UPPER(TRANSLATE(per_jurd_razSocial_vac, 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou')) LIKE UPPER(TRANSLATE(:razonSocial, 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou'))", nativeQuery = true)
+    List<PersonaJuridica> findByRazonSocialIgnoreAccents(@Param("razonSocial") String razonSocial);
+
+    // Método original mantenido para compatibilidad
     List<PersonaJuridica> findByRazonSocialIgnoreCase(String razonSocial);
 }
