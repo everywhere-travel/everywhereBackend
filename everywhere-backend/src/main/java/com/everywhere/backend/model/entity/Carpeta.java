@@ -27,7 +27,7 @@ public class Carpeta {
     private LocalDateTime actualizado;
 
     @ManyToOne
-    @JoinColumn(name = "car´_id_padr_int")
+    @JoinColumn(name = "car_id_padr_int")
     private Carpeta carpetaPadre;
 
 }
