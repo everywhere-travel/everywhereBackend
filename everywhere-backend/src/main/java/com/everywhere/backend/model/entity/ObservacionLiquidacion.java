@@ -17,16 +17,16 @@ public class ObservacionLiquidacion {
     @Column(name = "obliq_id_int")
     private Long id;
 
-    @Column(name = "obliq_desc_vac", length = 255)
+    @Column(name = "obliq_desc_vac")
     private String descripcion;
 
-    @Column(name = "obliq_val_dc", precision = 15, scale = 2)
+    @Column(name = "obliq_val_dc", precision = 38, scale = 2)
     private BigDecimal valor;
 
-    @Column(name = "obliq_doc_vac", length = 100)
+    @Column(name = "obliq_doc_vac")
     private String documento;
 
-    @Column(name = "obliq_nro_doc_vac", length = 100)
+    @Column(name = "obliq_nro_doc_vac")
     private String numeroDocumento;
 
     @CreationTimestamp

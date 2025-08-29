@@ -1,7 +1,7 @@
 package com.everywhere.backend.mapper;
 
 import com.everywhere.backend.model.dto.OperadorRequestDto;
-import com.everywhere.backend.model.dto.OperadorResponseDto;
+import com.everywhere.backend.model.dto.OperadorResponseDTO;
 import com.everywhere.backend.model.entity.Operador;
 
 public class OperadorMapper {
@@ -16,11 +16,11 @@ public class OperadorMapper {
         return operador;
     }
 
-    public static OperadorResponseDto toResponse(Operador operador) {
+    public static OperadorResponseDTO toResponse(Operador operador) {
         if (operador == null) {
             return null;
         }
-        OperadorResponseDto dto = new OperadorResponseDto();
+        OperadorResponseDTO dto = new OperadorResponseDTO();
         dto.setId(operador.getId());
         dto.setNombre(operador.getNombre());
         dto.setCreado(operador.getCreado());
