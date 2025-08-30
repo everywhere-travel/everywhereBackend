@@ -13,4 +13,12 @@ public interface CotizacionService {
     List<CotizacionResponseDto> findAll();
     CotizacionResponseDto update(Integer id, CotizacionRequestDto dto);
     void delete(Integer id);
+
+    // Métodos para asignar relaciones por ID
+    CotizacionResponseDto setFormaPagoById(Integer cotizacionId, Integer formaPagoId);
+    CotizacionResponseDto setEstadoCotizacionById(Integer cotizacionId, Integer estadoId);
+    CotizacionResponseDto setCounterById(Integer cotizacionId, Integer counterId);
+    CotizacionResponseDto setSucursalById(Integer cotizacionId, Integer sucursalId);
+    CotizacionResponseDto setCarpetaById(Integer cotizacionId, Integer carpetaId);
 }
+
