@@ -2,7 +2,7 @@ package com.everywhere.backend.api;
 
 import com.everywhere.backend.mapper.OperadorMapper;
 import com.everywhere.backend.model.dto.OperadorRequestDto;
-import com.everywhere.backend.model.dto.OperadorResponseDto;
+import com.everywhere.backend.model.dto.OperadorResponseDTO;
 import com.everywhere.backend.model.entity.Operador;
 import com.everywhere.backend.repository.OperadorRepository;
 import com.everywhere.backend.service.OperadorService;
@@ -24,8 +24,8 @@ public class OperadorController {
     }
 
     @GetMapping
-    public ResponseEntity<List<OperadorResponseDto>> findAll() {
-        List<OperadorResponseDto> response = operadorService.findAll()
+    public ResponseEntity<List<OperadorResponseDTO>> findAll() {
+        List<OperadorResponseDTO> response = operadorService.findAll()
                 .stream()
                 .map(OperadorMapper::toResponse)
                 .collect(Collectors.toList());
@@ -33,7 +33,7 @@ public class OperadorController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<OperadorResponseDto> getById(@PathVariable Integer id) {
+    public ResponseEntity<OperadorResponseDTO> getById(@PathVariable Integer id) {
         return operadorService.findById(id)
                 .map(OperadorMapper::toResponse)
                 .map(ResponseEntity::ok)
@@ -41,14 +41,14 @@ public class OperadorController {
     }
 
     @PostMapping
-    public ResponseEntity<OperadorResponseDto> create(@RequestBody OperadorRequestDto dto) {
+    public ResponseEntity<OperadorResponseDTO> create(@RequestBody OperadorRequestDto dto) {
         Operador operador = OperadorMapper.toEntity(dto);
         Operador nuevoOperador = operadorService.save(operador);
         return new ResponseEntity<>(OperadorMapper.toResponse(nuevoOperador), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<OperadorResponseDto> update(
+    public ResponseEntity<OperadorResponseDTO> update(
             @PathVariable Integer id,
             @RequestBody OperadorRequestDto dto) {
 

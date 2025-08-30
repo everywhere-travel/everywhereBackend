@@ -1,7 +1,7 @@
 package com.everywhere.backend.mapper;
 
 import com.everywhere.backend.model.dto.ProveedorRequestDto;
-import com.everywhere.backend.model.dto.ProveedorResponseDto;
+import com.everywhere.backend.model.dto.ProveedorResponseDTO;
 import com.everywhere.backend.model.entity.Proveedor;
 
 public class ProveedorMapper {
@@ -17,11 +17,11 @@ public class ProveedorMapper {
         return proveedor;
     }
 
-    public static ProveedorResponseDto toResponse(Proveedor proveedor) {
+    public static ProveedorResponseDTO toResponse(Proveedor proveedor) {
         if (proveedor == null) {
             return null;
         }
-        ProveedorResponseDto dto = new ProveedorResponseDto();
+        ProveedorResponseDTO dto = new ProveedorResponseDTO();
         dto.setId(proveedor.getId());
         dto.setNombre(proveedor.getNombre());
         dto.setCreado(proveedor.getCreado());

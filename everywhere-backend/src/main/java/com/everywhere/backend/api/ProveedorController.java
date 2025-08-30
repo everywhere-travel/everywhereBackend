@@ -2,7 +2,7 @@ package com.everywhere.backend.api;
 
 import com.everywhere.backend.mapper.ProveedorMapper;
 import com.everywhere.backend.model.dto.ProveedorRequestDto;
-import com.everywhere.backend.model.dto.ProveedorResponseDto;
+import com.everywhere.backend.model.dto.ProveedorResponseDTO;
 import com.everywhere.backend.model.entity.Proveedor;
 import com.everywhere.backend.service.ProveedorService;
 import org.springframework.http.HttpStatus;
@@ -23,8 +23,8 @@ public class ProveedorController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProveedorResponseDto>> findAll(){
-        List<ProveedorResponseDto> response = proveedorService.findAll()
+    public ResponseEntity<List<ProveedorResponseDTO>> findAll(){
+        List<ProveedorResponseDTO> response = proveedorService.findAll()
                 .stream()
                 .map(ProveedorMapper::toResponse)
                 .collect(Collectors.toList());
@@ -32,7 +32,7 @@ public class ProveedorController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProveedorResponseDto> getById(@PathVariable Integer id) {
+    public ResponseEntity<ProveedorResponseDTO> getById(@PathVariable Integer id) {
         return proveedorService.findById(id)
                 .map(ProveedorMapper::toResponse)
                 .map(ResponseEntity::ok)
@@ -40,14 +40,14 @@ public class ProveedorController {
     }
 
     @PostMapping
-    public ResponseEntity<ProveedorResponseDto> create(@RequestBody ProveedorRequestDto dto) {
+    public ResponseEntity<ProveedorResponseDTO> create(@RequestBody ProveedorRequestDto dto) {
         Proveedor proveedor = ProveedorMapper.toEntity(dto);
         Proveedor nuevoProveedor = proveedorService.save(proveedor);
         return new ResponseEntity<>(ProveedorMapper.toResponse(nuevoProveedor), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProveedorResponseDto> update(@PathVariable Integer id,
+    public ResponseEntity<ProveedorResponseDTO> update(@PathVariable Integer id,
                                                        @RequestBody ProveedorRequestDto dto) {
         return proveedorService.findById(id)
                 .map(existing -> {
