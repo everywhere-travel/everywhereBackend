@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface CotizacionService {
 
-    CotizacionResponseDto create(CotizacionRequestDto dto);
+    CotizacionResponseDto create(CotizacionRequestDto dto, Integer personaId);
     Optional<CotizacionResponseDto> findById(Integer id);
     List<CotizacionResponseDto> findAll();
     CotizacionResponseDto update(Integer id, CotizacionRequestDto dto);
@@ -20,5 +20,6 @@ public interface CotizacionService {
     CotizacionResponseDto setCounterById(Integer cotizacionId, Integer counterId);
     CotizacionResponseDto setSucursalById(Integer cotizacionId, Integer sucursalId);
     CotizacionResponseDto setCarpetaById(Integer cotizacionId, Integer carpetaId);
+    CotizacionResponseDto setPersonasById(Integer cotizacionId, Integer personasId);
 }
 

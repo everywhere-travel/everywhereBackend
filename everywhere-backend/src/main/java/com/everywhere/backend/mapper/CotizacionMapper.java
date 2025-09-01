@@ -31,6 +31,7 @@ public class CotizacionMapper {
         dto.setEstadoCotizacion(entity.getEstadoCotizacion());
         dto.setSucursal(entity.getSucursal());
         dto.setCarpeta(entity.getCarpeta());
+        dto.setPersonas(entity.getPersonas());
 
         return dto;
     }
