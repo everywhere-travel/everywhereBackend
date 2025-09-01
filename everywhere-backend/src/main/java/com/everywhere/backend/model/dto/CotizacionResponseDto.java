@@ -1,8 +1,6 @@
 package com.everywhere.backend.model.dto;
 
-import com.everywhere.backend.model.entity.Counter;
-import com.everywhere.backend.model.entity.EstadoCotizacion;
-import com.everywhere.backend.model.entity.FormaPago;
+import com.everywhere.backend.model.entity.*;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -28,4 +26,6 @@ public class CotizacionResponseDto {
     private Counter counter;
     private FormaPago formaPago;
     private EstadoCotizacion estadoCotizacion;
+    private Sucursal sucursal;
+    private Carpeta carpeta;
 }
