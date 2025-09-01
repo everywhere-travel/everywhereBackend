@@ -13,7 +13,7 @@ public class DetalleCotizacion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "dcot_id_int")
-    private Long id;
+    private int id;
 
     @Column(name = "dcot_cant_int")
     private Integer cantidad;
@@ -38,10 +38,10 @@ public class DetalleCotizacion {
     private Cotizacion cotizacion;
 
     @ManyToOne
-    @JoinColumn(name = "prod_id_int", nullable = false)
+    @JoinColumn(name = "prod_id_int")
     private Producto producto;
 
     @ManyToOne
-    @JoinColumn(name = "prov_id_int", nullable = false)
+    @JoinColumn(name = "prov_id_int")
     private Proveedor proveedor;
 }
