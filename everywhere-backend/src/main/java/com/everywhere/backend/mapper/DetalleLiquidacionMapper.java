@@ -9,10 +9,12 @@ import com.everywhere.backend.model.entity.Producto;
 import com.everywhere.backend.model.entity.Proveedor;
 import com.everywhere.backend.model.entity.Operador;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -23,119 +25,124 @@ public class DetalleLiquidacionMapper {
     public DetalleLiquidacionResponseDTO toResponseDTO(DetalleLiquidacion detalleLiquidacion) {
         DetalleLiquidacionResponseDTO dto = modelMapper.map(detalleLiquidacion, DetalleLiquidacionResponseDTO.class);
 
-        // Mapear todas las relaciones que tienen DTOs existentes
-        if (detalleLiquidacion.getLiquidacion() != null) {
-            dto.setLiquidacion(modelMapper.map(detalleLiquidacion.getLiquidacion(), com.everywhere.backend.model.dto.LiquidacionResponseDTO.class));
-        }
+        // Mapear relaciones de forma más limpia
+        Optional.ofNullable(detalleLiquidacion.getLiquidacion())
+                .ifPresent(liquidacion -> dto.setLiquidacion(modelMapper.map(liquidacion, com.everywhere.backend.model.dto.LiquidacionResponseDTO.class)));
 
-        if (detalleLiquidacion.getViajero() != null) {
-            dto.setViajero(modelMapper.map(detalleLiquidacion.getViajero(), com.everywhere.backend.model.dto.ViajeroResponseDTO.class));
-        }
+        Optional.ofNullable(detalleLiquidacion.getViajero())
+                .ifPresent(viajero -> dto.setViajero(modelMapper.map(viajero, com.everywhere.backend.model.dto.ViajeroResponseDTO.class)));
 
-        if (detalleLiquidacion.getProducto() != null) {
-            dto.setProducto(modelMapper.map(detalleLiquidacion.getProducto(), com.everywhere.backend.model.dto.ProductoResponse.class));
-        }
+        Optional.ofNullable(detalleLiquidacion.getProducto())
+                .ifPresent(producto -> dto.setProducto(modelMapper.map(producto, com.everywhere.backend.model.dto.ProductoResponse.class)));
 
-        if (detalleLiquidacion.getProveedor() != null) {
-            dto.setProveedor(modelMapper.map(detalleLiquidacion.getProveedor(), com.everywhere.backend.model.dto.ProveedorResponseDTO.class));
-        }
+        Optional.ofNullable(detalleLiquidacion.getProveedor())
+                .ifPresent(proveedor -> dto.setProveedor(modelMapper.map(proveedor, com.everywhere.backend.model.dto.ProveedorResponseDTO.class)));
 
-        if (detalleLiquidacion.getOperador() != null) {
-            dto.setOperador(modelMapper.map(detalleLiquidacion.getOperador(), com.everywhere.backend.model.dto.OperadorResponseDTO.class));
-        }
+        Optional.ofNullable(detalleLiquidacion.getOperador())
+                .ifPresent(operador -> dto.setOperador(modelMapper.map(operador, com.everywhere.backend.model.dto.OperadorResponseDTO.class)));
 
         return dto;
     }
 
     public DetalleLiquidacion toEntity(DetalleLiquidacionRequestDTO dto) {
-        DetalleLiquidacion detalleLiquidacion = new DetalleLiquidacion();
+        DetalleLiquidacion entity = modelMapper.map(dto, DetalleLiquidacion.class);
 
-        // Mapear campos básicos manualmente
-        detalleLiquidacion.setTicket(dto.getTicket());
-        detalleLiquidacion.setCostoTicket(dto.getCostoTicket());
-        detalleLiquidacion.setCargoServicio(dto.getCargoServicio());
-        detalleLiquidacion.setValorVenta(dto.getValorVenta());
-        detalleLiquidacion.setFacturaCompra(dto.getFacturaCompra());
-        detalleLiquidacion.setBoletaPasajero(dto.getBoletaPasajero());
-        detalleLiquidacion.setMontoDescuento(dto.getMontoDescuento());
-        detalleLiquidacion.setPagoPaxUSD(dto.getPagoPaxUSD());
-        detalleLiquidacion.setPagoPaxPEN(dto.getPagoPaxPEN());
+        // Configurar relaciones de forma elegante
+        setEntityRelations(dto, entity);
 
-        // Configurar relaciones usando IDs
-        if (dto.getLiquidacionId() != null) {
-            Liquidacion liquidacion = new Liquidacion();
-            liquidacion.setId(dto.getLiquidacionId());
-            detalleLiquidacion.setLiquidacion(liquidacion);
-        }
-
-        if (dto.getViajeroId() != null) {
-            Viajero viajero = new Viajero();
-            viajero.setId(dto.getViajeroId());
-            detalleLiquidacion.setViajero(viajero);
-        }
-
-        if (dto.getProductoId() != null) {
-            Producto producto = new Producto();
-            producto.setId(dto.getProductoId());
-            detalleLiquidacion.setProducto(producto);
-        }
-
-        if (dto.getProveedorId() != null) {
-            Proveedor proveedor = new Proveedor();
-            proveedor.setId(dto.getProveedorId());
-            detalleLiquidacion.setProveedor(proveedor);
-        }
-
-        if (dto.getOperadorId() != null) {
-            Operador operador = new Operador();
-            operador.setId(dto.getOperadorId());
-            detalleLiquidacion.setOperador(operador);
-        }
-
-        return detalleLiquidacion;
+        return entity;
     }
 
     public void updateEntityFromDTO(DetalleLiquidacionRequestDTO dto, DetalleLiquidacion entity) {
-        entity.setTicket(dto.getTicket());
-        entity.setCostoTicket(dto.getCostoTicket());
-        entity.setCargoServicio(dto.getCargoServicio());
-        entity.setValorVenta(dto.getValorVenta());
-        entity.setFacturaCompra(dto.getFacturaCompra());
-        entity.setBoletaPasajero(dto.getBoletaPasajero());
-        entity.setMontoDescuento(dto.getMontoDescuento());
-        entity.setPagoPaxUSD(dto.getPagoPaxUSD());
-        entity.setPagoPaxPEN(dto.getPagoPaxPEN());
+        // Configurar ModelMapper para ignorar valores null durante el mapeo
+        modelMapper.getConfiguration()
+                .setMatchingStrategy(MatchingStrategies.STRICT)
+                .setPropertyCondition(context -> context.getSource() != null);
+
+        // Mapear solo campos no null usando ModelMapper
+        modelMapper.map(dto, entity);
+
+        // SOLO actualizar relaciones si realmente se quiere cambiar la relación
+        // No sobrescribir relaciones existentes si no se envían IDs
+        updateEntityRelations(dto, entity);
+
+        // Siempre actualizar timestamp
         entity.setActualizado(LocalDateTime.now());
+    }
 
-        // Actualizar relaciones
-        if (dto.getLiquidacionId() != null) {
-            Liquidacion liquidacion = new Liquidacion();
-            liquidacion.setId(dto.getLiquidacionId());
-            entity.setLiquidacion(liquidacion);
-        }
+    private void setEntityRelations(DetalleLiquidacionRequestDTO dto, DetalleLiquidacion entity) {
+        // Para creación - siempre establecer relaciones si se proporcionan
+        Optional.ofNullable(dto.getLiquidacionId())
+                .ifPresent(id -> {
+                    Liquidacion liquidacion = new Liquidacion();
+                    liquidacion.setId(id);
+                    entity.setLiquidacion(liquidacion);
+                });
 
-        if (dto.getViajeroId() != null) {
-            Viajero viajero = new Viajero();
-            viajero.setId(dto.getViajeroId());
-            entity.setViajero(viajero);
-        }
+        Optional.ofNullable(dto.getViajeroId())
+                .ifPresent(id -> {
+                    Viajero viajero = new Viajero();
+                    viajero.setId(id);
+                    entity.setViajero(viajero);
+                });
 
-        if (dto.getProductoId() != null) {
-            Producto producto = new Producto();
-            producto.setId(dto.getProductoId());
-            entity.setProducto(producto);
-        }
+        Optional.ofNullable(dto.getProductoId())
+                .ifPresent(id -> {
+                    Producto producto = new Producto();
+                    producto.setId(id);
+                    entity.setProducto(producto);
+                });
 
-        if (dto.getProveedorId() != null) {
-            Proveedor proveedor = new Proveedor();
-            proveedor.setId(dto.getProveedorId());
-            entity.setProveedor(proveedor);
-        }
+        Optional.ofNullable(dto.getProveedorId())
+                .ifPresent(id -> {
+                    Proveedor proveedor = new Proveedor();
+                    proveedor.setId(id);
+                    entity.setProveedor(proveedor);
+                });
 
-        if (dto.getOperadorId() != null) {
-            Operador operador = new Operador();
-            operador.setId(dto.getOperadorId());
-            entity.setOperador(operador);
-        }
+        Optional.ofNullable(dto.getOperadorId())
+                .ifPresent(id -> {
+                    Operador operador = new Operador();
+                    operador.setId(id);
+                    entity.setOperador(operador);
+                });
+    }
+
+    private void updateEntityRelations(DetalleLiquidacionRequestDTO dto, DetalleLiquidacion entity) {
+        // Para actualización - solo cambiar relaciones si se envían explícitamente
+        Optional.ofNullable(dto.getLiquidacionId())
+                .ifPresent(id -> {
+                    Liquidacion liquidacion = new Liquidacion();
+                    liquidacion.setId(id);
+                    entity.setLiquidacion(liquidacion);
+                });
+
+        Optional.ofNullable(dto.getViajeroId())
+                .ifPresent(id -> {
+                    Viajero viajero = new Viajero();
+                    viajero.setId(id);
+                    entity.setViajero(viajero);
+                });
+
+        Optional.ofNullable(dto.getProductoId())
+                .ifPresent(id -> {
+                    Producto producto = new Producto();
+                    producto.setId(id);
+                    entity.setProducto(producto);
+                });
+
+        Optional.ofNullable(dto.getProveedorId())
+                .ifPresent(id -> {
+                    Proveedor proveedor = new Proveedor();
+                    proveedor.setId(id);
+                    entity.setProveedor(proveedor);
+                });
+
+        Optional.ofNullable(dto.getOperadorId())
+                .ifPresent(id -> {
+                    Operador operador = new Operador();
+                    operador.setId(id);
+                    entity.setOperador(operador);
+                });
     }
 }

@@ -3,6 +3,7 @@ package com.everywhere.backend.model.entity;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.Data;
 
 @Data
@@ -46,6 +47,9 @@ public class Liquidacion {
     @ManyToOne
     @JoinColumn(name = "prod_id_int", nullable = true)
     private Producto producto;
+
+    @OneToMany(mappedBy = "liquidacion")
+    private List<ObservacionLiquidacion> observacionesLiquidacion;
 
     @ManyToOne
     @JoinColumn(name = "form_id_int", nullable = true)
