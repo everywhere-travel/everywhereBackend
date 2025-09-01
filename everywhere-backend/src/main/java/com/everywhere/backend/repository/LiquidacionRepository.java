@@ -16,7 +16,8 @@ public interface LiquidacionRepository extends JpaRepository<Liquidacion, Intege
            "LEFT JOIN FETCH l.producto " +
            "LEFT JOIN FETCH l.formaPago " +
            "LEFT JOIN FETCH l.cotizacion " +
-           "LEFT JOIN FETCH l.carpeta")
+           "LEFT JOIN FETCH l.carpeta " +
+           "LEFT JOIN FETCH l.observacionesLiquidacion")
     List<Liquidacion> findAllWithRelations();
 
     @Query("SELECT l FROM Liquidacion l " +
@@ -24,6 +25,7 @@ public interface LiquidacionRepository extends JpaRepository<Liquidacion, Intege
            "LEFT JOIN FETCH l.formaPago " +
            "LEFT JOIN FETCH l.cotizacion " +
            "LEFT JOIN FETCH l.carpeta " +
+           "LEFT JOIN FETCH l.observacionesLiquidacion " +
            "WHERE l.id = :id")
     Optional<Liquidacion> findByIdWithRelations(@Param("id") Integer id);
 }
