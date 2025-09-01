@@ -154,7 +154,7 @@ public class LiquidacionServiceImpl implements LiquidacionService {
 
         return detalleSimple;
     }
- 
+
     @Override
     public LiquidacionResponseDTO create(LiquidacionRequestDTO dto, Integer cotizacionId) {
         Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId)
@@ -180,19 +180,20 @@ public class LiquidacionServiceImpl implements LiquidacionService {
         liquidacion.setActualizado(LocalDateTime.now());
 
         Liquidacion updated = liquidacionRepository.save(liquidacion);
-        return liquidacionMapper.toResponseDTO(updated); 
-      
-    private ObservacionLiquidacionSimpleDTO convertirAObservacionSimple(ObeservacionLiquidacionResponseDTO observacionCompleta) {
-        ObservacionLiquidacionSimpleDTO observacionSimple = new ObservacionLiquidacionSimpleDTO();
-        observacionSimple.setId(observacionCompleta.getId());
-        observacionSimple.setDescripcion(observacionCompleta.getDescripcion());
-        observacionSimple.setValor(observacionCompleta.getValor());
-        observacionSimple.setDocumento(observacionCompleta.getDocumento());
-        observacionSimple.setNumeroDocumento(observacionCompleta.getNumeroDocumento());
-        observacionSimple.setCreado(observacionCompleta.getCreado());
-        observacionSimple.setActualizado(observacionCompleta.getActualizado());
-
-        // NO incluimos la liquidación para evitar referencia circular
-        return observacionSimple; 
+        return liquidacionMapper.toResponseDTO(updated);
     }
-}
+
+        private ObservacionLiquidacionSimpleDTO convertirAObservacionSimple(ObeservacionLiquidacionResponseDTO observacionCompleta) {
+            ObservacionLiquidacionSimpleDTO observacionSimple = new ObservacionLiquidacionSimpleDTO();
+            observacionSimple.setId(observacionCompleta.getId());
+            observacionSimple.setDescripcion(observacionCompleta.getDescripcion());
+            observacionSimple.setValor(observacionCompleta.getValor());
+            observacionSimple.setDocumento(observacionCompleta.getDocumento());
+            observacionSimple.setNumeroDocumento(observacionCompleta.getNumeroDocumento());
+            observacionSimple.setCreado(observacionCompleta.getCreado());
+            observacionSimple.setActualizado(observacionCompleta.getActualizado());
+
+            // NO incluimos la liquidación para evitar referencia circular
+            return observacionSimple;
+        }
+    }
