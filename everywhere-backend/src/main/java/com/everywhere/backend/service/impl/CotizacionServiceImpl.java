@@ -7,6 +7,7 @@ import com.everywhere.backend.model.dto.FormaPagoResponseDTO;
 import com.everywhere.backend.model.entity.*;
 import com.everywhere.backend.repository.*;
 import com.everywhere.backend.service.CotizacionService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -24,6 +25,7 @@ public class CotizacionServiceImpl implements CotizacionService {
     private final CounterRepository counterRepository;
     private final SucursalRepository sucursalRepository;
     private final CarpetaRepository carpetaRepository;
+    private final PersonaRepository personasRepository;
 
 
     public CotizacionServiceImpl(CotizacionRepository cotizacionRepository,
@@ -31,17 +33,18 @@ public class CotizacionServiceImpl implements CotizacionService {
                                  EstadoCotizacionRepository estadoCotizacionRepository,
                                  CounterRepository counterRepository,
                                  SucursalRepository sucursalRepository,
-                                 CarpetaRepository carpetaRepository) {
+                                 CarpetaRepository carpetaRepository, PersonaRepository personasRepository) {
         this.cotizacionRepository = cotizacionRepository;
         this.formaPagoRepository = formaPagoRepository;
         this.estadoCotizacionRepository = estadoCotizacionRepository;
         this.counterRepository = counterRepository;
         this.sucursalRepository = sucursalRepository;
         this.carpetaRepository = carpetaRepository;
+        this.personasRepository = personasRepository;
     }
 
     @Override
-    public CotizacionResponseDto create(CotizacionRequestDto dto) {
+    public CotizacionResponseDto create(CotizacionRequestDto dto, Integer personaId) {
         Cotizacion entity = new Cotizacion();
 
         // Mapear datos desde el DTO
@@ -53,6 +56,13 @@ public class CotizacionServiceImpl implements CotizacionService {
         // Fechas automáticas
         entity.setFechaEmision(LocalDate.now());
         entity.setActualizado(LocalDateTime.now());
+
+        // Si personaId viene informado, buscar y asignar
+        if (personaId != null) {
+            Personas persona = personasRepository.findById(personaId)
+                    .orElseThrow(() -> new EntityNotFoundException("Persona no encontrada con id " + personaId));
+            entity.setPersonas(persona);
+        }
 
         Cotizacion saved = cotizacionRepository.save(entity);
         return CotizacionMapper.toResponse(saved);
@@ -172,6 +182,21 @@ public class CotizacionServiceImpl implements CotizacionService {
                 .orElseThrow(() -> new RuntimeException("Carpeta no encontrada"));
 
         cotizacion.setCarpeta(carpeta);
+        cotizacion.setActualizado(LocalDateTime.now());
+
+        Cotizacion updated = cotizacionRepository.save(cotizacion);
+        return CotizacionMapper.toResponse(updated);
+    }
+
+    @Override
+    public CotizacionResponseDto setPersonasById(Integer cotizacionId, Integer personaId) {
+        Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId)
+                .orElseThrow(() -> new RuntimeException("Cotización no encontrada"));
+
+        Personas persona = personasRepository.findById(personaId)
+                .orElseThrow(() -> new RuntimeException("Persona no encontrada"));
+
+        cotizacion.setPersonas(persona);
         cotizacion.setActualizado(LocalDateTime.now());
 
         Cotizacion updated = cotizacionRepository.save(cotizacion);

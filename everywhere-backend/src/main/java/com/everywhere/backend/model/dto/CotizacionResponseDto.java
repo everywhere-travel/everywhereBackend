@@ -28,4 +28,5 @@ public class CotizacionResponseDto {
     private EstadoCotizacion estadoCotizacion;
     private Sucursal sucursal;
     private Carpeta carpeta;
+    private Personas personas;
 }

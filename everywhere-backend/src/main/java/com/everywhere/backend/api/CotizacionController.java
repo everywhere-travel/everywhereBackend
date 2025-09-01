@@ -20,11 +20,23 @@ public class CotizacionController {
 
     // ----------------- CRUD -----------------
 
-    // Crear nueva cotización
+    // Crear sin persona
     @PostMapping
-    public ResponseEntity<CotizacionResponseDto> create(@RequestBody CotizacionRequestDto dto) {
-        return ResponseEntity.ok(cotizacionService.create(dto));
+    public ResponseEntity<CotizacionResponseDto> create(
+            @RequestBody CotizacionRequestDto dto
+    ) {
+        return ResponseEntity.ok(cotizacionService.create(dto, null));
     }
+
+    // Crear con persona (id en la ruta)
+    @PostMapping("/persona/{personaId}")
+    public ResponseEntity<CotizacionResponseDto> createWithPersona(
+            @PathVariable Integer personaId,
+            @RequestBody CotizacionRequestDto dto
+    ) {
+        return ResponseEntity.ok(cotizacionService.create(dto, personaId));
+    }
+
 
     // Buscar por ID
     @GetMapping("/{id}")
@@ -96,4 +108,13 @@ public class CotizacionController {
             @PathVariable Integer carpetaId) {
         return ResponseEntity.ok(cotizacionService.setCarpetaById(id, carpetaId));
     }
+
+    @PutMapping("/{id}/persona/{personaId}")
+    public ResponseEntity<CotizacionResponseDto> setPersona(
+            @PathVariable Integer id,
+            @PathVariable Integer personaId
+    ) {
+        return ResponseEntity.ok(cotizacionService.setPersonasById(id, personaId));
+    }
+
 }
