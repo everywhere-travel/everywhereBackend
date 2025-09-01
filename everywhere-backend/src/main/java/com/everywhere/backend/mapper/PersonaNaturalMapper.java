@@ -39,6 +39,12 @@ public class PersonaNaturalMapper {
         if (dto.getApellidos() != null) {
             entity.setApellidos(dto.getApellidos());
         }
+        if (dto.getCliente() != null) {
+            entity.setCliente(dto.getCliente());
+        }
+        if (dto.getCategoria() != null) {
+            entity.setCategoria(dto.getCategoria());
+        }
 
         // Actualizar persona base si existe
         if (dto.getPersona() != null && entity.getPersonas() != null) {
