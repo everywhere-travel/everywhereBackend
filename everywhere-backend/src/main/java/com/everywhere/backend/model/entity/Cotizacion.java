@@ -68,4 +68,8 @@ public class Cotizacion {
     @JoinColumn (name = "carp_id_padr_int")
     private Carpeta carpeta;
 
+    @ManyToOne
+    @JoinColumn(name = "per_id_int")
+    private Personas personas;
+
 }
