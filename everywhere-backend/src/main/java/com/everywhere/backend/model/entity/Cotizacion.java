@@ -13,7 +13,7 @@ public class Cotizacion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "cot_id_int")
-    private Long id;
+    private int id;
 
     @Column(name = "cot_num_vac", length = 100)
     private String codigoCotizacion;
@@ -40,7 +40,7 @@ public class Cotizacion {
     private LocalDate fechaSalida;
 
     @Column(name = "cot_fec_reg_tmp")
-    private LocalDate fechaRegistro;
+    private LocalDate fechaRegreso;
 
     @Column(name = "cot_mon_vac", length = 20)
     private String moneda;
@@ -49,23 +49,23 @@ public class Cotizacion {
     private String observacion;
 
     @ManyToOne
-    @JoinColumn(name = "cou_id_int", nullable = false)
+    @JoinColumn(name = "cou_id_int")
     private Counter counter;
 
     @ManyToOne
-    @JoinColumn(name = "form_id_int", nullable = false)
+    @JoinColumn(name = "form_id_int")
     private FormaPago formaPago;
 
     @ManyToOne
-    @JoinColumn(name = "est_cot_id_int", nullable = false)
+    @JoinColumn(name = "est_cot_id_int")
     private EstadoCotizacion estadoCotizacion;
 
     @ManyToOne
-    @JoinColumn(name = "suc_id_int", nullable = false)
+    @JoinColumn(name = "suc_id_int")
     private Sucursal sucursal;
 
     @ManyToOne
-    @JoinColumn (name = "carp_id_padr_int", nullable = false)
+    @JoinColumn (name = "carp_id_padr_int")
     private Carpeta carpeta;
 
 }
