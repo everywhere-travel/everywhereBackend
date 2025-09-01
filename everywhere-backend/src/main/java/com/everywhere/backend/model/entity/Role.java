@@ -13,11 +13,11 @@ public class Role {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "role_id")
+    @Column(name = "rol_id")
     private Integer id;
 
     @Column(name = "rol_nam_vc", length = 100)
-    private String nombre;
+    private String name;
 
     @CreationTimestamp
     @Column(name = "prov_cre_tmp", updatable = false)
