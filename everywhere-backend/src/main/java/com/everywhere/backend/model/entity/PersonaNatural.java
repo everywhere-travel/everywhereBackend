@@ -23,6 +23,12 @@ public class PersonaNatural {
     @Column(name = "per_nat_apell_vac")
     private String apellidos;
 
+    @Column(name = "per_nat_cliente_bol")
+    private Boolean cliente;
+
+    @Column(name = "per_nat_catg_vac")
+    private String categoria;
+
     @Column(name = "per_nat_cre_tmp", updatable = false)
     private LocalDateTime creado;
 
