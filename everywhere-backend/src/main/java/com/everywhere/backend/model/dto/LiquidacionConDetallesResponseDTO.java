@@ -24,4 +24,7 @@ public class LiquidacionConDetallesResponseDTO {
 
     // Lista de detalles anidados (SIN la liquidación repetida)
     private List<DetalleLiquidacionSimpleDTO> detalles;
+
+    // Lista de observaciones anidadas (SIN la liquidación repetida)
+    private List<ObservacionLiquidacionSimpleDTO> observaciones;
 }

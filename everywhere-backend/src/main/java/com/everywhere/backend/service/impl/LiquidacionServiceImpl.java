@@ -5,10 +5,13 @@ import com.everywhere.backend.model.dto.LiquidacionResponseDTO;
 import com.everywhere.backend.model.dto.LiquidacionConDetallesResponseDTO;
 import com.everywhere.backend.model.dto.DetalleLiquidacionResponseDTO;
 import com.everywhere.backend.model.dto.DetalleLiquidacionSimpleDTO;
+import com.everywhere.backend.model.dto.ObeservacionLiquidacionResponseDTO;
+import com.everywhere.backend.model.dto.ObservacionLiquidacionSimpleDTO;
 import com.everywhere.backend.model.entity.Liquidacion;
 import com.everywhere.backend.repository.LiquidacionRepository;
 import com.everywhere.backend.service.LiquidacionService;
 import com.everywhere.backend.service.DetalleLiquidacionService;
+import com.everywhere.backend.service.ObservacionLiquidacionService;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.LiquidacionMapper;
 import org.springframework.stereotype.Service;
@@ -25,6 +28,7 @@ public class LiquidacionServiceImpl implements LiquidacionService {
     private final LiquidacionRepository liquidacionRepository;
     private final LiquidacionMapper liquidacionMapper;
     private final DetalleLiquidacionService detalleLiquidacionService;
+    private final ObservacionLiquidacionService observacionLiquidacionService;
 
     @Override
     public List<LiquidacionResponseDTO> findAll() {
@@ -93,7 +97,15 @@ public class LiquidacionServiceImpl implements LiquidacionService {
                 .map(this::convertirADetalleSimple)
                 .collect(Collectors.toList());
 
-        // Crear el DTO con detalles
+        // Obtener las observaciones simplificadas (sin liquidación repetida)
+        List<ObeservacionLiquidacionResponseDTO> observacionesCompletas = observacionLiquidacionService.findByLiquidacionId(id);
+
+        // Convertir a observaciones simples (sin liquidación)
+        List<ObservacionLiquidacionSimpleDTO> observacionesSimples = observacionesCompletas.stream()
+                .map(this::convertirAObservacionSimple)
+                .collect(Collectors.toList());
+
+        // Crear el DTO con detalles y observaciones
         LiquidacionConDetallesResponseDTO resultado = new LiquidacionConDetallesResponseDTO();
         resultado.setId(liquidacionDTO.getId());
         resultado.setNumero(liquidacionDTO.getNumero());
@@ -107,6 +119,7 @@ public class LiquidacionServiceImpl implements LiquidacionService {
         resultado.setProducto(liquidacionDTO.getProducto());
         resultado.setFormaPago(liquidacionDTO.getFormaPago());
         resultado.setDetalles(detallesSimples);
+        resultado.setObservaciones(observacionesSimples);
 
         return resultado;
     }
@@ -133,5 +146,19 @@ public class LiquidacionServiceImpl implements LiquidacionService {
         detalleSimple.setOperador(detalleCompleto.getOperador());
 
         return detalleSimple;
+    }
+
+    private ObservacionLiquidacionSimpleDTO convertirAObservacionSimple(ObeservacionLiquidacionResponseDTO observacionCompleta) {
+        ObservacionLiquidacionSimpleDTO observacionSimple = new ObservacionLiquidacionSimpleDTO();
+        observacionSimple.setId(observacionCompleta.getId());
+        observacionSimple.setDescripcion(observacionCompleta.getDescripcion());
+        observacionSimple.setValor(observacionCompleta.getValor());
+        observacionSimple.setDocumento(observacionCompleta.getDocumento());
+        observacionSimple.setNumeroDocumento(observacionCompleta.getNumeroDocumento());
+        observacionSimple.setCreado(observacionCompleta.getCreado());
+        observacionSimple.setActualizado(observacionCompleta.getActualizado());
+
+        // NO incluimos la liquidación para evitar referencia circular
+        return observacionSimple;
     }
 }
