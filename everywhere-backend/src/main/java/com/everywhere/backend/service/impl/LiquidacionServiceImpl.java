@@ -5,12 +5,17 @@ import com.everywhere.backend.model.dto.LiquidacionResponseDTO;
 import com.everywhere.backend.model.dto.LiquidacionConDetallesResponseDTO;
 import com.everywhere.backend.model.dto.DetalleLiquidacionResponseDTO;
 import com.everywhere.backend.model.dto.DetalleLiquidacionSimpleDTO;
+import com.everywhere.backend.model.entity.Carpeta;
+import com.everywhere.backend.model.entity.Cotizacion;
 import com.everywhere.backend.model.entity.Liquidacion;
+import com.everywhere.backend.repository.CarpetaRepository;
+import com.everywhere.backend.repository.CotizacionRepository;
 import com.everywhere.backend.repository.LiquidacionRepository;
 import com.everywhere.backend.service.LiquidacionService;
 import com.everywhere.backend.service.DetalleLiquidacionService;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.LiquidacionMapper;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 
@@ -25,6 +30,8 @@ public class LiquidacionServiceImpl implements LiquidacionService {
     private final LiquidacionRepository liquidacionRepository;
     private final LiquidacionMapper liquidacionMapper;
     private final DetalleLiquidacionService detalleLiquidacionService;
+    private final CotizacionRepository cotizacionRepository;
+    private final CarpetaRepository carpetaRepository;
 
     @Override
     public List<LiquidacionResponseDTO> findAll() {
@@ -133,5 +140,33 @@ public class LiquidacionServiceImpl implements LiquidacionService {
         detalleSimple.setOperador(detalleCompleto.getOperador());
 
         return detalleSimple;
+    }
+
+    @Override
+    public LiquidacionResponseDTO create(LiquidacionRequestDTO dto, Integer cotizacionId) {
+        Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId)
+                .orElseThrow(() -> new EntityNotFoundException("Cotización no encontrada"));
+
+        Liquidacion liquidacion = liquidacionMapper.toEntity(dto);
+        liquidacion.setCotizacion(cotizacion);
+        liquidacion.setCreado(LocalDateTime.now());
+
+        Liquidacion saved = liquidacionRepository.save(liquidacion);
+        return liquidacionMapper.toResponseDTO(saved);
+    }
+
+    @Override
+    public LiquidacionResponseDTO setCarpeta(Integer liquidacionId, Integer carpetaId) {
+        Liquidacion liquidacion = liquidacionRepository.findById(liquidacionId)
+                .orElseThrow(() -> new EntityNotFoundException("Liquidación no encontrada"));
+
+        Carpeta carpeta = carpetaRepository.findById(carpetaId)
+                .orElseThrow(() -> new EntityNotFoundException("Carpeta no encontrada"));
+
+        liquidacion.setCarpeta(carpeta);
+        liquidacion.setActualizado(LocalDateTime.now());
+
+        Liquidacion updated = liquidacionRepository.save(liquidacion);
+        return liquidacionMapper.toResponseDTO(updated);
     }
 }

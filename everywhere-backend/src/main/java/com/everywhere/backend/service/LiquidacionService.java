@@ -13,4 +13,8 @@ public interface LiquidacionService {
     LiquidacionResponseDTO save(LiquidacionRequestDTO liquidacionRequestDTO);
     LiquidacionResponseDTO update(Integer id, LiquidacionRequestDTO liquidacionRequestDTO);
     void deleteById(Integer id);
+
+    LiquidacionResponseDTO create(LiquidacionRequestDTO liquidacionRequestDTO, Integer cotizacionId);
+    LiquidacionResponseDTO setCarpeta(Integer liquidacionId, Integer carpetaId);
+
 }
