@@ -74,12 +74,8 @@ public class CotizacionServiceImpl implements CotizacionService {
 
     @Override
     public CotizacionResponseDto update(Integer id, CotizacionRequestDto dto) {
-        System.out.println("DEBUG: Buscando cotización con ID = " + id);
-
         Cotizacion entity = cotizacionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cotización no encontrada"));
-
-        System.out.println("DEBUG: Cotización encontrada = " + entity);
 
         CotizacionMapper.updateEntityFromRequest(entity, dto);
         entity.setActualizado(LocalDateTime.now());
@@ -87,6 +83,7 @@ public class CotizacionServiceImpl implements CotizacionService {
         Cotizacion updated = cotizacionRepository.save(entity);
         return CotizacionMapper.toResponse(updated);
     }
+
 
 
     @Override
