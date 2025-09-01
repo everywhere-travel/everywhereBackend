@@ -54,4 +54,22 @@ public class LiquidacionController {
         liquidacionService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/cotizacion/{cotizacionId}")
+    public ResponseEntity<LiquidacionResponseDTO> createLiquidacionConCotizacion(
+            @PathVariable Integer cotizacionId,
+            @Valid @RequestBody LiquidacionRequestDTO liquidacionRequestDTO
+    ) {
+        LiquidacionResponseDTO nuevaLiquidacion = liquidacionService.create(liquidacionRequestDTO, cotizacionId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nuevaLiquidacion);
+    }
+
+    @PutMapping("/{liquidacionId}/carpeta/{carpetaId}")
+    public ResponseEntity<LiquidacionResponseDTO> setCarpeta(
+            @PathVariable Integer liquidacionId,
+            @PathVariable Integer carpetaId
+    ) {
+        LiquidacionResponseDTO liquidacionActualizada = liquidacionService.setCarpeta(liquidacionId, carpetaId);
+        return ResponseEntity.ok(liquidacionActualizada);
+    }
 }
