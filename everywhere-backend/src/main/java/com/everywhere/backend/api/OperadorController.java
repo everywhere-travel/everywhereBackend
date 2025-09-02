@@ -5,6 +5,7 @@ import com.everywhere.backend.model.dto.OperadorRequestDto;
 import com.everywhere.backend.model.dto.OperadorResponseDTO;
 import com.everywhere.backend.model.entity.Operador;
 import com.everywhere.backend.repository.OperadorRepository;
+import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.OperadorService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ public class OperadorController {
     }
 
     @GetMapping
+    @RequirePermission(module = "CONTABILIDAD", permission = "READ")
     public ResponseEntity<List<OperadorResponseDTO>> findAll() {
         List<OperadorResponseDTO> response = operadorService.findAll()
                 .stream()
@@ -33,6 +35,7 @@ public class OperadorController {
     }
 
     @GetMapping("/{id}")
+    @RequirePermission(module = "CONTABILIDAD", permission = "READ")
     public ResponseEntity<OperadorResponseDTO> getById(@PathVariable Integer id) {
         return operadorService.findById(id)
                 .map(OperadorMapper::toResponse)
@@ -41,6 +44,7 @@ public class OperadorController {
     }
 
     @PostMapping
+    @RequirePermission(module = "CONTABILIDAD", permission = "CREATE")
     public ResponseEntity<OperadorResponseDTO> create(@RequestBody OperadorRequestDto dto) {
         Operador operador = OperadorMapper.toEntity(dto);
         Operador nuevoOperador = operadorService.save(operador);
@@ -48,6 +52,7 @@ public class OperadorController {
     }
 
     @PutMapping("/{id}")
+    @RequirePermission(module = "CONTABILIDAD", permission = "UPDATE")
     public ResponseEntity<OperadorResponseDTO> update(
             @PathVariable Integer id,
             @RequestBody OperadorRequestDto dto) {
@@ -65,6 +70,7 @@ public class OperadorController {
 
 
     @DeleteMapping("/{id}")
+    @RequirePermission(module = "CONTABILIDAD", permission = "DELETE")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         if (operadorService.findById(id).isEmpty()) {
             return ResponseEntity.notFound().build();

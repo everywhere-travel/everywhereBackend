@@ -3,6 +3,7 @@ package com.everywhere.backend.api;
 
 import com.everywhere.backend.model.dto.CounterRequestDto;
 import com.everywhere.backend.model.dto.CounterResponseDto;
+import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.CounterService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,17 +19,20 @@ public class CounterController {
     private final CounterService counterService;
 
     @PostMapping
+    @RequirePermission(module = "CONTABILIDAD", permission = "CREATE")
     public ResponseEntity<CounterResponseDto> create(@RequestBody CounterRequestDto request) {
         return ResponseEntity.ok(counterService.create(request));
     }
 
 
     @PutMapping
+    @RequirePermission(module = "CONTABILIDAD", permission = "UPDATE")
     public ResponseEntity<CounterResponseDto> update(@RequestBody CounterRequestDto request) {
         return ResponseEntity.ok(counterService.update(request));
     }
 
     @PatchMapping("/activate")
+    @RequirePermission(module = "CONTABILIDAD", permission = "UPDATE")
     public ResponseEntity<CounterResponseDto> activate(@RequestBody CounterRequestDto request) {
         return ResponseEntity.ok(counterService.activate(
                 request.getCodigo() != null ? request.getCodigo() : request.getNombre()
@@ -36,6 +40,7 @@ public class CounterController {
     }
 
     @PatchMapping("/desactivate")
+    @RequirePermission(module = "CONTABILIDAD", permission = "UPDATE")
     public ResponseEntity<CounterResponseDto> deactivate(@RequestBody CounterRequestDto request) {
         return ResponseEntity.ok(counterService.deactivate(
                 request.getCodigo() != null ? request.getCodigo() : request.getNombre()
@@ -44,6 +49,7 @@ public class CounterController {
 
     //Get counter by code
     @GetMapping("/search")
+    @RequirePermission(module = "CONTABILIDAD", permission = "READ")
     public ResponseEntity<CounterResponseDto> get(@RequestBody CounterRequestDto request) {
         return counterService.get(
                         request.getCodigo() != null ? request.getCodigo() : request.getNombre()
@@ -53,16 +59,19 @@ public class CounterController {
 
     //Get all counters
     @GetMapping
+    @RequirePermission(module = "CONTABILIDAD", permission = "READ")
     public ResponseEntity<List<CounterResponseDto>> getAll() {
         return ResponseEntity.ok(counterService.getAll());
     }
 
     @GetMapping("/activos")
+    @RequirePermission(module = "CONTABILIDAD", permission = "READ")
     public ResponseEntity<List<CounterResponseDto>> getActivos() {
         return ResponseEntity.ok(counterService.listActive());
     }
 
     @GetMapping("/inactivos")
+    @RequirePermission(module = "CONTABILIDAD", permission = "READ")
     public ResponseEntity<List<CounterResponseDto>> getInactivos() {
         return ResponseEntity.ok(counterService.listInactive());
     }

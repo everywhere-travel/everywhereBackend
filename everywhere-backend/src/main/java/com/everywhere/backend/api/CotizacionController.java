@@ -2,6 +2,7 @@ package com.everywhere.backend.api;
 
 import com.everywhere.backend.model.dto.CotizacionRequestDto;
 import com.everywhere.backend.model.dto.CotizacionResponseDto;
+import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.CotizacionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +23,7 @@ public class CotizacionController {
 
     // Crear sin persona
     @PostMapping
+    @RequirePermission(module = "COTIZACIONES", permission = "CREATE")
     public ResponseEntity<CotizacionResponseDto> create(
             @RequestBody CotizacionRequestDto dto
     ) {
@@ -30,6 +32,7 @@ public class CotizacionController {
 
     // Crear con persona (id en la ruta)
     @PostMapping("/persona/{personaId}")
+    @RequirePermission(module = "COTIZACIONES", permission = "CREATE")
     public ResponseEntity<CotizacionResponseDto> createWithPersona(
             @PathVariable Integer personaId,
             @RequestBody CotizacionRequestDto dto
@@ -40,6 +43,7 @@ public class CotizacionController {
 
     // Buscar por ID
     @GetMapping("/{id}")
+    @RequirePermission(module = "COTIZACIONES", permission = "READ")
     public ResponseEntity<CotizacionResponseDto> findById(@PathVariable Integer id) {
         return cotizacionService.findById(id)
                 .map(ResponseEntity::ok)
@@ -48,12 +52,14 @@ public class CotizacionController {
 
     // Listar todas las cotizaciones
     @GetMapping
+    @RequirePermission(module = "COTIZACIONES", permission = "READ")
     public ResponseEntity<List<CotizacionResponseDto>> findAll() {
         return ResponseEntity.ok(cotizacionService.findAll());
     }
 
     // Actualizar cotización
     @PutMapping("/{id}")
+    @RequirePermission(module = "COTIZACIONES", permission = "UPDATE")
     public ResponseEntity<CotizacionResponseDto> update(
             @PathVariable Integer id,
             @RequestBody CotizacionRequestDto dto) {
@@ -62,6 +68,7 @@ public class CotizacionController {
 
     // Eliminar cotización
     @DeleteMapping("/{id}")
+    @RequirePermission(module = "COTIZACIONES", permission = "DELETE")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         cotizacionService.delete(id);
         return ResponseEntity.noContent().build();
@@ -71,6 +78,7 @@ public class CotizacionController {
 
     // Asignar forma de pago
     @PutMapping("/{id}/forma-pago/{formaPagoId}")
+    @RequirePermission(module = "COTIZACIONES", permission = "UPDATE")
     public ResponseEntity<CotizacionResponseDto> setFormaPago(
             @PathVariable Integer id,
             @PathVariable Integer formaPagoId) {
@@ -79,6 +87,7 @@ public class CotizacionController {
 
     // Asignar estado de cotización
     @PutMapping("/{id}/estado/{estadoId}")
+    @RequirePermission(module = "COTIZACIONES", permission = "UPDATE")
     public ResponseEntity<CotizacionResponseDto> setEstadoCotizacion(
             @PathVariable Integer id,
             @PathVariable Integer estadoId) {
@@ -87,6 +96,7 @@ public class CotizacionController {
 
     // Asignar counter
     @PutMapping("/{id}/counter/{counterId}")
+    @RequirePermission(module = "COTIZACIONES", permission = "UPDATE")
     public ResponseEntity<CotizacionResponseDto> setCounter(
             @PathVariable Integer id,
             @PathVariable Integer counterId) {
@@ -95,26 +105,10 @@ public class CotizacionController {
 
     // Asignar sucursal
     @PutMapping("/{id}/sucursal/{sucursalId}")
+    @RequirePermission(module = "COTIZACIONES", permission = "UPDATE")
     public ResponseEntity<CotizacionResponseDto> setSucursal(
             @PathVariable Integer id,
             @PathVariable Integer sucursalId) {
         return ResponseEntity.ok(cotizacionService.setSucursalById(id, sucursalId));
     }
-
-    // Asignar carpeta
-    @PutMapping("/{id}/carpeta/{carpetaId}")
-    public ResponseEntity<CotizacionResponseDto> setCarpeta(
-            @PathVariable Integer id,
-            @PathVariable Integer carpetaId) {
-        return ResponseEntity.ok(cotizacionService.setCarpetaById(id, carpetaId));
-    }
-
-    @PutMapping("/{id}/persona/{personaId}")
-    public ResponseEntity<CotizacionResponseDto> setPersona(
-            @PathVariable Integer id,
-            @PathVariable Integer personaId
-    ) {
-        return ResponseEntity.ok(cotizacionService.setPersonasById(id, personaId));
-    }
-
 }

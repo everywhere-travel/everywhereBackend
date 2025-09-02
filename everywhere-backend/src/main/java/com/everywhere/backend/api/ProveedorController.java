@@ -4,6 +4,7 @@ import com.everywhere.backend.mapper.ProveedorMapper;
 import com.everywhere.backend.model.dto.ProveedorRequestDto;
 import com.everywhere.backend.model.dto.ProveedorResponseDTO;
 import com.everywhere.backend.model.entity.Proveedor;
+import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.ProveedorService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ public class ProveedorController {
     }
 
     @GetMapping
+    @RequirePermission(module = "PROVEEDORES", permission = "READ")
     public ResponseEntity<List<ProveedorResponseDTO>> findAll(){
         List<ProveedorResponseDTO> response = proveedorService.findAll()
                 .stream()
@@ -32,6 +34,7 @@ public class ProveedorController {
     }
 
     @GetMapping("/{id}")
+    @RequirePermission(module = "PROVEEDORES", permission = "READ")
     public ResponseEntity<ProveedorResponseDTO> getById(@PathVariable Integer id) {
         return proveedorService.findById(id)
                 .map(ProveedorMapper::toResponse)
@@ -40,6 +43,7 @@ public class ProveedorController {
     }
 
     @PostMapping
+    @RequirePermission(module = "PROVEEDORES", permission = "CREATE")
     public ResponseEntity<ProveedorResponseDTO> create(@RequestBody ProveedorRequestDto dto) {
         Proveedor proveedor = ProveedorMapper.toEntity(dto);
         Proveedor nuevoProveedor = proveedorService.save(proveedor);
@@ -47,6 +51,7 @@ public class ProveedorController {
     }
 
     @PutMapping("/{id}")
+    @RequirePermission(module = "PROVEEDORES", permission = "UPDATE")
     public ResponseEntity<ProveedorResponseDTO> update(@PathVariable Integer id,
                                                        @RequestBody ProveedorRequestDto dto) {
         return proveedorService.findById(id)
@@ -59,6 +64,7 @@ public class ProveedorController {
     }
 
     @DeleteMapping("/{id}")
+    @RequirePermission(module = "PROVEEDORES", permission = "DELETE")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         if (proveedorService.findById(id).isEmpty()) {
             return ResponseEntity.notFound().build();

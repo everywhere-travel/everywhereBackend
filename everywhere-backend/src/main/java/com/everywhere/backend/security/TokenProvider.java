@@ -6,13 +6,13 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -30,6 +30,8 @@ public class TokenProvider {
 
     @Value("${jwt.validity-in-seconds}")
     private long jwtValidityInSeconds;
+
+    private final CustomUserDetailsService userDetailsService;
 
     private Key key;
 
@@ -81,11 +83,23 @@ public class TokenProvider {
         // TODO: Crear la lista de autoridades (roles) para el usuario
         List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
 
-        // TODO: El principal del contexto de seguridad será el email (subject) extraído del token
-        User principal = new User(claims.getSubject(), "", authorities);
+        try {
+            // TODO: Cargar el usuario completo desde la base de datos usando el email del token
+            UserDetails userDetails = userDetailsService.loadUserByUsername(claims.getSubject());
 
-        // TODO: Crear el objeto de autenticación con los detalles del usuario
-        return new UsernamePasswordAuthenticationToken(principal, token, authorities);
+            // TODO: Crear el objeto de autenticación con el UserPrincipal completo
+            return new UsernamePasswordAuthenticationToken(userDetails, token, authorities);
+        } catch (UsernameNotFoundException e) {
+            // TODO: Si no se encuentra el usuario, crear un UserPrincipal básico (fallback)
+            UserPrincipal principal = new UserPrincipal(
+                    null, // id no disponible desde el token
+                    claims.getSubject(), // email
+                    "", // password vacío para tokens
+                    authorities,
+                    null // user entity no disponible desde el token
+            );
+            return new UsernamePasswordAuthenticationToken(principal, token, authorities);
+        }
     }
 
     // TODO: Método para validar el token JWT (si está correctamente firmado y no ha expirado)
