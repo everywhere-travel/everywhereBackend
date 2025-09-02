@@ -2,6 +2,7 @@ package com.everywhere.backend.api;
 
 import com.everywhere.backend.model.dto.ProductoRequestDto;
 import com.everywhere.backend.model.dto.ProductoResponse;
+import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.ProductoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,12 +19,14 @@ public class ProductoController {
 
     // Crear un producto
     @PostMapping
+    @RequirePermission(module = "PRODUCTOS", permission = "CREATE")
     public ResponseEntity<ProductoResponse> create(@RequestBody ProductoRequestDto request) {
         return ResponseEntity.ok(productoService.create(request));
     }
 
     // Actualizar un producto por id
     @PutMapping("/{id}")
+    @RequirePermission(module = "PRODUCTOS", permission = "UPDATE")
     public ResponseEntity<ProductoResponse> update(
             @PathVariable Integer id,
             @RequestBody ProductoRequestDto request) {
@@ -32,6 +35,7 @@ public class ProductoController {
 
     // Obtener un producto por id
     @GetMapping("/{id}")
+    @RequirePermission(module = "PRODUCTOS", permission = "READ")
     public ResponseEntity<ProductoResponse> getById(@PathVariable Integer id) {
         return productoService.getById(id)
                 .map(ResponseEntity::ok)
@@ -40,12 +44,14 @@ public class ProductoController {
 
     // Listar todos los productos
     @GetMapping
+    @RequirePermission(module = "PRODUCTOS", permission = "READ")
     public ResponseEntity<List<ProductoResponse>> getAll() {
         return ResponseEntity.ok(productoService.getAll());
     }
 
     // Eliminar un producto por id
     @DeleteMapping("/{id}")
+    @RequirePermission(module = "PRODUCTOS", permission = "DELETE")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         productoService.delete(id);
         return ResponseEntity.noContent().build();
@@ -53,6 +59,7 @@ public class ProductoController {
 
     // Obtener producto por código
     @GetMapping("/codigo/{codigo}")
+    @RequirePermission(module = "PRODUCTOS", permission = "READ")
     public ResponseEntity<ProductoResponse> getByCodigo(@PathVariable String codigo) {
         return productoService.getByCodigo(codigo)
                 .map(ResponseEntity::ok)

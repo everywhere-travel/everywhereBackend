@@ -2,6 +2,7 @@ package com.everywhere.backend.api;
 
 import com.everywhere.backend.model.dto.CarpetaRequestDto;
 import com.everywhere.backend.model.dto.CarpetaResponseDto;
+import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.CarpetaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -82,7 +83,6 @@ public class CarpetaController {
         return ResponseEntity.ok(carpetaService.findByMes(mes));
     }
 
-
     // Listar por rango de fechas
     @GetMapping("/fecha")
     public ResponseEntity<List<CarpetaResponseDto>> findByRango(
@@ -92,21 +92,23 @@ public class CarpetaController {
     }
 
     // Listar recientes
+    @RequirePermission(module = "CONTABILIDAD", permission = "READ")
     @GetMapping("/recientes")
     public ResponseEntity<List<CarpetaResponseDto>> findRecent(@RequestParam(defaultValue = "5") int limit) {
         return ResponseEntity.ok(carpetaService.findRecent(limit));
     }
 
     // Listar raíces (sin padre)
+    @RequirePermission(module = "CONTABILIDAD", permission = "READ")
     @GetMapping("/raices")
     public ResponseEntity<List<CarpetaResponseDto>> findRaices() {
         return ResponseEntity.ok(carpetaService.findRaices());
     }
 
     // Encontrar ruta de la carpeta
+    @RequirePermission(module = "CONTABILIDAD", permission = "READ")
     @GetMapping("/{id}/camino")
     public ResponseEntity<List<CarpetaResponseDto>> findCamino(@PathVariable Integer id) {
         return ResponseEntity.ok(carpetaService.findCamino(id));
     }
-
 }

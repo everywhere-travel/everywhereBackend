@@ -36,16 +36,43 @@ public class JWTFilter extends GenericFilterBean {
             // Eliminar el prefijo "Bearer " para obtener solo el token
             String token = bearerToken.substring(7);
 
-            // TODO: Utilizar el TokenProvider para obtener la autenticación a partir del token JWT
-            Authentication authentication = tokenProvider.getAuthentication(token);
+            // Validar que el token tenga el formato correcto de JWT (exactamente 2 puntos)
+            if (isValidJwtFormat(token)) {
+                try {
+                    // TODO: Validar el token antes de procesarlo
+                    if (tokenProvider.validateToken(token)) {
+                        // TODO: Utilizar el TokenProvider para obtener la autenticación a partir del token JWT
+                        Authentication authentication = tokenProvider.getAuthentication(token);
 
-            // TODO: Establecer la autenticación en el contexto de seguridad de Spring para la solicitud actual
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                        // TODO: Establecer la autenticación en el contexto de seguridad de Spring para la solicitud actual
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
+                } catch (Exception e) {
+                    // Log del error pero continuar con la cadena de filtros sin autenticación
+                    logger.warn("Error al procesar el token JWT: " + e.getMessage());
+                }
+            } else {
+                logger.warn("Token JWT con formato inválido. Puntos encontrados: " + countDots(token));
+            }
         }
 
         // TODO: Continuar con la cadena de filtros, permitiendo que la solicitud siga su curso
         chain.doFilter(request, response);
     }
 
-}
+    /**
+     * Valida que el token tenga el formato correcto de JWT (exactamente 2 puntos)
+     */
+    private boolean isValidJwtFormat(String token) {
+        return token != null && countDots(token) == 2;
+    }
 
+    /**
+     * Cuenta el número de puntos en el token
+     */
+    private int countDots(String token) {
+        if (token == null) return 0;
+        return (int) token.chars().filter(ch -> ch == '.').count();
+    }
+
+}
