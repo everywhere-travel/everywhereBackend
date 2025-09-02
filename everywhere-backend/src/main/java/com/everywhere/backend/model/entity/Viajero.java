@@ -13,30 +13,30 @@ public class Viajero {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "via_id_int")
-    private Long id;
+    private Integer id;
 
-    @Column(name = "via_nomb_vac", length = 150)
+    @Column(name = "via_nomb_vac")
     private String nombres;
 
-    @Column(name = "via_ap_pat_vac", length = 100)
+    @Column(name = "via_ap_pat_vac")
     private String apellidoPaterno;
 
-    @Column(name = "via_ap_mat_vac", length = 100)
+    @Column(name = "via_ap_mat_vac")
     private String apellidoMaterno;
 
     @Column(name = "via_fec_nac_tmp")
     private LocalDate fechaNacimiento;
 
-    @Column(name = "via_nacio_vac", length = 100)
+    @Column(name = "via_nacio_vac")
     private String nacionalidad;
 
-    @Column(name = "via_resi_vac", length = 200)
+    @Column(name = "via_resi_vac")
     private String residencia;
 
-    @Column(name = "via_tip_doc_vac", length = 50)
+    @Column(name = "via_tip_doc_vac")
     private String tipoDocumento;
 
-    @Column(name = "via_num_doc_vac", length = 50)
+    @Column(name = "via_num_doc_vac")
     private String numeroDocumento;
 
     @Column(name = "via_fec_emi_doc_tmp")
@@ -53,6 +53,6 @@ public class Viajero {
 
     @ManyToOne
     @JoinColumn(name = "per_id_int", nullable = false)
-    private Persona persona;
+    private Personas personas;
 
 }

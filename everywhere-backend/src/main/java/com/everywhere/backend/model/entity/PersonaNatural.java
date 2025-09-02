@@ -12,16 +12,22 @@ public class PersonaNatural {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "per_nat_id_int")
-    private Long id;
+    private Integer id;
 
     @Column(name = "per_nat_doc_int")
     private String documento;
 
-    @Column(name = "per_nat_nomb_vac", length = 150)
+    @Column(name = "per_nat_nomb_vac")
     private String nombres;
 
-    @Column(name = "per_nat_apell_vac", length = 150)
+    @Column(name = "per_nat_apell_vac")
     private String apellidos;
+
+    @Column(name = "per_nat_cliente_bol")
+    private Boolean cliente;
+
+    @Column(name = "per_nat_catg_vac")
+    private String categoria;
 
     @Column(name = "per_nat_cre_tmp", updatable = false)
     private LocalDateTime creado;
@@ -31,5 +37,5 @@ public class PersonaNatural {
 
     @ManyToOne
     @JoinColumn(name = "per_id_int", nullable = false)
-    private Persona persona;
+    private Personas personas;
 }

@@ -13,7 +13,7 @@ public class DetalleLiquidacion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "dtliq_id_int")
-    private Long id;
+    private Integer id;
 
     @Column(name = "dtliq_tick_vac")
     private String ticket;
