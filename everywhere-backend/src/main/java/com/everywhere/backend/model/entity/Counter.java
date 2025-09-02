@@ -11,11 +11,14 @@ public class Counter {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "cou_id_int")
-    private Long id;
+    private int id;
 
     @Column(name = "cou_nom_vac", length = 150)
     private String nombre;
 
     @Column(name = "cou_est_bol")
     private Boolean estado;
+
+    @Column (name = "cou_cod_vac", length = 50)
+    private String codigo;
 }

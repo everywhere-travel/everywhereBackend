@@ -7,12 +7,12 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "personas")
-public class Persona {
+public class Personas {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "per_id_int")
-    private Long id;
+    private Integer id;
 
     @Column(name = "per_email_vac", length = 150)
     private String email;
