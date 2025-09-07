@@ -8,4 +8,4 @@ FROM openjdk:21-jdk-slim
 WORKDIR /app
 COPY --from=build /app/target/*.jar everywhere-backend.jar
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","everywhere-backend.jar"]
+ENTRYPOINT ["java","-jar","everywhere-backend.jar", "--server.port=${PORT}"]
