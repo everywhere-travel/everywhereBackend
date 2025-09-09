@@ -33,6 +33,14 @@ public class DetalleCotizacion {
     @Column(name = "dcot_upd_tmp")
     private LocalDateTime actualizado;
 
+    @Column(name = "dcot_comision_dc", precision = 5, scale = 2)
+    private BigDecimal comision;
+
+
+    @ManyToOne
+    @JoinColumn(name = "cat_id_int")
+    private Categoria categoria;
+
     @ManyToOne
     @JoinColumn(name = "cot_id_int", nullable = false)
     private Cotizacion cotizacion;

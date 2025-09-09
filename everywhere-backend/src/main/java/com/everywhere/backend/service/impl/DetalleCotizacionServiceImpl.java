@@ -11,6 +11,7 @@ import com.everywhere.backend.repository.CotizacionRepository;
 import com.everywhere.backend.repository.DetalleCotizacionRepository;
 import com.everywhere.backend.repository.ProductoRepository;
 import com.everywhere.backend.repository.ProveedorRepository;
+import com.everywhere.backend.repository.CategoriaRepository;
 import com.everywhere.backend.service.DetalleCotizacionService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
@@ -27,17 +28,20 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
     private final CotizacionRepository cotizacionRepository;
     private final ProductoRepository productoRepository;
     private final ProveedorRepository proveedorRepository;
+    private final CategoriaRepository categoriaRepository;
 
     public DetalleCotizacionServiceImpl(
             DetalleCotizacionRepository detalleCotizacionRepository,
             CotizacionRepository cotizacionRepository,
             ProductoRepository productoRepository,
-            ProveedorRepository proveedorRepository
+            ProveedorRepository proveedorRepository,
+            CategoriaRepository categoriaRepository
     ) {
         this.detalleCotizacionRepository = detalleCotizacionRepository;
         this.cotizacionRepository = cotizacionRepository;
         this.productoRepository = productoRepository;
         this.proveedorRepository = proveedorRepository;
+        this.categoriaRepository = categoriaRepository;
     }
 
     @Override
@@ -67,7 +71,7 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
         Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId)
                 .orElseThrow(() -> new EntityNotFoundException("Cotización no encontrada"));
 
-        DetalleCotizacion entity = DetalleCotizacionMapper.toEntity(dto);
+    DetalleCotizacion entity = DetalleCotizacionMapper.toEntity(dto, categoriaRepository);
         entity.setCotizacion(cotizacion);
         entity.setCreado(LocalDateTime.now());
 
@@ -80,7 +84,7 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
         DetalleCotizacion entity = detalleCotizacionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Detalle de cotización no encontrado"));
 
-        DetalleCotizacionMapper.updateEntityFromRequest(entity, dto);
+    DetalleCotizacionMapper.updateEntityFromRequest(entity, dto, categoriaRepository);
         entity.setActualizado(LocalDateTime.now());
 
         DetalleCotizacion updated = detalleCotizacionRepository.save(entity);
