@@ -111,4 +111,13 @@ public class CotizacionController {
             @PathVariable Integer sucursalId) {
         return ResponseEntity.ok(cotizacionService.setSucursalById(id, sucursalId));
     }
+
+    // Asignar persona
+    @PutMapping("/{id}/persona/{personaId}")
+    @RequirePermission(module = "COTIZACIONES", permission = "UPDATE")
+    public ResponseEntity<CotizacionResponseDto> setPersonas(
+            @PathVariable Integer id,
+            @PathVariable Integer personaId) {
+        return ResponseEntity.ok(cotizacionService.setPersonasById(id, personaId));
+    }
 }

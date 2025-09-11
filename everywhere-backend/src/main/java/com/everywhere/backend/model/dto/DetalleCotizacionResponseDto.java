@@ -20,8 +20,8 @@ public class DetalleCotizacionResponseDto {
     private LocalDateTime creado;
     private LocalDateTime actualizado;
     private BigDecimal comision;
-    private Integer categoriaId;
-    private Integer cotizacionId;
-    private Integer productoId;
-    private Integer proveedorId;
+    private Categoria categoria;
+    private Cotizacion cotizacion;
+    private Producto producto;
+    private Proveedor proveedor;
 }
