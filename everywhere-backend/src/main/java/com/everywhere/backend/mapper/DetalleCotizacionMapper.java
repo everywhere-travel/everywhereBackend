@@ -22,10 +22,10 @@ public class DetalleCotizacionMapper {
     dto.setComision(entity.getComision());
 
     // Solo IDs de relaciones
-    dto.setCotizacionId(entity.getCotizacion() != null ? entity.getCotizacion().getId() : null);
-    dto.setProductoId(entity.getProducto() != null ? entity.getProducto().getId() : null);
-    dto.setProveedorId(entity.getProveedor() != null ? entity.getProveedor().getId() : null);
-    dto.setCategoriaId(entity.getCategoria() != null ? entity.getCategoria().getId() : null);
+    dto.setCotizacion(entity.getCotizacion());
+    dto.setProducto(entity.getProducto());
+    dto.setProveedor(entity.getProveedor());
+    dto.setCategoria(entity.getCategoria());
 
     return dto;
     }
