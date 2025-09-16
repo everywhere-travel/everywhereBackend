@@ -3,6 +3,7 @@ package com.everywhere.backend.mapper;
 import com.everywhere.backend.model.dto.DetalleCotizacionRequestDto;
 import com.everywhere.backend.model.dto.DetalleCotizacionResponseDto;
 import com.everywhere.backend.model.entity.DetalleCotizacion;
+import com.everywhere.backend.repository.CategoriaRepository;
 
 public class DetalleCotizacionMapper {
 
@@ -45,11 +46,14 @@ public class DetalleCotizacionMapper {
         return entity;
     }
 
-    public static void updateEntityFromRequest(DetalleCotizacion entity, DetalleCotizacionRequestDto dto, com.everywhere.backend.repository.CategoriaRepository categoriaRepository) {
+    public static void updateEntityFromRequest(
+            DetalleCotizacion entity,
+            DetalleCotizacionRequestDto dto,
+            CategoriaRepository categoriaRepository
+    ) {
         if (dto == null || entity == null) {
             return;
         }
-
         entity.setCantidad(dto.getCantidad());
         entity.setUnidad(dto.getUnidad());
         entity.setDescripcion(dto.getDescripcion());
