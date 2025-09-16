@@ -4,6 +4,7 @@ import com.everywhere.backend.model.dto.PersonaNaturalRequestDTO;
 import com.everywhere.backend.model.dto.PersonaNaturalResponseDTO;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PersonaNaturalService {
     List<PersonaNaturalResponseDTO> findAll();
@@ -14,4 +15,6 @@ public interface PersonaNaturalService {
     PersonaNaturalResponseDTO save(PersonaNaturalRequestDTO personaNaturalRequestDTO);
     PersonaNaturalResponseDTO update(Integer id, PersonaNaturalRequestDTO personaNaturalRequestDTO);
     void deleteById(Integer id);
+
+
 }
