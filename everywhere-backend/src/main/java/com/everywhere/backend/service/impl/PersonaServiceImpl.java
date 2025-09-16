@@ -1,8 +1,11 @@
 package com.everywhere.backend.service.impl;
 
-import com.everywhere.backend.model.dto.PersonaRequestDTO;
-import com.everywhere.backend.model.dto.PersonaResponseDTO;
+import com.everywhere.backend.model.dto.*;
+import com.everywhere.backend.model.entity.PersonaJuridica;
+import com.everywhere.backend.model.entity.PersonaNatural;
 import com.everywhere.backend.model.entity.Personas;
+import com.everywhere.backend.repository.PersonaJuridicaRepository;
+import com.everywhere.backend.repository.PersonaNaturalRepository;
 import com.everywhere.backend.repository.PersonaRepository;
 import com.everywhere.backend.service.PersonaService;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
@@ -12,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,6 +24,8 @@ public class PersonaServiceImpl implements PersonaService {
 
     private final PersonaRepository personaRepository;
     private final PersonaMapper personaMapper;
+    private final PersonaNaturalRepository personaNaturalRepository;
+    private  final PersonaJuridicaRepository personaJuridicaRepository;
 
     @Override
     public List<PersonaResponseDTO> findAll() {
@@ -76,4 +82,28 @@ public class PersonaServiceImpl implements PersonaService {
         }
         personaRepository.deleteById(id);
     }
+
+    @Override
+    public PersonaDisplayDto findPersonaNaturalOrJuridicaById(Integer id) {
+        Personas base = personaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Persona no encontrada con ID " + id));
+
+        // Verificamos si existe como NATURAL
+        Optional<PersonaNatural> naturalOpt = personaNaturalRepository.findByPersonasId(id);
+        if (naturalOpt.isPresent()) {
+            return personaMapper.toDisplayDTO(naturalOpt.get());
+        }
+
+        // Verificamos si existe como JURIDICA
+        Optional<PersonaJuridica> juridicaOpt = personaJuridicaRepository.findByPersonasId(id);
+        if (juridicaOpt.isPresent()) {
+            return personaMapper.toDisplayDTO(juridicaOpt.get());
+        }
+
+        // Si existe en tabla base, pero no está ni en natural ni en jurídica
+        return new PersonaDisplayDto(base.getId(), "GENERICA", null, "Persona sin tipo definido");
+    }
+
+
 }
+

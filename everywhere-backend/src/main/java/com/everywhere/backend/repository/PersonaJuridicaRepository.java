@@ -20,4 +20,6 @@ public interface PersonaJuridicaRepository extends JpaRepository<PersonaJuridica
 
     // Método original mantenido para compatibilidad
     List<PersonaJuridica> findByRazonSocialIgnoreCase(String razonSocial);
+    Optional<PersonaJuridica> findByPersonasId(Integer personaId);
+
 }

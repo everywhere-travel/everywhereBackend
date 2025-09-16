@@ -3,6 +3,7 @@ package com.everywhere.backend.mapper;
 import com.everywhere.backend.model.dto.DetalleCotizacionRequestDto;
 import com.everywhere.backend.model.dto.DetalleCotizacionResponseDto;
 import com.everywhere.backend.model.entity.DetalleCotizacion;
+import com.everywhere.backend.repository.CategoriaRepository;
 
 public class DetalleCotizacionMapper {
 
@@ -11,24 +12,26 @@ public class DetalleCotizacionMapper {
             return null;
         }
 
-        DetalleCotizacionResponseDto dto = new DetalleCotizacionResponseDto();
-        dto.setId(entity.getId());
-        dto.setCantidad(entity.getCantidad());
-        dto.setUnidad(entity.getUnidad());
-        dto.setDescripcion(entity.getDescripcion());
-        dto.setPrecioHistorico(entity.getPrecioHistorico());
-        dto.setCreado(entity.getCreado());
-        dto.setActualizado(entity.getActualizado());
+    DetalleCotizacionResponseDto dto = new DetalleCotizacionResponseDto();
+    dto.setId(entity.getId());
+    dto.setCantidad(entity.getCantidad());
+    dto.setUnidad(entity.getUnidad());
+    dto.setDescripcion(entity.getDescripcion());
+    dto.setPrecioHistorico(entity.getPrecioHistorico());
+    dto.setCreado(entity.getCreado());
+    dto.setActualizado(entity.getActualizado());
+    dto.setComision(entity.getComision());
 
-        // Relaciones completas
-        dto.setCotizacion(entity.getCotizacion());
-        dto.setProducto(entity.getProducto());
-        dto.setProveedor(entity.getProveedor());
+    // Solo IDs de relaciones
+    dto.setCotizacion(entity.getCotizacion());
+    dto.setProducto(entity.getProducto());
+    dto.setProveedor(entity.getProveedor());
+    dto.setCategoria(entity.getCategoria());
 
-        return dto;
+    return dto;
     }
 
-    public static DetalleCotizacion toEntity(DetalleCotizacionRequestDto dto) {
+    public static DetalleCotizacion toEntity(DetalleCotizacionRequestDto dto, com.everywhere.backend.repository.CategoriaRepository categoriaRepository) {
         if (dto == null) {
             return null;
         }
@@ -37,17 +40,25 @@ public class DetalleCotizacionMapper {
         entity.setCantidad(dto.getCantidad());
         entity.setUnidad(dto.getUnidad());
         entity.setDescripcion(dto.getDescripcion());
-
+        entity.setCategoria(categoriaRepository.getOne(dto.getCategoria()));
+        entity.setComision(dto.getComision());
+        entity.setPrecioHistorico(dto.getPrecioHistorico());
         return entity;
     }
 
-    public static void updateEntityFromRequest(DetalleCotizacion entity, DetalleCotizacionRequestDto dto) {
+    public static void updateEntityFromRequest(
+            DetalleCotizacion entity,
+            DetalleCotizacionRequestDto dto,
+            CategoriaRepository categoriaRepository
+    ) {
         if (dto == null || entity == null) {
             return;
         }
-
         entity.setCantidad(dto.getCantidad());
         entity.setUnidad(dto.getUnidad());
         entity.setDescripcion(dto.getDescripcion());
+        entity.setCategoria(categoriaRepository.getOne(dto.getCategoria()));
+        entity.setComision(dto.getComision());
+        entity.setPrecioHistorico(dto.getPrecioHistorico());
     }
 }

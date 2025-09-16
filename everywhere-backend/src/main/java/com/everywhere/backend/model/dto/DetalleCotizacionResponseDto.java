@@ -1,5 +1,6 @@
 package com.everywhere.backend.model.dto;
 
+import com.everywhere.backend.model.entity.Categoria;
 import com.everywhere.backend.model.entity.Cotizacion;
 import com.everywhere.backend.model.entity.Producto;
 import com.everywhere.backend.model.entity.Proveedor;
@@ -18,7 +19,8 @@ public class DetalleCotizacionResponseDto {
     private BigDecimal precioHistorico;
     private LocalDateTime creado;
     private LocalDateTime actualizado;
-
+    private BigDecimal comision;
+    private Categoria categoria;
     private Cotizacion cotizacion;
     private Producto producto;
     private Proveedor proveedor;
