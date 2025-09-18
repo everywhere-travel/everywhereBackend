@@ -8,6 +8,7 @@ import com.everywhere.backend.repository.CounterRepository;
 import com.everywhere.backend.service.CounterService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,8 +26,8 @@ public class CounterServiceImpl implements CounterService {
     @Override
     public CounterResponseDto create(CounterRequestDto dto) {
         Counter entity = CounterMapper.toEntity(dto);
-        entity.setCodigo(UUID.randomUUID().toString()); // genera el código
-        entity.setEstado(true);
+        entity.setCodigo(UUID.randomUUID().toString());
+        entity.setFechaCreacion(LocalDateTime.now());
         Counter saved = counterRepository.save(entity);
         return CounterMapper.toResponse(saved);
     }
@@ -35,9 +36,10 @@ public class CounterServiceImpl implements CounterService {
     public CounterResponseDto update(CounterRequestDto dto) {
         Counter entity = counterRepository.findByCodigo(dto.getCodigo())
                 .orElseThrow(() -> new RuntimeException("Counter no encontrado"));
-        entity.setNombre(dto.getNombre());
-        Counter updated = counterRepository.save(entity);
-        return CounterMapper.toResponse(updated);
+
+        Counter updatedEntity = CounterMapper.toEntityForUpdate(dto, entity);
+        Counter saved = counterRepository.save(updatedEntity);
+        return CounterMapper.toResponse(saved);
     }
 
     @Override
