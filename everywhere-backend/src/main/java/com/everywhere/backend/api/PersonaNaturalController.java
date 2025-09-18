@@ -2,7 +2,6 @@ package com.everywhere.backend.api;
 
 import com.everywhere.backend.model.dto.PersonaNaturalRequestDTO;
 import com.everywhere.backend.model.dto.PersonaNaturalResponseDTO;
-import com.everywhere.backend.model.dto.PersonaResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.PersonaNaturalService;
 import jakarta.validation.Valid;

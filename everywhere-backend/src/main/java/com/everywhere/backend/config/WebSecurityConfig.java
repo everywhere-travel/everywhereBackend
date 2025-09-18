@@ -33,7 +33,6 @@ public class WebSecurityConfig {
     private final TokenProvider tokenProvider;
     private final JWTFilter jwtRequestFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    private final CustomUserDetailsService userDetailsService;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {

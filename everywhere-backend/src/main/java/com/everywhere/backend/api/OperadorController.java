@@ -4,7 +4,6 @@ import com.everywhere.backend.mapper.OperadorMapper;
 import com.everywhere.backend.model.dto.OperadorRequestDto;
 import com.everywhere.backend.model.dto.OperadorResponseDTO;
 import com.everywhere.backend.model.entity.Operador;
-import com.everywhere.backend.repository.OperadorRepository;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.OperadorService;
 import org.springframework.http.HttpStatus;
