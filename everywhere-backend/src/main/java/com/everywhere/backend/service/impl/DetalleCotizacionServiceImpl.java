@@ -3,14 +3,8 @@ package com.everywhere.backend.service.impl;
 import com.everywhere.backend.mapper.DetalleCotizacionMapper;
 import com.everywhere.backend.model.dto.DetalleCotizacionRequestDto;
 import com.everywhere.backend.model.dto.DetalleCotizacionResponseDto;
-import com.everywhere.backend.model.entity.Cotizacion;
-import com.everywhere.backend.model.entity.DetalleCotizacion;
-import com.everywhere.backend.model.entity.Producto;
-import com.everywhere.backend.model.entity.Proveedor;
-import com.everywhere.backend.repository.CotizacionRepository;
-import com.everywhere.backend.repository.DetalleCotizacionRepository;
-import com.everywhere.backend.repository.ProductoRepository;
-import com.everywhere.backend.repository.ProveedorRepository;
+import com.everywhere.backend.model.entity.*;
+import com.everywhere.backend.repository.*;
 import com.everywhere.backend.service.DetalleCotizacionService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
@@ -27,17 +21,29 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
     private final CotizacionRepository cotizacionRepository;
     private final ProductoRepository productoRepository;
     private final ProveedorRepository proveedorRepository;
+    private final CategoriaRepository categoriaRepository;
+    private final OperadorRepository operadorRepository;
+    private final LiquidacionRepository liquidacionRepository;
+    private final ViajeroRepository viajeroRepository;
 
     public DetalleCotizacionServiceImpl(
             DetalleCotizacionRepository detalleCotizacionRepository,
             CotizacionRepository cotizacionRepository,
             ProductoRepository productoRepository,
-            ProveedorRepository proveedorRepository
+            ProveedorRepository proveedorRepository,
+            CategoriaRepository categoriaRepository,
+            OperadorRepository operadorRepository,
+            LiquidacionRepository liquidacionRepository,
+            ViajeroRepository viajeroRepository
     ) {
         this.detalleCotizacionRepository = detalleCotizacionRepository;
         this.cotizacionRepository = cotizacionRepository;
         this.productoRepository = productoRepository;
         this.proveedorRepository = proveedorRepository;
+        this.categoriaRepository = categoriaRepository;
+        this.operadorRepository = operadorRepository;
+        this.liquidacionRepository = liquidacionRepository;
+        this.viajeroRepository = viajeroRepository;
     }
 
     @Override
@@ -64,23 +70,36 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
 
     @Override
     public DetalleCotizacionResponseDto create(DetalleCotizacionRequestDto dto, int cotizacionId) {
-        Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId)
-                .orElseThrow(() -> new EntityNotFoundException("Cotización no encontrada"));
+        DetalleCotizacion entity = new DetalleCotizacion();
 
-        DetalleCotizacion entity = DetalleCotizacionMapper.toEntity(dto);
+        // Relación Cotización
+        Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId)
+                .orElseThrow(() -> new RuntimeException("Cotización no encontrada"));
         entity.setCotizacion(cotizacion);
-        entity.setCreado(LocalDateTime.now());
+
+        // Relación Categoria
+        Categoria categoria = categoriaRepository.findById(dto.getCategoria())
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+        entity.setCategoria(categoria);
+
+        // Campos simples
+        entity.setCantidad(dto.getCantidad());
+        entity.setUnidad(dto.getUnidad());
+        entity.setDescripcion(dto.getDescripcion());
+        entity.setComision(dto.getComision());
+        entity.setPrecioHistorico(dto.getPrecioHistorico());
 
         DetalleCotizacion saved = detalleCotizacionRepository.save(entity);
         return DetalleCotizacionMapper.toResponse(saved);
     }
+
 
     @Override
     public DetalleCotizacionResponseDto update(int id, DetalleCotizacionRequestDto dto) {
         DetalleCotizacion entity = detalleCotizacionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Detalle de cotización no encontrado"));
 
-        DetalleCotizacionMapper.updateEntityFromRequest(entity, dto);
+    DetalleCotizacionMapper.updateEntityFromRequest(entity, dto, categoriaRepository);
         entity.setActualizado(LocalDateTime.now());
 
         DetalleCotizacion updated = detalleCotizacionRepository.save(entity);
@@ -133,4 +152,9 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
 
         return DetalleCotizacionMapper.toResponse(detalleCotizacionRepository.save(detalle));
     }
+
+
+
+
+
 }
