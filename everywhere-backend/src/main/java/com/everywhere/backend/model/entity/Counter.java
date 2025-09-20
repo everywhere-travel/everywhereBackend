@@ -3,6 +3,8 @@ package com.everywhere.backend.model.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 @Table(name = "counter")
@@ -21,4 +23,10 @@ public class Counter {
 
     @Column (name = "cou_cod_vac", length = 50)
     private String codigo;
+
+    @Column (name = "cou_fec_crea_tmp", updatable = false)
+    private LocalDateTime fechaCreacion;
+
+    @Column (name = "cou_fec_actu_tmp")
+    private LocalDateTime fechaActualizacion;
 }

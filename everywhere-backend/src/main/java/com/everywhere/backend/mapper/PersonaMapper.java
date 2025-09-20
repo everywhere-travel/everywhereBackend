@@ -2,6 +2,9 @@ package com.everywhere.backend.mapper;
 
 import com.everywhere.backend.model.dto.PersonaRequestDTO;
 import com.everywhere.backend.model.dto.PersonaResponseDTO;
+import com.everywhere.backend.model.dto.PersonaDisplayDto;
+import com.everywhere.backend.model.entity.PersonaJuridica;
+import com.everywhere.backend.model.entity.PersonaNatural;
 import com.everywhere.backend.model.entity.Personas;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
@@ -38,5 +41,24 @@ public class PersonaMapper {
             entity.setObservacion(dto.getObservacion());
         }
         entity.setActualizado(LocalDateTime.now());
+    }
+
+    public PersonaDisplayDto toDisplayDTO(PersonaNatural natural) {
+        String nombreCompleto = natural.getNombres() + " " + natural.getApellidos();
+        return new PersonaDisplayDto(
+                natural.getId(),
+                "NATURAL",
+                String.valueOf(natural.getDocumento()),
+                nombreCompleto
+        );
+    }
+
+    public PersonaDisplayDto toDisplayDTO(PersonaJuridica juridica) {
+        return new PersonaDisplayDto(
+                juridica.getId(),
+                "JURIDICA",
+                String.valueOf(juridica.getRuc()),
+                juridica.getRazonSocial()
+        );
     }
 }

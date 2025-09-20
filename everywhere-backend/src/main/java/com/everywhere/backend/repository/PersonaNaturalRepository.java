@@ -24,4 +24,6 @@ public interface PersonaNaturalRepository extends JpaRepository<PersonaNatural, 
     // Métodos originales mantenidos para compatibilidad
     List<PersonaNatural> findByNombresIgnoreCase(String nombres);
     List<PersonaNatural> findByApellidosIgnoreCase(String apellidos);
+    Optional<PersonaNatural> findByPersonasId(Integer personaId);
+
 }

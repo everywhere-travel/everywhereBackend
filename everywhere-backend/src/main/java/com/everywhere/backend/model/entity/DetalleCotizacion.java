@@ -1,9 +1,14 @@
 package com.everywhere.backend.model.entity;
+import com.everywhere.backend.model.entity.Categoria;
+import com.everywhere.backend.model.entity.Cotizacion;
+import com.everywhere.backend.model.entity.Producto;
+import com.everywhere.backend.model.entity.Proveedor;
 
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
 
 @Data
 @Entity
@@ -32,6 +37,14 @@ public class DetalleCotizacion {
 
     @Column(name = "dcot_upd_tmp")
     private LocalDateTime actualizado;
+
+    @Column(name = "dcot_comision_dc", precision = 5, scale = 2)
+    private BigDecimal comision;
+
+
+    @ManyToOne
+    @JoinColumn(name = "cat_id_int")
+    private Categoria categoria;
 
     @ManyToOne
     @JoinColumn(name = "cot_id_int", nullable = false)
