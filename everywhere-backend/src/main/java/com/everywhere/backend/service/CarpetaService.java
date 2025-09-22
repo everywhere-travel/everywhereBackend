@@ -39,4 +39,7 @@ public interface CarpetaService {
 
     // Lista la ruta por donde navegas
     List<CarpetaResponseDto> findCamino(Integer carpetaId);
+
+    //Listar Hijos por id de padre
+    List<CarpetaResponseDto> findHijosByPadreId(Integer carpetaPadreId);
 }

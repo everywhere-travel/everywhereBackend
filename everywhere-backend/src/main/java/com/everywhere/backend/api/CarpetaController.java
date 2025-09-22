@@ -111,4 +111,10 @@ public class CarpetaController {
     public ResponseEntity<List<CarpetaResponseDto>> findCamino(@PathVariable Integer id) {
         return ResponseEntity.ok(carpetaService.findCamino(id));
     }
+
+    // Listar hijos por ID de padre
+    @GetMapping("/hijos/{carpetaPadreId}")
+    public ResponseEntity<List<CarpetaResponseDto>> findHijosByPadreId(@PathVariable Integer carpetaPadreId) {
+        return ResponseEntity.ok(carpetaService.findHijosByPadreId(carpetaPadreId));
+    }
 }
