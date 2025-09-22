@@ -2,14 +2,21 @@ package com.everywhere.backend.api;
 
 import com.everywhere.backend.model.dto.ViajeroRequestDTO;
 import com.everywhere.backend.model.dto.ViajeroResponseDTO;
+import com.everywhere.backend.model.entity.Viajero;
+import com.everywhere.backend.repository.ViajeroRepository;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.ViajeroService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -19,6 +26,7 @@ import java.util.List;
 public class ViajeroController {
 
     private final ViajeroService viajeroService;
+    private final ViajeroRepository viajeroRepository;
 
     @GetMapping
     @RequirePermission(module = "VIAJEROS", permission = "READ")
@@ -96,5 +104,25 @@ public class ViajeroController {
     public ResponseEntity<Void> deleteViajero(@PathVariable Integer id) {
         viajeroService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/export/excelCosta")
+    @RequirePermission(module = "VIAJEROS", permission = "READ")
+    public ResponseEntity<InputStreamResource> exportToExcelCosta(@RequestBody List<Integer> viajeroIds) throws IOException {
+
+        List<Viajero> viajerosParaExportar = viajeroRepository.findAllById(viajeroIds);
+
+        // Se llama al servicio (esto está correcto)
+        ByteArrayInputStream in = viajeroService.exportToExcelCosta(viajerosParaExportar);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=reporte_viajeros.xlsx");
+
+        // El cuerpo del método no cambia, ya que está correcto
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(new InputStreamResource(in)); // <-- Ahora esto coincide con el tipo de retorno
     }
 }

@@ -14,8 +14,17 @@ import com.everywhere.backend.mapper.PersonaMapper;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -169,5 +178,70 @@ public class ViajeroServiceImpl implements ViajeroService {
             throw new ResourceNotFoundException("Viajero no encontrado con ID: " + id);
         }
         viajeroRepository.deleteById(id);
+    }
+
+    @Override
+    public ByteArrayInputStream exportToExcelCosta(List<Viajero> viajeros) throws IOException {
+        // Definimos las columnas exactas que solicitaste
+        String[] columns = {"Nombre", "Apellido", "Genero", "Fecha Nacimiento", "Tipo Documento", "Documento", "Telefono", "Gmail"};
+
+        try (
+                Workbook workbook = new XSSFWorkbook();
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ) {
+            Sheet sheet = workbook.createSheet("Viajeros");
+
+            // Fila 0: Creamos la cabecera (los títulos)
+            Row headerRow = sheet.createRow(0);
+            for (int col = 0; col < columns.length; col++) {
+                Cell cell = headerRow.createCell(col);
+                cell.setCellValue(columns[col]);
+            }
+
+            // A partir de la Fila 1: Usamos la lista de viajeros que nos llega
+            int rowIdx = 1;
+            for (Viajero viajero : viajeros) {
+                Row row = sheet.createRow(rowIdx++);
+
+                // --- Mapeo de campos ---
+                row.createCell(0).setCellValue(viajero.getNombres());
+
+                String apellidoPaterno = viajero.getApellidoPaterno() != null ? viajero.getApellidoPaterno() : "";
+                String apellidoMaterno = viajero.getApellidoMaterno() != null ? viajero.getApellidoMaterno() : "";
+                String apellidosCompletos = (apellidoPaterno + " " + apellidoMaterno).trim().toUpperCase();
+                row.createCell(1).setCellValue(apellidosCompletos);
+
+                row.createCell(2).setCellValue(viajero.getGenero());
+
+                if (viajero.getFechaNacimiento() != null) {
+                    String fechaFormateada = viajero.getFechaNacimiento().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                    row.createCell(3).setCellValue(fechaFormateada);
+                }
+
+                row.createCell(4).setCellValue("DNI");
+                row.createCell(5).setCellValue(viajero.getNumeroDocumento());
+
+                // --- INICIO: LÓGICA PARA TELÉFONO Y CORREO ---
+                if (viajero.getPersonas() != null) {
+                    // Teléfono: si existe, se pone; si no, se deja en blanco.
+                    String telefono = viajero.getPersonas().getTelefono() != null ? viajero.getPersonas().getTelefono() : "";
+                    row.createCell(6).setCellValue(telefono);
+
+                    // Correo: si existe, se pone; si no, se usa el correo por defecto.
+                    String email = (viajero.getPersonas().getEmail() != null && !viajero.getPersonas().getEmail().trim().isEmpty())
+                            ? viajero.getPersonas().getEmail()
+                            : "vmroxana28@gmail.com";
+                    row.createCell(7).setCellValue(email);
+                } else {
+                    // Si no hay entidad 'Personas', el teléfono va vacío y el correo es el de por defecto.
+                    row.createCell(6).setCellValue("");
+                    row.createCell(7).setCellValue("vmroxana28@gmail.com");
+                }
+                // --- FIN: LÓGICA PARA TELÉFONO Y CORREO ---
+            }
+
+            workbook.write(out);
+            return new ByteArrayInputStream(out.toByteArray());
+        }
     }
 }

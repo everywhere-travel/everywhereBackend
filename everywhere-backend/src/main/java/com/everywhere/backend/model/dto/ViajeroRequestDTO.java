@@ -17,7 +17,7 @@ public class ViajeroRequestDTO {
     private String numeroDocumento;
     private LocalDate fechaEmisionDocumento;
     private LocalDate fechaVencimientoDocumento;
-
+    private String genero;
     @Valid
     private PersonaRequestDTO persona;
 }

@@ -19,5 +19,6 @@ public class ViajeroResponseDTO {
     private LocalDate fechaVencimientoDocumento;
     private LocalDateTime creado;
     private LocalDateTime actualizado;
+    private String genero;
     private PersonaResponseDTO persona;
 }

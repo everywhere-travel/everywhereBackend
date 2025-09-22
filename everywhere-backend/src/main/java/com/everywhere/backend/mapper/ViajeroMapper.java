@@ -60,6 +60,9 @@ public class ViajeroMapper {
         if (dto.getFechaVencimientoDocumento() != null) {
             entity.setFechaVencimientoDocumento(dto.getFechaVencimientoDocumento());
         }
+        if (dto.getGenero() != null) {
+            entity.setGenero(dto.getGenero());
+        }
 
         // Actualizar persona base si existe
         if (dto.getPersona() != null && entity.getPersonas() != null) {

@@ -51,6 +51,9 @@ public class Viajero {
     @Column(name = "via_upd_tmp")
     private LocalDateTime actualizado;
 
+    @Column(name = "via_gen_vac")
+    private String genero;
+
     @ManyToOne
     @JoinColumn(name = "per_id_int", nullable = false)
     private Personas personas;

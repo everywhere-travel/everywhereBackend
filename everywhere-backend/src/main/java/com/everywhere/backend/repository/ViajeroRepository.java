@@ -36,4 +36,5 @@ public interface ViajeroRepository extends JpaRepository<Viajero, Integer> {
     // Búsquedas por fecha (pueden devolver múltiples resultados)
     List<Viajero> findByFechaVencimientoDocumento(LocalDate fechaVencimiento);
     List<Viajero> findByFechaVencimientoDocumentoBetween(LocalDate fechaInicio, LocalDate fechaFin);
+
 }
