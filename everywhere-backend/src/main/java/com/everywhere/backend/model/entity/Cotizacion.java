@@ -27,10 +27,10 @@ public class Cotizacion {
     private Integer cantNinos;
 
     @Column(name = "cot_fec_emi_tmp")
-    private LocalDate fechaEmision;
+    private LocalDateTime fechaEmision;
 
     @Column(name = "cot_fec_venc_tmp")
-    private LocalDate fechaVencimiento;
+    private LocalDateTime fechaVencimiento;
 
     @Column(name = "cot_fec_upd_tmp")
     private LocalDateTime actualizado;
