@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "EverywhereBackendApplication",
+            "request": "launch",
+            "mainClass": "com.everywhere.backend.EverywhereBackendApplication",
+            "projectName": "everywhere-backend",
+            "cwd": "${workspaceFolder}",
+            "envFile": "${workspaceFolder}/src/.env"
+        }
+    ]
+}
