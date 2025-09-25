@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 public class CotizacionRequestDto {
     private int cantAdultos;
     private int cantNinos;
-    private LocalDate fechaVencimiento;
+    private LocalDateTime fechaVencimiento;
     private String origenDestino;
     private LocalDate fechaSalida;
     private LocalDate fechaRegreso;

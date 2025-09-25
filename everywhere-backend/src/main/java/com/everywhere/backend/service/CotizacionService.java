@@ -2,6 +2,7 @@ package com.everywhere.backend.service;
 
 import com.everywhere.backend.model.dto.CotizacionRequestDto;
 import com.everywhere.backend.model.dto.CotizacionResponseDto;
+import com.everywhere.backend.model.dto.CotizacionConDetallesResponseDTO;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +14,9 @@ public interface CotizacionService {
     List<CotizacionResponseDto> findAll();
     CotizacionResponseDto update(Integer id, CotizacionRequestDto dto);
     void delete(Integer id);
+
+    // Método para obtener cotización con todos sus detalles
+    CotizacionConDetallesResponseDTO findByIdWithDetalles(Integer id);
 
     // Métodos para asignar relaciones por ID
     CotizacionResponseDto setFormaPagoById(Integer cotizacionId, Integer formaPagoId);
