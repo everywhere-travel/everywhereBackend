@@ -33,18 +33,6 @@ public class Viajero {
     @Column(name = "via_resi_vac")
     private String residencia;
 
-    @Column(name = "via_tip_doc_vac")
-    private String tipoDocumento;
-
-    @Column(name = "via_num_doc_vac")
-    private String numeroDocumento;
-
-    @Column(name = "via_fec_emi_doc_tmp")
-    private LocalDate fechaEmisionDocumento;
-
-    @Column(name = "via_fec_venc_doc_tmp")
-    private LocalDate fechaVencimientoDocumento;
-
     @Column(name = "via_cre_tmp", updatable = false)
     private LocalDateTime creado;
 
