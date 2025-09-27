@@ -12,13 +12,13 @@ public class DetalleLiquidacionRequestDTO {
     @Size(max = 255)
     private String ticket;
 
-    @DecimalMin(value = "0.0", inclusive = false)
+    @DecimalMin(value = "0.0")
     private BigDecimal costoTicket;
 
-    @DecimalMin(value = "0.0", inclusive = false)
+    @DecimalMin(value = "0.0")
     private BigDecimal cargoServicio;
 
-    @DecimalMin(value = "0.0", inclusive = false)
+    @DecimalMin(value = "0.0")
     private BigDecimal valorVenta;
 
     @Size(max = 255)

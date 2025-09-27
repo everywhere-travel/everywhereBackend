@@ -3,6 +3,10 @@ package com.everywhere.backend.model.entity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import lombok.Data;
 
 @Data
@@ -42,26 +46,28 @@ public class DetalleLiquidacion {
     @Column(name = "dtliq_pag_pax_sol_dc")
     private BigDecimal pagoPaxPEN;
 
+    @CreationTimestamp
     @Column(name = "dtliq_fec_cre_tmp")
     private LocalDateTime creado;
 
-    @Column(name = "dtliq_fec_upd_tmp")
+    @UpdateTimestamp
+    @Column(name = "dtliq_fec_upd_tmp", updatable = true)
     private LocalDateTime actualizado;
 
     @ManyToOne
-    @JoinColumn(name = "opr_id_int", nullable = false)
+    @JoinColumn(name = "opr_id_int", nullable = true)
     private Operador operador;
 
     @ManyToOne
-    @JoinColumn(name = "prov_id_int", nullable = false)
+    @JoinColumn(name = "prov_id_int", nullable = true)
     private Proveedor proveedor;
 
     @ManyToOne
-    @JoinColumn(name = "via_id_int", nullable = false)
+    @JoinColumn(name = "via_id_int", nullable = true)
     private Viajero viajero;
 
     @ManyToOne
-    @JoinColumn(name = "prod_id_int", nullable = false)
+    @JoinColumn(name = "prod_id_int", nullable = true)
     private Producto producto;
 
     @ManyToOne
