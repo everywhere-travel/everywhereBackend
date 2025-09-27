@@ -10,11 +10,9 @@ public class LiquidacionConDetallesResponseDTO {
 
     private Integer id;
     private String numero;
-    private LocalDate fechaCompra;
-    private LocalDate fechaVencimiento;
+    private LocalDate fechaCompra; 
     private String destino;
-    private Integer numeroPasajeros;
-    private String observacion;
+    private Integer numeroPasajeros; 
     private LocalDateTime creado;
     private LocalDateTime actualizado;
 

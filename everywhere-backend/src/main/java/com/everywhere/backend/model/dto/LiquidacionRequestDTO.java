@@ -1,25 +1,21 @@
 package com.everywhere.backend.model.dto;
 
 import lombok.Data;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull; 
 import java.time.LocalDate;
 
 @Data
 public class LiquidacionRequestDTO {
     private String numero;
-    private LocalDate fechaCompra;
-    private LocalDate fechaVencimiento;
+    private LocalDate fechaCompra; 
     private String destino;
-    private Integer numeroPasajeros;
-    private String observacion;
+    private Integer numeroPasajeros; 
 
-    // Comentado temporalmente para probar CRUD básico
-    // @NotNull
-    // private Integer cotizacionId;
+    @NotNull
+    private Integer cotizacionId;
 
     private Integer productoId;
     private Integer formaPagoId;
 
-    //  private Integer carpetaId;
+    private Integer carpetaId;
 }

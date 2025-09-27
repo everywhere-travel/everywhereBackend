@@ -32,7 +32,7 @@ public class Cotizacion {
     @Column(name = "cot_fec_venc_tmp")
     private LocalDateTime fechaVencimiento;
 
-    @Column(name = "cot_fec_upd_tmp")
+    @Column(name = "cot_fec_upd_tmp", updatable = true)
     private LocalDateTime actualizado;
 
     @Column(name = "cot_dest_vac", length = 200)

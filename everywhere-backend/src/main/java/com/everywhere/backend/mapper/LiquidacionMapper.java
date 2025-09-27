@@ -4,9 +4,9 @@ import com.everywhere.backend.model.dto.LiquidacionRequestDTO;
 import com.everywhere.backend.model.dto.LiquidacionResponseDTO;
 import com.everywhere.backend.model.entity.Liquidacion;
 import com.everywhere.backend.model.entity.Cotizacion;
+import com.everywhere.backend.model.entity.Carpeta;
 import com.everywhere.backend.model.entity.Producto;
 import com.everywhere.backend.model.entity.FormaPago;
-import com.everywhere.backend.model.entity.Carpeta;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
@@ -40,10 +40,17 @@ public class LiquidacionMapper {
         // Mapear campos básicos manualmente
         liquidacion.setNumero(dto.getNumero());
         liquidacion.setFechaCompra(dto.getFechaCompra());
-        liquidacion.setFechaVencimiento(dto.getFechaVencimiento());
         liquidacion.setDestino(dto.getDestino());
         liquidacion.setNumeroPasajeros(dto.getNumeroPasajeros());
-        liquidacion.setObservacion(dto.getObservacion());
+
+        // Cotización (siempre debe estar presente)
+        if (dto.getCotizacionId() != null) {
+            Cotizacion cotizacion = new Cotizacion();
+            cotizacion.setId(dto.getCotizacionId());
+            liquidacion.setCotizacion(cotizacion);
+        } else {
+            throw new IllegalArgumentException("El ID de cotización es obligatorio para crear una liquidación");
+        }
 
         // Campos opcionales
         if (dto.getProductoId() != null) {
@@ -58,9 +65,12 @@ public class LiquidacionMapper {
             liquidacion.setFormaPago(formaPago);
         }
 
-        // Dejar campos de relación como null para evitar restricciones
-        liquidacion.setCotizacion(null);
-        liquidacion.setCarpeta(null);
+        // OPCIONAL: Carpeta (puede ser null)
+        if (dto.getCarpetaId() != null) {
+            Carpeta carpeta = new Carpeta();
+            carpeta.setId(dto.getCarpetaId());
+            liquidacion.setCarpeta(carpeta);
+        }
 
         return liquidacion;
     }
@@ -68,11 +78,15 @@ public class LiquidacionMapper {
     public void updateEntityFromDTO(LiquidacionRequestDTO dto, Liquidacion entity) {
         entity.setNumero(dto.getNumero());
         entity.setFechaCompra(dto.getFechaCompra());
-        entity.setFechaVencimiento(dto.getFechaVencimiento());
         entity.setDestino(dto.getDestino());
         entity.setNumeroPasajeros(dto.getNumeroPasajeros());
-        entity.setObservacion(dto.getObservacion());
         entity.setActualizado(LocalDateTime.now());
+
+        if (dto.getCotizacionId() != null) {
+            Cotizacion cotizacion = new Cotizacion();
+            cotizacion.setId(dto.getCotizacionId());
+            entity.setCotizacion(cotizacion);
+        } 
 
         // Actualizar campos opcionales
         if (dto.getProductoId() != null) {
@@ -91,6 +105,12 @@ public class LiquidacionMapper {
             entity.setFormaPago(null);
         }
 
-        // No tocar cotización ni carpeta para evitar conflictos
+        if (dto.getCarpetaId() != null) {
+            Carpeta carpeta = new Carpeta();
+            carpeta.setId(dto.getCarpetaId());
+            entity.setCarpeta(carpeta);
+        } else {
+            entity.setCarpeta(null);
+        }
     }
 }
