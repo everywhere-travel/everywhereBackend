@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import lombok.Data;
 
 @Data
@@ -20,27 +24,23 @@ public class Liquidacion {
     private String numero;
 
     @Column(name = "liq_fec_comp_tmp")
-    private LocalDate fechaCompra;
-
-    @Column(name = "liq_fec_vac_tmp")
-    private LocalDate fechaVencimiento;
+    private LocalDate fechaCompra; 
 
     @Column(name = "liq_dest_vac")
     private String destino;
 
     @Column(name = "liq_nro_pasj_int")
-    private Integer numeroPasajeros;
+    private Integer numeroPasajeros; 
 
-    @Column(name = "liq_obsv_vac")
-    private String observacion;
-
+    @CreationTimestamp
     @Column(name = "liq_fec_cre_tmp", updatable = false)
     private LocalDateTime creado;
 
-    @Column(name = "liq_fec_upd_tmp")
+    @UpdateTimestamp
+    @Column(name = "liq_fec_upd_tmp", updatable = true)
     private LocalDateTime actualizado;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "cot_id_int")
     private Cotizacion cotizacion;
 
