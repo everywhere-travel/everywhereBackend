@@ -35,7 +35,7 @@ public class DetalleCotizacion {
     @Column(name = "dcot_cre_tmp", updatable = false)
     private LocalDateTime creado;
 
-    @Column(name = "dcot_upd_tmp")
+    @Column(name = "dcot_upd_tmp", updatable = true)
     private LocalDateTime actualizado;
 
     @Column(name = "dcot_comision_dc", precision = 5, scale = 2)
