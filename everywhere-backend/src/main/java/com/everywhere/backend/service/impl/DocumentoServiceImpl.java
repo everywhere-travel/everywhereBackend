@@ -11,6 +11,7 @@ import com.everywhere.backend.service.DocumentoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -37,6 +38,8 @@ public class DocumentoServiceImpl implements DocumentoService {
     @Override
     public DocumentoResponseDto create(DocumentoRequestDto dto) {
         Documento documento = DocumentoMapper.toEntity(dto);
+        LocalDateTime now = LocalDateTime.now();
+        documento.setCreado(now);
         Documento saved = documentoRepository.save(documento);
         return DocumentoMapper.toDto(saved);
     }
@@ -49,7 +52,8 @@ public class DocumentoServiceImpl implements DocumentoService {
         // actualizar campos
         documento.setTipo(dto.getTipo());
         documento.setDescripcion(dto.getDescripcion());
-
+        LocalDateTime now = LocalDateTime.now();
+        documento.setActualizado(now);
         Documento updated = documentoRepository.save(documento);
         return DocumentoMapper.toDto(updated);
     }

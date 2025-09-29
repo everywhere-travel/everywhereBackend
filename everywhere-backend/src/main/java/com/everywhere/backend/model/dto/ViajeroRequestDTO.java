@@ -13,10 +13,6 @@ public class ViajeroRequestDTO {
     private LocalDate fechaNacimiento;
     private String nacionalidad;
     private String residencia;
-    private String tipoDocumento;
-    private String numeroDocumento;
-    private LocalDate fechaEmisionDocumento;
-    private LocalDate fechaVencimientoDocumento;
 
     @Valid
     private PersonaRequestDTO persona;

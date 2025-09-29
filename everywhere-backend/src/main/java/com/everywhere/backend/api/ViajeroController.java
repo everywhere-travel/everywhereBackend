@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -34,13 +33,6 @@ public class ViajeroController {
         return ResponseEntity.ok(viajeros);
     }
 
-    @GetMapping("/numeroDocumento")
-    @RequirePermission(module = "VIAJEROS", permission = "READ")
-    public ResponseEntity<List<ViajeroResponseDTO>> getViajeroByNumDoc(@RequestParam String numeroDocumento) {
-        List<ViajeroResponseDTO> viajeros = viajeroService.findByNumeroDocumento(numeroDocumento.trim());
-        return ResponseEntity.ok(viajeros);
-    }
-
     @GetMapping("/nacionalidad")
     @RequirePermission(module = "VIAJEROS", permission = "READ")
     public ResponseEntity<List<ViajeroResponseDTO>> getViajeroByNacionalidad(@RequestParam String nacionalidad) {
@@ -60,21 +52,6 @@ public class ViajeroController {
     public ResponseEntity<ViajeroResponseDTO> getViajeroById(@PathVariable Integer id) {
         ViajeroResponseDTO viajero = viajeroService.findById(id);
         return ResponseEntity.ok(viajero);
-    }
-
-    @GetMapping("/fecha-vencimiento")
-    @RequirePermission(module = "VIAJEROS", permission = "READ")
-    public ResponseEntity<List<ViajeroResponseDTO>> getViajerosByFechaVencimiento(@RequestParam LocalDate fechaVencimientoDocumento) {
-        List<ViajeroResponseDTO> viajeros = viajeroService.findByFechaVencimientoDocumento(fechaVencimientoDocumento);
-        return ResponseEntity.ok(viajeros);
-    }
-
-    @GetMapping("/fecha-vencimiento-rango")
-    @RequirePermission(module = "VIAJEROS", permission = "READ")
-    public ResponseEntity<List<ViajeroResponseDTO>> getViajerosByFechaVencimientoRango(@RequestParam LocalDate fechaInicio,
-                                                                                       @RequestParam LocalDate fechaFin) {
-        List<ViajeroResponseDTO> viajeros = viajeroService.findByFechaVencimientoDocumentoBetween(fechaInicio, fechaFin);
-        return ResponseEntity.ok(viajeros);
     }
 
     @PostMapping
