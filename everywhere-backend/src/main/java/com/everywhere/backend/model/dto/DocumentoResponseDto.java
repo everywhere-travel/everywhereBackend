@@ -9,6 +9,7 @@ public class DocumentoResponseDto {
     private int id;
     private String tipo;
     private String descripcion;
+    private Boolean estado;
     private LocalDateTime creado;
     private LocalDateTime actualizado;
 }

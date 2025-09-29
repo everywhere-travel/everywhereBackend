@@ -13,6 +13,7 @@ public class DocumentoMapper {
         Documento documento = new Documento();
         documento.setTipo(dto.getTipo());
         documento.setDescripcion(dto.getDescripcion());
+
         return documento;
     }
 
@@ -22,8 +23,10 @@ public class DocumentoMapper {
         dto.setId(documento.getId());
         dto.setTipo(documento.getTipo());
         dto.setDescripcion(documento.getDescripcion());
+        dto.setEstado(documento.getEstado());
         dto.setCreado(documento.getCreado());
         dto.setActualizado(documento.getActualizado());
+
         return dto;
     }
 }
