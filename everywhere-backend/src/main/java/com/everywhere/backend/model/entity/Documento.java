@@ -5,9 +5,10 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
-@Data
+
 @Entity
 @Table(name = "documentos")
+@Data
 public class Documento {
 
     @Id
@@ -19,11 +20,11 @@ public class Documento {
     private String tipo;
 
     @Lob
-    @Column(name = "doc_desc_vac", nullable = false)
+    @Column(name = "doc_desc_vac")
     private String descripcion;
 
     @Column(name = "doc_cre_tmp", updatable = false)
-    private java.time.LocalDateTime creado;
+    private LocalDateTime creado;
 
     @Column(name = "doc_upd_tmp")
     private LocalDateTime actualizado;
