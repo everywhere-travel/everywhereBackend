@@ -34,7 +34,7 @@ public class ObservacionLiquidacion {
     private LocalDateTime creado;
 
     @UpdateTimestamp
-    @Column(name = "obliq_fec_upd_tmp")
+    @Column(name = "obliq_fec_upd_tmp", updatable = true)
     private LocalDateTime actualizado;
 
     @ManyToOne

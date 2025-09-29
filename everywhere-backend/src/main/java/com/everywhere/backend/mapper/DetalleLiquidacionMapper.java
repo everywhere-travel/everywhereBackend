@@ -47,9 +47,7 @@ public class DetalleLiquidacionMapper {
     public DetalleLiquidacion toEntity(DetalleLiquidacionRequestDTO dto) {
         DetalleLiquidacion entity = modelMapper.map(dto, DetalleLiquidacion.class);
 
-        // Configurar relaciones de forma elegante
         setEntityRelations(dto, entity);
-
         return entity;
     }
 
@@ -64,9 +62,7 @@ public class DetalleLiquidacionMapper {
 
         // SOLO actualizar relaciones si realmente se quiere cambiar la relación
         // No sobrescribir relaciones existentes si no se envían IDs
-        updateEntityRelations(dto, entity);
-
-        // Siempre actualizar timestamp
+        updateEntityRelations(dto, entity); 
         entity.setActualizado(LocalDateTime.now());
     }
 
