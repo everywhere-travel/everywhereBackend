@@ -40,6 +40,7 @@ public class DocumentoServiceImpl implements DocumentoService {
         Documento documento = DocumentoMapper.toEntity(dto);
         LocalDateTime now = LocalDateTime.now();
         documento.setCreado(now);
+        documento.setEstado(Boolean.TRUE);
         Documento saved = documentoRepository.save(documento);
         return DocumentoMapper.toDto(saved);
     }
@@ -60,9 +61,13 @@ public class DocumentoServiceImpl implements DocumentoService {
 
     @Override
     public void delete(int id) {
-        if (!documentoRepository.existsById(id)) {
-            throw new RuntimeException("Documento no encontrado con id: " + id);
-        }
-        documentoRepository.deleteById(id);
+        Documento documento = documentoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Documento no encontrado con id: " + id));
+
+        // Alternar el estado: true -> false, false -> true
+        documento.setEstado(!documento.getEstado());
+        documento.setActualizado(LocalDateTime.now());
+
+        documentoRepository.save(documento);
     }
 }

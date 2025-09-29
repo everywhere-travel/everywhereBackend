@@ -19,9 +19,11 @@ public class Documento {
     @Column(name = "doc_tipo_vac", nullable = false, unique = true)
     private String tipo;
 
-    @Lob
     @Column(name = "doc_desc_vac")
     private String descripcion;
+
+    @Column(name = "doc_est_bln")
+    private Boolean estado;
 
     @Column(name = "doc_cre_tmp", updatable = false)
     private LocalDateTime creado;
