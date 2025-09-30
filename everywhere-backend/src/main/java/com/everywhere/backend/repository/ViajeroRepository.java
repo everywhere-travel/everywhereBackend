@@ -12,12 +12,6 @@ import java.util.Optional;
 
 @Repository
 public interface ViajeroRepository extends JpaRepository<Viajero, Integer> {
-    // Campo único - solo puede haber uno
-    Optional<Viajero> findByNumeroDocumentoIgnoreCase(String numeroDocumento);
-
-    // Método para verificar si existe un número de documento (para validación)
-    boolean existsByNumeroDocumentoIgnoreCase(String numeroDocumento);
-
     // Búsquedas que ignoran tildes/acentos usando LIKE para búsquedas parciales
     @Query(value = "SELECT * FROM viajeros WHERE UPPER(TRANSLATE(via_nomb_vac, 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou')) LIKE UPPER(TRANSLATE(CONCAT('%', :nombres, '%'), 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou'))", nativeQuery = true)
     List<Viajero> findByNombresIgnoreAccents(@Param("nombres") String nombres);
@@ -33,7 +27,5 @@ public interface ViajeroRepository extends JpaRepository<Viajero, Integer> {
     List<Viajero> findByNacionalidadIgnoreCase(String nacionalidad);
     List<Viajero> findByResidenciaIgnoreCase(String residencia);
 
-    // Búsquedas por fecha (pueden devolver múltiples resultados)
-    List<Viajero> findByFechaVencimientoDocumento(LocalDate fechaVencimiento);
-    List<Viajero> findByFechaVencimientoDocumentoBetween(LocalDate fechaInicio, LocalDate fechaFin);
+
 }
