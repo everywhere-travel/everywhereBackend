@@ -116,11 +116,9 @@ public class LiquidacionServiceImpl implements LiquidacionService {
         LiquidacionConDetallesResponseDTO resultado = new LiquidacionConDetallesResponseDTO();
         resultado.setId(liquidacionDTO.getId());
         resultado.setNumero(liquidacionDTO.getNumero());
-        resultado.setFechaCompra(liquidacionDTO.getFechaCompra());
-        resultado.setFechaVencimiento(liquidacionDTO.getFechaVencimiento());
+        resultado.setFechaCompra(liquidacionDTO.getFechaCompra()); 
         resultado.setDestino(liquidacionDTO.getDestino());
-        resultado.setNumeroPasajeros(liquidacionDTO.getNumeroPasajeros());
-        resultado.setObservacion(liquidacionDTO.getObservacion());
+        resultado.setNumeroPasajeros(liquidacionDTO.getNumeroPasajeros()); 
         resultado.setCreado(liquidacionDTO.getCreado());
         resultado.setActualizado(liquidacionDTO.getActualizado());
         resultado.setProducto(liquidacionDTO.getProducto());

@@ -1,12 +1,12 @@
 package com.everywhere.backend.service.impl;
 
 import com.everywhere.backend.mapper.CotizacionMapper;
-import com.everywhere.backend.model.dto.CotizacionRequestDto;
-import com.everywhere.backend.model.dto.CotizacionResponseDto;
-import com.everywhere.backend.model.dto.FormaPagoResponseDTO;
+import com.everywhere.backend.model.dto.*;
 import com.everywhere.backend.model.entity.*;
 import com.everywhere.backend.repository.*;
 import com.everywhere.backend.service.CotizacionService;
+import com.everywhere.backend.service.DetalleCotizacionService;
+import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +26,7 @@ public class CotizacionServiceImpl implements CotizacionService {
     private final SucursalRepository sucursalRepository;
     private final CarpetaRepository carpetaRepository;
     private final PersonaRepository personasRepository;
+    private final DetalleCotizacionService detalleCotizacionService;
 
 
     public CotizacionServiceImpl(CotizacionRepository cotizacionRepository,
@@ -33,7 +34,9 @@ public class CotizacionServiceImpl implements CotizacionService {
                                  EstadoCotizacionRepository estadoCotizacionRepository,
                                  CounterRepository counterRepository,
                                  SucursalRepository sucursalRepository,
-                                 CarpetaRepository carpetaRepository, PersonaRepository personasRepository) {
+                                 CarpetaRepository carpetaRepository, 
+                                 PersonaRepository personasRepository,
+                                 DetalleCotizacionService detalleCotizacionService) {
         this.cotizacionRepository = cotizacionRepository;
         this.formaPagoRepository = formaPagoRepository;
         this.estadoCotizacionRepository = estadoCotizacionRepository;
@@ -41,6 +44,7 @@ public class CotizacionServiceImpl implements CotizacionService {
         this.sucursalRepository = sucursalRepository;
         this.carpetaRepository = carpetaRepository;
         this.personasRepository = personasRepository;
+        this.detalleCotizacionService = detalleCotizacionService;
     }
 
     @Override
@@ -54,7 +58,7 @@ public class CotizacionServiceImpl implements CotizacionService {
         entity.setCodigoCotizacion(generateCodigoCotizacion());
 
         // Fechas automáticas
-        entity.setFechaEmision(LocalDate.now());
+        entity.setFechaEmision(LocalDateTime.now());
         entity.setActualizado(LocalDateTime.now());
 
         // Si personaId viene informado, buscar y asignar
@@ -203,6 +207,63 @@ public class CotizacionServiceImpl implements CotizacionService {
         return CotizacionMapper.toResponse(updated);
     }
 
+    @Override
+    public CotizacionConDetallesResponseDTO findByIdWithDetalles(Integer id) {
+        // Obtener la cotización
+        Cotizacion cotizacion = cotizacionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Cotización no encontrada con ID: " + id));
 
+        // Convertir a DTO base
+        CotizacionResponseDto cotizacionDTO = CotizacionMapper.toResponse(cotizacion);
+
+        // Obtener los detalles completos
+        List<DetalleCotizacionResponseDto> detallesCompletos = detalleCotizacionService.findByCotizacionId(id);
+
+        // Convertir a detalles simples (sin cotización repetida)
+        List<DetalleCotizacionSimpleDTO> detallesSimples = detallesCompletos.stream()
+                .map(this::convertirADetalleSimple)
+                .collect(Collectors.toList());
+
+        // Crear el DTO con detalles
+        CotizacionConDetallesResponseDTO resultado = new CotizacionConDetallesResponseDTO();
+        resultado.setId(cotizacionDTO.getId());
+        resultado.setCodigoCotizacion(cotizacionDTO.getCodigoCotizacion());
+        resultado.setCantAdultos(cotizacionDTO.getCantAdultos());
+        resultado.setCantNinos(cotizacionDTO.getCantNinos());
+        resultado.setFechaEmision(cotizacionDTO.getFechaEmision());
+        resultado.setFechaVencimiento(cotizacionDTO.getFechaVencimiento());
+        resultado.setActualizado(cotizacionDTO.getActualizado());
+        resultado.setOrigenDestino(cotizacionDTO.getOrigenDestino());
+        resultado.setFechaSalida(cotizacionDTO.getFechaSalida());
+        resultado.setFechaRegreso(cotizacionDTO.getFechaRegreso());
+        resultado.setMoneda(cotizacionDTO.getMoneda());
+        resultado.setObservacion(cotizacionDTO.getObservacion());
+        resultado.setCounter(cotizacionDTO.getCounter());
+        resultado.setFormaPago(cotizacionDTO.getFormaPago());
+        resultado.setEstadoCotizacion(cotizacionDTO.getEstadoCotizacion());
+        resultado.setSucursal(cotizacionDTO.getSucursal());
+        resultado.setCarpeta(cotizacionDTO.getCarpeta());
+        resultado.setPersonas(cotizacionDTO.getPersonas());
+        resultado.setDetalles(detallesSimples);
+
+        return resultado;
+    }
+
+    private DetalleCotizacionSimpleDTO convertirADetalleSimple(DetalleCotizacionResponseDto detalleCompleto) {
+        DetalleCotizacionSimpleDTO detalleSimple = new DetalleCotizacionSimpleDTO();
+        detalleSimple.setId(detalleCompleto.getId());
+        detalleSimple.setCantidad(detalleCompleto.getCantidad());
+        detalleSimple.setUnidad(detalleCompleto.getUnidad());
+        detalleSimple.setDescripcion(detalleCompleto.getDescripcion());
+        detalleSimple.setPrecioHistorico(detalleCompleto.getPrecioHistorico());
+        detalleSimple.setCreado(detalleCompleto.getCreado());
+        detalleSimple.setActualizado(detalleCompleto.getActualizado());
+        detalleSimple.setComision(detalleCompleto.getComision());
+        detalleSimple.setCategoria(detalleCompleto.getCategoria());
+        detalleSimple.setProducto(detalleCompleto.getProducto());
+        detalleSimple.setProveedor(detalleCompleto.getProveedor());
+        // NO seteamos la cotización para evitar referencia circular
+        return detalleSimple;
+    }
 
 }
