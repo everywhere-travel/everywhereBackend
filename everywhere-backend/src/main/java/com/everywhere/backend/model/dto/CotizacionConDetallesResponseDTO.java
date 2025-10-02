@@ -5,9 +5,10 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
-public class CotizacionResponseDto {
+public class CotizacionConDetallesResponseDTO {
 
     private int id;
     private String codigoCotizacion;
@@ -22,11 +23,14 @@ public class CotizacionResponseDto {
     private String moneda;
     private String observacion;
 
-    // Relaciones
+    // Relaciones de la cotización
     private Counter counter;
     private FormaPago formaPago;
     private EstadoCotizacion estadoCotizacion;
     private Sucursal sucursal;
     private Carpeta carpeta;
     private Personas personas;
+
+    // Lista de detalles anidados (SIN la cotización repetida)
+    private List<DetalleCotizacionSimpleDTO> detalles;
 }

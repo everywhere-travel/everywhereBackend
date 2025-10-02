@@ -13,10 +13,6 @@ public class ViajeroResponseDTO {
     private LocalDate fechaNacimiento;
     private String nacionalidad;
     private String residencia;
-    private String tipoDocumento;
-    private String numeroDocumento;
-    private LocalDate fechaEmisionDocumento;
-    private LocalDate fechaVencimientoDocumento;
     private LocalDateTime creado;
     private LocalDateTime actualizado;
     private PersonaResponseDTO persona;

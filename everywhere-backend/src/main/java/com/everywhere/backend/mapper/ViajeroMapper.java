@@ -3,9 +3,9 @@ package com.everywhere.backend.mapper;
 import com.everywhere.backend.model.dto.ViajeroRequestDTO;
 import com.everywhere.backend.model.dto.ViajeroResponseDTO;
 import com.everywhere.backend.model.entity.Viajero;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
-import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -25,11 +25,19 @@ public class ViajeroMapper {
     }
 
     public Viajero toEntity(ViajeroRequestDTO dto) {
-        return modelMapper.map(dto, Viajero.class);
+        Viajero entity = modelMapper.map(dto, Viajero.class);
+
+        if (dto.getPersona() != null) {
+            entity.setPersonas(personaMapper.toEntity(dto.getPersona()));
+        }
+
+        entity.setCreado(LocalDateTime.now());
+        entity.setActualizado(LocalDateTime.now());
+        return entity;
     }
 
     public void updateEntityFromDTO(ViajeroRequestDTO dto, Viajero entity) {
-        // Actualizar campos específicos de Viajero
+
         if (dto.getNombres() != null) {
             entity.setNombres(dto.getNombres());
         }
@@ -48,22 +56,11 @@ public class ViajeroMapper {
         if (dto.getResidencia() != null) {
             entity.setResidencia(dto.getResidencia());
         }
-        if (dto.getTipoDocumento() != null) {
-            entity.setTipoDocumento(dto.getTipoDocumento());
-        }
-        if (dto.getNumeroDocumento() != null) {
-            entity.setNumeroDocumento(dto.getNumeroDocumento());
-        }
-        if (dto.getFechaEmisionDocumento() != null) {
-            entity.setFechaEmisionDocumento(dto.getFechaEmisionDocumento());
-        }
-        if (dto.getFechaVencimientoDocumento() != null) {
-            entity.setFechaVencimientoDocumento(dto.getFechaVencimientoDocumento());
-        }
 
-        // Actualizar persona base si existe
         if (dto.getPersona() != null && entity.getPersonas() != null) {
             personaMapper.updateEntityFromDTO(dto.getPersona(), entity.getPersonas());
+        } else if (dto.getPersona() != null) {
+            entity.setPersonas(personaMapper.toEntity(dto.getPersona()));
         }
 
         entity.setActualizado(LocalDateTime.now());

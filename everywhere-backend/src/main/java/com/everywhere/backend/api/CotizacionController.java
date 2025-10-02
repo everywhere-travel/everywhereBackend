@@ -2,6 +2,7 @@ package com.everywhere.backend.api;
 
 import com.everywhere.backend.model.dto.CotizacionRequestDto;
 import com.everywhere.backend.model.dto.CotizacionResponseDto;
+import com.everywhere.backend.model.dto.CotizacionConDetallesResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.CotizacionService;
 import org.springframework.http.ResponseEntity;
@@ -48,6 +49,14 @@ public class CotizacionController {
         return cotizacionService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    // Obtener cotización con todos sus detalles
+    @GetMapping("/{id}/con-detalles")
+    @RequirePermission(module = "COTIZACIONES", permission = "READ")
+    public ResponseEntity<CotizacionConDetallesResponseDTO> getCotizacionConDetalles(@PathVariable Integer id) {
+        CotizacionConDetallesResponseDTO cotizacionConDetalles = cotizacionService.findByIdWithDetalles(id);
+        return ResponseEntity.ok(cotizacionConDetalles);
     }
 
     // Listar todas las cotizaciones
