@@ -45,23 +45,37 @@ public class DetalleLiquidacionMapper {
     }
 
     public DetalleLiquidacion toEntity(DetalleLiquidacionRequestDTO dto) {
-        DetalleLiquidacion entity = modelMapper.map(dto, DetalleLiquidacion.class);
-
+        DetalleLiquidacion entity = new DetalleLiquidacion();
+        
+        // Mapear campos básicos manualmente para evitar conflictos con ModelMapper
+        entity.setTicket(dto.getTicket());
+        entity.setCostoTicket(dto.getCostoTicket());
+        entity.setCargoServicio(dto.getCargoServicio());
+        entity.setValorVenta(dto.getValorVenta());
+        entity.setFacturaCompra(dto.getFacturaCompra());
+        entity.setBoletaPasajero(dto.getBoletaPasajero());
+        entity.setMontoDescuento(dto.getMontoDescuento());
+        entity.setPagoPaxUSD(dto.getPagoPaxUSD());
+        entity.setPagoPaxPEN(dto.getPagoPaxPEN());
+        
+        // Establecer relaciones
         setEntityRelations(dto, entity);
         return entity;
     }
 
     public void updateEntityFromDTO(DetalleLiquidacionRequestDTO dto, DetalleLiquidacion entity) {
-        // Configurar ModelMapper para ignorar valores null durante el mapeo
-        modelMapper.getConfiguration()
-                .setMatchingStrategy(MatchingStrategies.STRICT)
-                .setPropertyCondition(context -> context.getSource() != null);
-
-        // Mapear solo campos no null usando ModelMapper
-        modelMapper.map(dto, entity);
-
-        // SOLO actualizar relaciones si realmente se quiere cambiar la relación
-        // No sobrescribir relaciones existentes si no se envían IDs
+        // Mapear campos básicos manualmente para evitar conflictos con ModelMapper
+        entity.setTicket(dto.getTicket());
+        entity.setCostoTicket(dto.getCostoTicket());
+        entity.setCargoServicio(dto.getCargoServicio());
+        entity.setValorVenta(dto.getValorVenta());
+        entity.setFacturaCompra(dto.getFacturaCompra());
+        entity.setBoletaPasajero(dto.getBoletaPasajero());
+        entity.setMontoDescuento(dto.getMontoDescuento());
+        entity.setPagoPaxUSD(dto.getPagoPaxUSD());
+        entity.setPagoPaxPEN(dto.getPagoPaxPEN());
+        
+        // Actualizar relaciones
         updateEntityRelations(dto, entity); 
         entity.setActualizado(LocalDateTime.now());
     }
