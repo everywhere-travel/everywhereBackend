@@ -256,6 +256,7 @@ public class CotizacionServiceImpl implements CotizacionService {
         detalleSimple.setUnidad(detalleCompleto.getUnidad());
         detalleSimple.setDescripcion(detalleCompleto.getDescripcion());
         detalleSimple.setPrecioHistorico(detalleCompleto.getPrecioHistorico());
+        detalleSimple.setSeleccionado(detalleCompleto.getSeleccionado());
         detalleSimple.setCreado(detalleCompleto.getCreado());
         detalleSimple.setActualizado(detalleCompleto.getActualizado());
         detalleSimple.setComision(detalleCompleto.getComision());

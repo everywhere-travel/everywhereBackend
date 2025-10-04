@@ -88,6 +88,7 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
         entity.setDescripcion(dto.getDescripcion());
         entity.setComision(dto.getComision());
         entity.setPrecioHistorico(dto.getPrecioHistorico());
+        entity.setSeleccionado(dto.getSeleccionado()); // Campo opcional, puede ser null
 
         DetalleCotizacion saved = detalleCotizacionRepository.save(entity);
         return DetalleCotizacionMapper.toResponse(saved);
@@ -153,8 +154,23 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
         return DetalleCotizacionMapper.toResponse(detalleCotizacionRepository.save(detalle));
     }
 
-
-
-
+    @Override
+    public DetalleCotizacionResponseDto updateSeleccionado(int detalleId, Boolean seleccionado) {
+        if (detalleId <= 0) {
+            throw new IllegalArgumentException("El ID del detalle debe ser un número válido mayor a 0");
+        }
+        if (seleccionado == null) {
+            throw new IllegalArgumentException("El valor de seleccionado no puede ser null");
+        }
+        
+        DetalleCotizacion detalle = detalleCotizacionRepository.findById(detalleId)
+                .orElseThrow(() -> new EntityNotFoundException("Detalle no encontrado con ID: " + detalleId));
+        
+        detalle.setSeleccionado(seleccionado);
+        detalle.setActualizado(LocalDateTime.now());
+        
+        DetalleCotizacion saved = detalleCotizacionRepository.save(detalle);
+        return DetalleCotizacionMapper.toResponse(saved);
+    }
 
 }
