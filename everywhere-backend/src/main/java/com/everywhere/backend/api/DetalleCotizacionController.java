@@ -104,8 +104,8 @@ public class DetalleCotizacionController {
     @PutMapping("/{detalleId}/seleccionado")
     @RequirePermission(module = "COTIZACIONES", permission = "UPDATE")
     public ResponseEntity<DetalleCotizacionResponseDto> updateSeleccionado(
-            @PathVariable("detalleId") int detalleId,
-            @RequestParam("seleccionado") Boolean seleccionado
+            @PathVariable int detalleId,
+            @RequestParam Boolean seleccionado
     ) {
         if (detalleId <= 0) {
             return ResponseEntity.badRequest().build();
