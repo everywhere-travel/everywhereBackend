@@ -18,6 +18,7 @@ public class DetalleCotizacionMapper {
     dto.setUnidad(entity.getUnidad());
     dto.setDescripcion(entity.getDescripcion());
     dto.setPrecioHistorico(entity.getPrecioHistorico());
+    dto.setSeleccionado(entity.getSeleccionado());
     dto.setCreado(entity.getCreado());
     dto.setActualizado(entity.getActualizado());
     dto.setComision(entity.getComision());
@@ -43,6 +44,7 @@ public class DetalleCotizacionMapper {
         entity.setCategoria(categoriaRepository.getOne(dto.getCategoria()));
         entity.setComision(dto.getComision());
         entity.setPrecioHistorico(dto.getPrecioHistorico());
+        entity.setSeleccionado(dto.getSeleccionado());
         return entity;
     }
 
@@ -60,5 +62,6 @@ public class DetalleCotizacionMapper {
         entity.setCategoria(categoriaRepository.getOne(dto.getCategoria()));
         entity.setComision(dto.getComision());
         entity.setPrecioHistorico(dto.getPrecioHistorico());
+        entity.setSeleccionado(dto.getSeleccionado());
     }
 }

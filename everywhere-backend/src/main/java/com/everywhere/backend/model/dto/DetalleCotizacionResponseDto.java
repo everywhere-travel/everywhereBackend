@@ -17,6 +17,7 @@ public class DetalleCotizacionResponseDto {
     private Integer unidad;
     private String descripcion;
     private BigDecimal precioHistorico;
+    private Boolean seleccionado;
     private LocalDateTime creado;
     private LocalDateTime actualizado;
     private BigDecimal comision;
