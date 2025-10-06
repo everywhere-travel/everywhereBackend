@@ -25,20 +25,18 @@ public class AuthorizationAspect {
 
         log.info("Verificando permisos para módulo: {} y permiso: {}", module, permission);
 
-        // Obtener información del usuario actual para debugging
         Role currentRole = authorizationService.getCurrentUserRole();
-        log.info("Usuario actual tiene rol: {}", currentRole != null ? currentRole.getName() : "NULL");
-
         if (currentRole != null) {
-            log.info("Módulos disponibles para el rol: {}", currentRole.getModules());
-            log.info("Permisos disponibles para el rol: {}", currentRole.getPermissions());
+            log.info("Usuario actual tiene rol: {}", currentRole.getName());
+            log.info("Módulos disponibles: {}", currentRole.getModulePermissions().keySet());
+            log.info("Permisos por módulo: {}", currentRole.getModulePermissions());
         }
 
         if (!authorizationService.hasPermission(module, permission)) {
             log.warn("Acceso denegado para módulo: {} y permiso: {} con rol: {}",
                     module, permission, currentRole != null ? currentRole.getName() : "NULL");
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body("No tienes permisos para realizar esta acción en el módulo: " + module);
+                    .body("No tienes permisos para realizar esta acción en el módulo: " + module);
         }
 
         log.info("Acceso permitido para módulo: {} y permiso: {}", module, permission);
