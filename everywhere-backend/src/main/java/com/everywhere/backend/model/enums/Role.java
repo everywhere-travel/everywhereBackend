@@ -60,12 +60,13 @@ public enum Role {
 
     OPERACIONES(6, "OPERACIONES", Map.ofEntries(
             entry("CLIENTES", Set.of("CREATE","READ","UPDATE","DELETE")),
-    entry("VIAJEROS", Set.of("CREATE","READ","UPDATE","DELETE")),
-    entry("PRODUCTOS", Set.of("CREATE","READ","UPDATE","DELETE")),
-    entry("PROVEEDORES", Set.of("CREATE","READ","UPDATE","DELETE")),
-    entry("OPERADOR", Set.of("CREATE","READ","UPDATE","DELETE")),
-    entry("PERSONAS", Set.of("CREATE","READ","UPDATE","DELETE")
-            )),
+            entry("VIAJEROS", Set.of("CREATE","READ","UPDATE","DELETE")),
+            entry("PRODUCTOS", Set.of("CREATE","READ","UPDATE","DELETE")),
+            entry("PROVEEDORES", Set.of("CREATE","READ","UPDATE","DELETE")),
+            entry("OPERADOR", Set.of("CREATE","READ","UPDATE","DELETE")),
+            entry("PERSONAS", Set.of("CREATE","READ","UPDATE","DELETE"))
+    )),  // <-- Cerrar Map.ofEntries y agregar coma para continuar con el siguiente enum
+
     VENTAS_JUNIOR(7, "VENTAS_JUNIOR", Map.ofEntries(
             entry("CLIENTES", Set.of("CREATE","READ")),
             entry("VIAJEROS", Set.of("CREATE","READ")),
