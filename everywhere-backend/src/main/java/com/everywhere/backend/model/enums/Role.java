@@ -64,14 +64,14 @@ public enum Role {
     entry("PRODUCTOS", Set.of("CREATE","READ","UPDATE","DELETE")),
     entry("PROVEEDORES", Set.of("CREATE","READ","UPDATE","DELETE")),
     entry("OPERADOR", Set.of("CREATE","READ","UPDATE","DELETE")),
-    entry("PERSONAS", Set.of("CREATE","READ","UPDATE","DELETE"))
+    entry("PERSONAS", Set.of("CREATE","READ","UPDATE","DELETE")
             )),
     VENTAS_JUNIOR(7, "VENTAS_JUNIOR", Map.ofEntries(
             entry("CLIENTES", Set.of("CREATE","READ")),
             entry("VIAJEROS", Set.of("CREATE","READ")),
             entry("COTIZACIONES", Set.of("CREATE","READ","UPDATE")),// Control interno más fino
             entry("LIQUIDACIONES", Set.of("CREATE","READ","DELETE")),// Control interno más fino
-            entry("CARPETA", Set.of("CREATE","READ"))
+            entry("CARPETA", Set.of("CREATE","READ")),
             entry("PERSONAS", Set.of("CREATE","READ"))
 
     )),
