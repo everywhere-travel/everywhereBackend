@@ -3,7 +3,6 @@ package com.everywhere.backend.service;
 import com.everywhere.backend.model.dto.ViajeroRequestDTO;
 import com.everywhere.backend.model.dto.ViajeroResponseDTO;
 
-import java.time.LocalDate;
 import java.util.List;
 
 public interface ViajeroService {

@@ -1,11 +1,9 @@
 package com.everywhere.backend.service.impl;
 
-import com.everywhere.backend.mapper.DocumentoMapper;
-import com.everywhere.backend.model.dto.CategoriaResponseDto;
+import com.everywhere.backend.mapper.DocumentoMapper; 
 import com.everywhere.backend.model.dto.DocumentoRequestDto;
 import com.everywhere.backend.model.dto.DocumentoResponseDto;
-import com.everywhere.backend.model.entity.Documento;
-import com.everywhere.backend.repository.DetalleDocumentoRepository;
+import com.everywhere.backend.model.entity.Documento; 
 import com.everywhere.backend.repository.DocumentoRepository;
 import com.everywhere.backend.service.DocumentoService;
 import org.springframework.beans.factory.annotation.Autowired;

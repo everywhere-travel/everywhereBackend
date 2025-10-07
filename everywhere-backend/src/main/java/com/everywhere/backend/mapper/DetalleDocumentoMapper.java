@@ -2,9 +2,7 @@ package com.everywhere.backend.mapper;
 
 import com.everywhere.backend.model.dto.DetalleDocumentoRequestDto;
 import com.everywhere.backend.model.dto.DetalleDocumentoResponseDto;
-import com.everywhere.backend.model.entity.DetalleDocumento;
-import com.everywhere.backend.model.entity.Documento;
-import com.everywhere.backend.model.entity.Viajero;
+import com.everywhere.backend.model.entity.DetalleDocumento; 
 import com.everywhere.backend.repository.DocumentoRepository;
 import com.everywhere.backend.repository.ViajeroRepository;
 import lombok.RequiredArgsConstructor;
