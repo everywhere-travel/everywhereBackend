@@ -26,16 +26,11 @@ public class ExchangeController {
     private static final Logger LOGGER = Logger.getLogger(ExchangeController.class.getName());
 
     @GetMapping("/tipo-de-cambio")
-    public ResponseEntity<Object> getTipoDeCambio() {
-        // --- Configuración de Selenium ---
-        // Esto evita que se abran ventanas de consola de chromedriver
-        System.setProperty("webdriver.chrome.silentOutput", "true"); 
-        
-        // Opcional pero recomendado: Especifica la ruta al driver si no está en el PATH del sistema.
-        // System.setProperty("webdriver.chrome.driver", "C:/path/to/your/chromedriver.exe");
+    public ResponseEntity<Object> getTipoDeCambio() { 
+        System.setProperty("webdriver.chrome.silentOutput", "true");  
         
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless=new"); // Ejecuta el navegador en modo headless (sin interfaz gráfica)
+        options.addArguments("--headless=new");
         options.addArguments("--disable-gpu");
         options.addArguments("--window-size=1920,1080");
         options.addArguments("--no-sandbox");
@@ -49,16 +44,12 @@ public class ExchangeController {
 
             driver.get("https://www.cambiomundial.com/");
 
-            // --- LA SOLUCIÓN: ESPERA EXPLÍCITA ---
-            // Se crea un objeto de espera que esperará un máximo de 10 segundos.
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
             LOGGER.info("El robot está en la página, esperando que los valores aparezcan...");
 
-            // El robot ahora esperará hasta que el elemento con ID 'lblvalorcompra' TENGA TEXTO.
             WebElement buyElement = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("lblvalorcompra")));
             WebElement sellElement = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("lblvalorventa")));
 
-            // Una pequeña espera adicional para asegurar que el texto se renderice completamente si es necesario
             wait.until(d -> !d.findElement(By.id("lblvalorcompra")).getText().isEmpty());
 
             String buyPrice = buyElement.getText();
@@ -80,7 +71,7 @@ public class ExchangeController {
             
         } finally {
             if (driver != null) {
-                driver.quit(); // Cierra el navegador y el proceso del driver
+                driver.quit();
                 LOGGER.info("El robot ha terminado y el navegador se ha cerrado.");
             }
         }

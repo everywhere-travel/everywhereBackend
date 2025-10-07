@@ -20,9 +20,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.http.HttpMethod;
 
-import java.util.Arrays;
-
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import java.util.Arrays; 
 
 @Configuration
 @RequiredArgsConstructor
@@ -60,29 +58,29 @@ public class WebSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
 
                 .authorizeHttpRequests(authorize -> authorize
-                        // TODO: Permitir acceso público a las rutas de login, registro y endpoints públicos como Swagger UI
-                        .requestMatchers(antMatcher("/auth/**")).permitAll()
-                        .requestMatchers(antMatcher("/swagger-ui/**")).permitAll()
-                        .requestMatchers(antMatcher(HttpMethod.OPTIONS, "/**")).permitAll()
-                        .requestMatchers(antMatcher("/v3/api-docs/**")).permitAll()
-                        .requestMatchers(antMatcher("/swagger-resources/**")).permitAll()
-                        .requestMatchers(antMatcher("/webjars/**")).permitAll()
-                        // TODO: Cualquier otra solicitud requiere autenticación (JWT u otra autenticación configurada)
+                        // Permitir acceso público a las rutas de login, registro y endpoints públicos como Swagger UI
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-resources/**").permitAll()
+                        .requestMatchers("/webjars/**").permitAll()
+                        // Cualquier otra solicitud requiere autenticación (JWT u otra autenticación configurada)
                         .anyRequest().authenticated()
                 )
 
-                // TODO: Permite la autenticación básica (para testing con Postman, por ejemplo)
+                // Permite la autenticación básica (para testing con Postman, por ejemplo)
                 //.httpBasic(Customizer.withDefaults())
-                // TODO: Desactiva el formulario de inicio de sesión predeterminado, ya que se usará JWT
+                // Desactiva el formulario de inicio de sesión predeterminado, ya que se usará JWT
                 .formLogin(AbstractHttpConfigurer::disable)
-                // TODO: Configura el manejo de excepciones para autenticación. Usa JwtAuthenticationEntryPoint para manejar errores 401 (no autorizado)
+                // Configura el manejo de excepciones para autenticación. Usa JwtAuthenticationEntryPoint para manejar errores 401 (no autorizado)
                 .exceptionHandling(e -> e.authenticationEntryPoint(jwtAuthenticationEntryPoint))
-                // TODO: Configura la política de sesiones como "sin estado" (stateless), ya que JWT maneja la autenticación, no las sesiones de servidor
+                // Configura la política de sesiones como "sin estado" (stateless), ya que JWT maneja la autenticación, no las sesiones de servidor
                 .sessionManagement(h -> h.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // TODO: Agrega la configuración para JWT en el filtro antes de los filtros predeterminados de Spring Security
+                // Agrega la configuración para JWT en el filtro antes de los filtros predeterminados de Spring Security
                 .with(new JWTConfigurer(tokenProvider), Customizer.withDefaults());
 
-        // TODO: Añadir el JWTFilter antes del filtro de autenticación de nombre de usuario/contraseña.
+        // Añadir el JWTFilter antes del filtro de autenticación de nombre de usuario/contraseña.
         //  Esto permite que el JWTFilter valide el token antes de la autenticación
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -91,7 +89,7 @@ public class WebSecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        // TODO: Proporciona el AuthenticationManager que gestionará la autenticación basada en los detalles de usuario y contraseña
+        // Proporciona el AuthenticationManager que gestionará la autenticación basada en los detalles de usuario y contraseña
         return authenticationConfiguration.getAuthenticationManager();
     }
 

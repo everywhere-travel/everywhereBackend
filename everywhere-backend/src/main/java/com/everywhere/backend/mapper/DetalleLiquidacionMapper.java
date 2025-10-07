@@ -8,8 +8,7 @@ import com.everywhere.backend.model.entity.Viajero;
 import com.everywhere.backend.model.entity.Producto;
 import com.everywhere.backend.model.entity.Proveedor;
 import com.everywhere.backend.model.entity.Operador;
-import org.modelmapper.ModelMapper;
-import org.modelmapper.convention.MatchingStrategies;
+import org.modelmapper.ModelMapper; 
 import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 
