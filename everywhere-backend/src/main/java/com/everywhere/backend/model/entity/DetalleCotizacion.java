@@ -1,8 +1,4 @@
 package com.everywhere.backend.model.entity;
-import com.everywhere.backend.model.entity.Categoria;
-import com.everywhere.backend.model.entity.Cotizacion;
-import com.everywhere.backend.model.entity.Producto;
-import com.everywhere.backend.model.entity.Proveedor;
 
 import jakarta.persistence.*;
 import lombok.Data;

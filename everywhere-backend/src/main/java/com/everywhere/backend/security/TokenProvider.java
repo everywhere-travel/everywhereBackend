@@ -49,12 +49,12 @@ public class TokenProvider {
                 .build();
     }
 
-    // TODO: Método para crear el token JWT con los detalles del usuario autenticado
+    // Método para crear el token JWT con los detalles del usuario autenticado
     public String createAccessToken(Authentication authentication) {
-        // TODO: Obtener el email o nombre del usuario autenticado
+        // Obtener el email o nombre del usuario autenticado
         String email = authentication.getName();
 
-        // TODO: Obtener el rol del usuario desde el objeto de autenticación
+        // Obtener el rol del usuario desde el objeto de autenticación
         String role = authentication
                 .getAuthorities()
                 .stream()
@@ -62,7 +62,7 @@ public class TokenProvider {
                 .orElseThrow(NullPointerException::new)
                 .getAuthority();
 
-        // TODO: Construir y firmar el token JWT que incluye el rol y el email
+        // Construir y firmar el token JWT que incluye el rol y el email
         return Jwts
                 .builder()
                 .setSubject(email)  // El sujeto del token es el email o nombre de usuario
@@ -72,25 +72,25 @@ public class TokenProvider {
                 .compact();
     }
 
-    // TODO: Método para obtener la autenticación a partir del token JWT
+    // Método para obtener la autenticación a partir del token JWT
     public Authentication getAuthentication(String token) {
-        // TODO: Extraer los claims (datos) del token JWT
+        // Extraer los claims (datos) del token JWT
         Claims claims = jwtParser.parseClaimsJws(token).getBody();
 
-        // TODO: Obtener el rol del token
+        // Obtener el rol del token
         String role = claims.get("role").toString();
 
-        // TODO: Crear la lista de autoridades (roles) para el usuario
+        // Crear la lista de autoridades (roles) para el usuario
         List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
 
         try {
-            // TODO: Cargar el usuario completo desde la base de datos usando el email del token
+            // Cargar el usuario completo desde la base de datos usando el email del token
             UserDetails userDetails = userDetailsService.loadUserByUsername(claims.getSubject());
 
-            // TODO: Crear el objeto de autenticación con el UserPrincipal completo
+            // Crear el objeto de autenticación con el UserPrincipal completo
             return new UsernamePasswordAuthenticationToken(userDetails, token, authorities);
         } catch (UsernameNotFoundException e) {
-            // TODO: Si no se encuentra el usuario, crear un UserPrincipal básico (fallback)
+            // Si no se encuentra el usuario, crear un UserPrincipal básico (fallback)
             UserPrincipal principal = new UserPrincipal(
                     null, // id no disponible desde el token
                     claims.getSubject(), // email
@@ -102,10 +102,10 @@ public class TokenProvider {
         }
     }
 
-    // TODO: Método para validar el token JWT (si está correctamente firmado y no ha expirado)
+    // Método para validar el token JWT (si está correctamente firmado y no ha expirado)
     public boolean validateToken(String token) {
         try {
-            // TODO: Parsear el token JWT para verificar su validez
+            // Parsear el token JWT para verificar su validez
             jwtParser.parseClaimsJws(token);
             return true;  // El token es válido
         } catch (JwtException e) {

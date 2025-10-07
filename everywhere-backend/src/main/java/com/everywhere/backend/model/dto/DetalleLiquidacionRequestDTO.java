@@ -38,16 +38,12 @@ public class DetalleLiquidacionRequestDTO {
 
     @NotNull
     private Integer liquidacionId;
-
-    @NotNull
+ 
     private Integer viajeroId;
-
-    @NotNull
+ 
     private Integer productoId;
-
-    @NotNull
+ 
     private Integer proveedorId;
-
-    @NotNull
+ 
     private Integer operadorId;
 }
