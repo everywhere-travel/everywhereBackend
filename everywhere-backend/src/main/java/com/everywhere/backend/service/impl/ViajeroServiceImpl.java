@@ -7,17 +7,14 @@ import com.everywhere.backend.model.entity.Personas;
 import com.everywhere.backend.repository.ViajeroRepository;
 import com.everywhere.backend.repository.PersonaRepository;
 import com.everywhere.backend.service.ViajeroService;
-import com.everywhere.backend.exceptions.ResourceNotFoundException;
-import com.everywhere.backend.exceptions.BadRequestException;
+import com.everywhere.backend.exceptions.ResourceNotFoundException; 
 import com.everywhere.backend.mapper.ViajeroMapper;
 import com.everywhere.backend.mapper.PersonaMapper;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 
-import java.time.LocalDateTime;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDateTime; 
+import java.util.List; 
 import java.util.stream.Collectors;
 
 @Service
