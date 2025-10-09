@@ -129,4 +129,10 @@ public class CotizacionController {
             @PathVariable Integer personaId) {
         return ResponseEntity.ok(cotizacionService.setPersonasById(id, personaId));
     }
+
+    @GetMapping("/sin-liquidacion")
+    @RequirePermission(module = "COTIZACIONES", permission = "READ")
+    public ResponseEntity<List<CotizacionResponseDto>> findCotizacionesSinLiquidacion() {
+        return ResponseEntity.ok(cotizacionService.findCotizacionesSinLiquidacion());
+    }
 }

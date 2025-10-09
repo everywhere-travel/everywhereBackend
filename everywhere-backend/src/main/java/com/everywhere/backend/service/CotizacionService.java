@@ -25,5 +25,7 @@ public interface CotizacionService {
     CotizacionResponseDto setSucursalById(Integer cotizacionId, Integer sucursalId);
     CotizacionResponseDto setCarpetaById(Integer cotizacionId, Integer carpetaId);
     CotizacionResponseDto setPersonasById(Integer cotizacionId, Integer personasId);
+
+    List<CotizacionResponseDto> findCotizacionesSinLiquidacion();
 }
 

@@ -266,4 +266,12 @@ public class CotizacionServiceImpl implements CotizacionService {
         return detalleSimple;
     }
 
+    @Override
+    public List<CotizacionResponseDto> findCotizacionesSinLiquidacion() {
+        List<Cotizacion> cotizaciones = cotizacionRepository.findCotizacionesSinLiquidacion();
+        return cotizaciones.stream()
+                .map(CotizacionMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
 }
