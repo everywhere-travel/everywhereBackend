@@ -121,4 +121,11 @@ public class CarpetaController {
     public ResponseEntity<List<CarpetaResponseDto>> findCamino(@PathVariable Integer id) {
         return ResponseEntity.ok(carpetaService.findCamino(id));
     }
+
+    @GetMapping("/hijos/{id}")
+    @RequirePermission(module = "CARPETA", permission = "READ")
+    public ResponseEntity<List<CarpetaResponseDto>> findHijos(@PathVariable Integer id) {
+        return ResponseEntity.ok(carpetaService.findByCarpetaPadreId(id));
+    }
+
 }
