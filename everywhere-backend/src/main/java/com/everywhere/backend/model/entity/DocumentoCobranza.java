@@ -1,5 +1,6 @@
 package com.everywhere.backend.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -52,21 +53,22 @@ public class DocumentoCobranza {
 
     // Relación con detalles
     @OneToMany(mappedBy = "documentoCobranza", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<DetalleDocumentoCobranza> detalles;
 
-    // Campos adicionales para datos de cotización (no mapeados a BD)
-    @Transient
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cot_id_int", unique = true)
+    private Cotizacion cotizacion;
+
+    @Column(name = "doc_co_nro_ser_vac", length = 50)
     private String nroSerie;
 
-    @Transient
+    @Column(name = "doc_co_file_ven_vac", length = 100)
     private String fileVenta;
 
-    @Transient
+    @Column(name = "doc_co_cos_env_dc")
     private Double costoEnvio;
 
-    @Transient
+    @Column(name = "doc_co_mon_vac", length = 10)
     private String moneda;
-
-    @Transient
-    private Long cotizacionId;
 }
