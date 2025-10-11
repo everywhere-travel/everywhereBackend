@@ -16,14 +16,11 @@ public interface DocumentoCobranzaRepository extends JpaRepository<DocumentoCobr
     @Query("SELECT MAX(d.numero) FROM DocumentoCobranza d WHERE d.numero LIKE 'DC01-%'")
     Optional<String> findLastDocumentNumber();
 
-    /**
-     * Busca documento por número
-     */
     Optional<DocumentoCobranza> findByNumero(String numero);
 
-    /**
-     * Busca documentos por persona
-     */
     @Query("SELECT d FROM DocumentoCobranza d WHERE d.persona.id = :personaId")
     Optional<DocumentoCobranza> findByPersonaId(Long personaId);
+    
+    @Query("SELECT d FROM DocumentoCobranza d WHERE d.cotizacion.id = :cotizacionId")
+    Optional<DocumentoCobranza> findByCotizacionId(Integer cotizacionId);
 }

@@ -1,8 +1,9 @@
 package com.everywhere.backend.api;
 
 import com.everywhere.backend.security.RequirePermission;
-import com.everywhere.backend.service.PdfService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.everywhere.backend.service.DocumentoCobranzaService;
+import lombok.AllArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -12,78 +13,38 @@ import org.springframework.web.bind.annotation.*;
 import java.io.ByteArrayInputStream;
 
 @RestController
+@AllArgsConstructor
 @RequestMapping("/pdf")
 public class PdfController {
 
-    @Autowired
-    private PdfService pdfService;
+    private final DocumentoCobranzaService documentoCobranzaService;
 
-    @GetMapping("/documento-cobranza")
+    @GetMapping("/documento-cobranza/{id}")
     @RequirePermission(module = "DOCUMENTOS", permission = "READ")
-    public ResponseEntity<byte[]> generateDocumentoCobranzaPdf(
-            @RequestParam int cotizacionId,
-            @RequestParam String nroSerie,
-            @RequestParam String fileVenta,
-            @RequestParam Double costoEnvio,
-            @RequestParam(defaultValue = "true") boolean saveToDatabase) {
+    public ResponseEntity<InputStreamResource> generateDocumentoCobranzaPdf(@PathVariable Long id) {
 
         try {
-            ByteArrayInputStream pdfStream;
+            // Verificar que el documento existe usando el DTO
+            com.everywhere.backend.model.dto.DocumentoCobranzaResponseDTO documentoDto = documentoCobranzaService.findById(id);
             
-            if (saveToDatabase) {
-                // Opción 1: Guardar en BD y generar PDF
-                pdfStream = pdfService.generateDocumentoCobranzaPdfWithSave(cotizacionId, nroSerie, fileVenta, costoEnvio);
-            } else {
-                // Opción 2: Solo generar PDF sin guardar (modo anterior)
-                pdfStream = pdfService.generateDocumentoCobranzaPdf(cotizacionId, nroSerie, fileVenta, costoEnvio);
-            }
+            if (documentoDto == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            
+            ByteArrayInputStream pdfStream = documentoCobranzaService.generatePdf(id);
 
-            if (pdfStream == null) {
-                return ResponseEntity.noContent().build();
-            }
-
-            byte[] pdfBytes = pdfStream.readAllBytes();
+            if (pdfStream == null) return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+            
 
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDispositionFormData("inline", 
-                "documento_cobranza_" + nroSerie + "_" + fileVenta + ".pdf");
-            headers.setContentLength(pdfBytes.length);
+            headers.add("Content-Disposition", "inline; filename=documento_cobranza_" + documentoDto.getNroSerie() + ".pdf");
 
-            return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(new InputStreamResource(pdfStream));
 
         } catch (Exception e) {
-            // Log del error para debugging
-            System.err.println("Error generando PDF de documento de cobranza: " + e.getMessage());
+            System.err.println("Error generando PDF: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    // Método genérico (alternativo)
-    @PostMapping("/generar")
-    @RequirePermission(module = "DOCUMENTOS", permission = "READ")
-    public ResponseEntity<byte[]> generatePdf(
-            @RequestParam String tipo,
-            @RequestBody Object[] parametros) {
-
-        try {
-            ByteArrayInputStream pdfStream = pdfService.generatePdf(tipo, parametros);
-
-            if (pdfStream == null) {
-                return ResponseEntity.noContent().build();
-            }
-
-            byte[] pdfBytes = pdfStream.readAllBytes();
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDispositionFormData("inline", tipo + ".pdf");
-            headers.setContentLength(pdfBytes.length);
-
-            return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
-
-        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

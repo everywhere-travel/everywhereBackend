@@ -1,5 +1,6 @@
 package com.everywhere.backend.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -35,16 +36,10 @@ public class DetalleDocumentoCobranza {
     // Relaciones
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "doc_co_id_int")
+    @JsonBackReference
     private DocumentoCobranza documentoCobranza;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "prod_id_int")
     private Producto producto;
-
-    // Campos adicionales para cálculos (no mapeados)
-    @Transient
-    private BigDecimal comision;
-
-    @Transient
-    private BigDecimal subtotal;
 }

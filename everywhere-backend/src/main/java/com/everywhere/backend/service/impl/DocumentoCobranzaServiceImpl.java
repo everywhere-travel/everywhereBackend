@@ -1,0 +1,714 @@
+package com.everywhere.backend.service.impl;
+
+import com.itextpdf.kernel.colors.ColorConstants;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.borders.Border;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
+import com.everywhere.backend.model.dto.CotizacionConDetallesResponseDTO;
+import com.everywhere.backend.model.dto.DetalleCotizacionSimpleDTO;
+import com.everywhere.backend.model.dto.DocumentoCobranzaDTO;
+import com.everywhere.backend.model.dto.DocumentoCobranzaResponseDTO;
+import com.everywhere.backend.model.entity.DocumentoCobranza;
+import com.everywhere.backend.model.entity.DetalleDocumentoCobranza;
+import com.everywhere.backend.model.entity.FormaPago;
+import com.everywhere.backend.model.entity.Personas;
+import com.everywhere.backend.model.entity.Producto;
+import com.everywhere.backend.model.entity.Sucursal;
+import com.everywhere.backend.repository.DetalleDocumentoCobranzaRepository;
+import com.everywhere.backend.repository.DocumentoCobranzaRepository;
+import com.everywhere.backend.service.CotizacionService;
+import com.everywhere.backend.service.DocumentoCobranzaService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
+
+    @Autowired
+    private CotizacionService cotizacionService;
+    
+    @Autowired
+    private DocumentoCobranzaRepository documentoCobranzaRepository;
+    
+    @Autowired
+    private DetalleDocumentoCobranzaRepository detalleDocumentoCobranzaRepository;
+
+    // ========== MÉTODOS PÚBLICOS DE LA INTERFAZ ==========
+
+    @Override
+    public DocumentoCobranzaResponseDTO createDocumentoCobranza(Integer cotizacionId, String fileVenta, Double costoEnvio) {
+        DocumentoCobranza existente = documentoCobranzaRepository.findByCotizacionId(cotizacionId).orElse(null);
+        if (existente != null) {
+            throw new RuntimeException("Ya existe un documento de cobranza para la cotización ID: " + cotizacionId);
+        }
+        
+        CotizacionConDetallesResponseDTO cotizacion = cotizacionService.findByIdWithDetalles(cotizacionId);
+        if (cotizacion == null) {
+            throw new RuntimeException("Cotización no encontrada con ID: " + cotizacionId);
+        }
+
+        DocumentoCobranza documento = new DocumentoCobranza();
+        documento.setNumero(generateNextDocumentNumber());
+        documento.setFechaEmision(LocalDateTime.now());
+        documento.setObservaciones(cotizacion.getObservacion());
+        
+        com.everywhere.backend.model.entity.Cotizacion cotizacionEntity = new com.everywhere.backend.model.entity.Cotizacion();
+        cotizacionEntity.setId(cotizacionId);
+        documento.setCotizacion(cotizacionEntity);
+        
+        if (cotizacion.getPersonas() != null) {
+            Personas persona = new Personas();
+            persona.setId(cotizacion.getPersonas().getId());
+            documento.setPersona(persona);
+        }
+        
+        if (cotizacion.getSucursal() != null) {
+            Sucursal sucursal = new Sucursal();
+            sucursal.setId(cotizacion.getSucursal().getId());
+            documento.setSucursal(sucursal);
+        }
+        
+        if (cotizacion.getFormaPago() != null) {
+            FormaPago formaPago = new FormaPago();
+            formaPago.setId(cotizacion.getFormaPago().getId());
+            documento.setFormaPago(formaPago);
+        }
+        
+        documento.setNroSerie(generateNextSerieNumber());
+        documento.setFileVenta(fileVenta);
+        documento.setCostoEnvio(costoEnvio);
+        documento.setMoneda(cotizacion.getMoneda());
+
+        documento = documentoCobranzaRepository.save(documento);
+
+        List<DetalleDocumentoCobranza> detalles = new ArrayList<>();
+        
+        if (cotizacion.getDetalles() != null) {
+            for (DetalleCotizacionSimpleDTO detalleCot : cotizacion.getDetalles()) {
+                if (detalleCot.getSeleccionado() != null && detalleCot.getSeleccionado()) {
+                    DetalleDocumentoCobranza detalle = new DetalleDocumentoCobranza();
+                    detalle.setDocumentoCobranza(documento);
+                    detalle.setCantidad(detalleCot.getCantidad() != null ? detalleCot.getCantidad() : 0);
+                    detalle.setDescripcion(detalleCot.getDescripcion());
+                    detalle.setFechaCreacion(LocalDateTime.now());
+                    
+                    BigDecimal precioUnitario = detalleCot.getPrecioHistorico() != null ? 
+                        detalleCot.getPrecioHistorico() : BigDecimal.ZERO;
+                    detalle.setPrecio(precioUnitario);
+                    
+                    if (detalleCot.getProducto() != null) {
+                        Producto producto = new Producto();
+                        producto.setId(detalleCot.getProducto().getId());
+                        detalle.setProducto(producto);
+                    }
+                    
+                    detalles.add(detalle);
+                }
+            }
+        }
+        
+        if (!detalles.isEmpty()) {
+            detalleDocumentoCobranzaRepository.saveAll(detalles);
+            documento.setDetalles(detalles);
+        }
+        
+        return convertToResponseDTO(documento);
+    }
+
+    @Override
+    public ByteArrayInputStream generatePdf(Long documentoId) {
+        DocumentoCobranza documento = findDocumentoById(documentoId);
+        if (documento == null) {
+            throw new RuntimeException("Documento de cobranza no encontrado con ID: " + documentoId);
+        }
+        
+        DocumentoCobranzaDTO documentoDTO = convertToDTO(documento);
+        return generatePdfFromDTO(documentoDTO);
+    }
+
+    @Override
+    public DocumentoCobranzaDTO convertToDTO(DocumentoCobranza entity) {
+        DocumentoCobranzaDTO dto = new DocumentoCobranzaDTO();
+        
+        dto.setNroSerie(entity.getNroSerie());
+        dto.setFileVenta(entity.getFileVenta());
+        dto.setCostoEnvio(entity.getCostoEnvio() != null ? BigDecimal.valueOf(entity.getCostoEnvio()) : BigDecimal.ZERO);
+        dto.setFechaEmision(entity.getFechaEmision());
+        dto.setMoneda(entity.getMoneda());
+        dto.setObservaciones(entity.getObservaciones());
+        
+        if (entity.getPersona() != null) {
+            dto.setClienteEmail(entity.getPersona().getEmail());
+            dto.setClienteTelefono(entity.getPersona().getTelefono());
+            dto.setClienteDireccion(entity.getPersona().getDireccion());
+        }
+        
+        if (entity.getSucursal() != null) {
+            dto.setPuntoCompra(entity.getSucursal().getDescripcion());
+        }
+        
+        if (entity.getFormaPago() != null) {
+            dto.setFormaPago(entity.getFormaPago().getDescripcion());
+        }
+        
+        List<DocumentoCobranzaDTO.DetalleDocumentoCobranza> detallesDto = new ArrayList<>();
+        BigDecimal subtotalGeneral = BigDecimal.ZERO;
+        
+        if (entity.getDetalles() != null) {
+            for (DetalleDocumentoCobranza detalleEntity : entity.getDetalles()) {
+                DocumentoCobranzaDTO.DetalleDocumentoCobranza detalleDto = new DocumentoCobranzaDTO.DetalleDocumentoCobranza();
+                
+                detalleDto.setCantidad(detalleEntity.getCantidad());
+                detalleDto.setDescripcion(detalleEntity.getDescripcion());
+                detalleDto.setPrecioUnitario(detalleEntity.getPrecio());
+                
+                if (detalleEntity.getProducto() != null) {
+                    detalleDto.setCodigoProducto(detalleEntity.getProducto().getCodigo());
+                }
+                
+                // Calcular subtotal del detalle: cantidad * precio
+                BigDecimal cantidad = detalleEntity.getCantidad() != null ? 
+                    new BigDecimal(detalleEntity.getCantidad()) : BigDecimal.ONE;
+                BigDecimal precio = detalleEntity.getPrecio() != null ? 
+                    detalleEntity.getPrecio() : BigDecimal.ZERO;
+                BigDecimal subtotalDetalle = cantidad.multiply(precio);
+                
+                subtotalGeneral = subtotalGeneral.add(subtotalDetalle);
+                detallesDto.add(detalleDto);
+            }
+        }
+        
+        dto.setDetalles(detallesDto);
+        dto.setSubtotal(subtotalGeneral);
+        
+        BigDecimal total = subtotalGeneral.add(dto.getCostoEnvio());
+        dto.setTotal(total);
+        
+        dto.setImporteEnLetras(convertirNumeroALetras(total.doubleValue(), entity.getMoneda()));
+        
+        return dto;
+    }
+
+    @Override
+    public DocumentoCobranzaResponseDTO convertToResponseDTO(DocumentoCobranza entity) {
+        DocumentoCobranzaResponseDTO dto = new DocumentoCobranzaResponseDTO();
+        
+        dto.setId(entity.getId());
+        dto.setNumero(entity.getNumero());
+        dto.setFechaEmision(entity.getFechaEmision());
+        dto.setObservaciones(entity.getObservaciones());
+        dto.setNroSerie(entity.getNroSerie());
+        dto.setFileVenta(entity.getFileVenta());
+        dto.setCostoEnvio(entity.getCostoEnvio());
+        dto.setMoneda(entity.getMoneda());
+        
+        if (entity.getCotizacion() != null) {
+            dto.setCotizacionId(entity.getCotizacion().getId());
+        }
+        
+        if (entity.getPersona() != null) {
+            dto.setPersonaId(entity.getPersona().getId());
+            dto.setClienteEmail(entity.getPersona().getEmail());
+        }
+        
+        if (entity.getSucursal() != null) {
+            dto.setSucursalId(entity.getSucursal().getId());
+            dto.setSucursalDescripcion(entity.getSucursal().getDescripcion());
+        }
+        
+        if (entity.getFormaPago() != null) {
+            dto.setFormaPagoId(entity.getFormaPago().getId());
+            dto.setFormaPagoDescripcion(entity.getFormaPago().getDescripcion());
+        }
+        
+        return dto;
+    }
+
+    @Override
+    public DocumentoCobranzaResponseDTO findById(Long id) {
+        DocumentoCobranza entity = documentoCobranzaRepository.findById(id).orElse(null);
+        return entity != null ? convertToResponseDTO(entity) : null;
+    }
+
+    @Override
+    public DocumentoCobranzaResponseDTO findByNumero(String numero) {
+        DocumentoCobranza entity = documentoCobranzaRepository.findByNumero(numero).orElse(null);
+        return entity != null ? convertToResponseDTO(entity) : null;
+    }
+
+    @Override
+    public List<DocumentoCobranzaResponseDTO> findAll() {
+        return documentoCobranzaRepository.findAll().stream()
+                .map(this::convertToResponseDTO)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
+    public DocumentoCobranzaResponseDTO findByCotizacionId(Integer cotizacionId) {
+        DocumentoCobranza entity = documentoCobranzaRepository.findByCotizacionId(cotizacionId).orElse(null);
+        return entity != null ? convertToResponseDTO(entity) : null;
+    }
+
+    // ========== MÉTODOS PRIVADOS ==========
+
+    private DocumentoCobranza findDocumentoById(Long id) {
+        return documentoCobranzaRepository.findById(id).orElse(null);
+    }
+
+    private String generateNextDocumentNumber() {
+        Optional<String> lastNumberOpt = documentoCobranzaRepository.findLastDocumentNumber();
+        
+        if (lastNumberOpt.isPresent()) {
+            String lastNumber = lastNumberOpt.get();
+            String[] parts = lastNumber.split("-");
+            if (parts.length == 2) {
+                String serie = parts[0];
+                int numero = Integer.parseInt(parts[1]);
+                int nextNumero = numero + 1;
+                
+                if (nextNumero > 999999999) {
+                    return "DC02-000000001";
+                }
+                
+                return String.format("%s-%09d", serie, nextNumero);
+            }
+        }
+        
+        return "DC01-000000300";
+    }
+
+    private String generateNextSerieNumber() {
+        return "DC-" + System.currentTimeMillis();
+    }
+
+    private String convertirNumeroALetras(double numero, String moneda) {
+        if (numero == 0) {
+            return "CERO " + (moneda != null ? moneda.toUpperCase() : "");
+        }
+        
+        return String.format("%.2f %s", numero, moneda != null ? moneda.toUpperCase() : "").toUpperCase();
+    }
+
+    private ByteArrayInputStream generatePdfFromDTO(DocumentoCobranzaDTO documento) {
+        if (documento == null) {
+            return null;
+        }
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        boolean hasValidData = false;
+
+        try {
+            PdfWriter writer = new PdfWriter(out);
+            PdfDocument pdfDocument = new PdfDocument(writer);
+            Document pdfDoc = new Document(pdfDocument);
+
+            // 1. ENCABEZADO DE LA EMPRESA
+            addCompanyHeader(pdfDoc, documento);
+            hasValidData = true;
+
+            // 2. TABLA DE DETALLES DE SERVICIOS
+            if (documento.getDetalles() != null && !documento.getDetalles().isEmpty()) {
+                addServicesTable(pdfDoc, documento);
+            }
+
+            // 3. TABLA DE RESUMEN (MONEDA, CUOTAS, FORMA DE PAGO)
+            addSummaryTable(pdfDoc, documento);
+
+            // 4. SECCIÓN DE TOTALES
+            addTotalsSection(pdfDoc, documento);
+
+            // 5. PIE DE PÁGINA
+            addFooter(pdfDoc, documento);
+
+            pdfDoc.close();
+
+            if (!hasValidData) {
+                return null;
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error al generar el PDF del documento de cobranza", e);
+        }
+
+        return new ByteArrayInputStream(out.toByteArray());
+    }
+
+    // 1. ENCABEZADO DE LA EMPRESA
+    private void addCompanyHeader(Document document, DocumentoCobranzaDTO documento) {
+        // Crear tabla principal para el encabezado
+        Table headerTable = new Table(2).setWidth(UnitValue.createPercentValue(100));
+        
+        // Columna izquierda - Logo y datos de empresa
+        Cell leftCell = new Cell()
+                .setBorder(Border.NO_BORDER)
+                .setWidth(UnitValue.createPercentValue(60));
+                
+        // Logo y nombre de empresa (simulado con texto)
+        leftCell.add(new Paragraph("everywhere")
+                .setFontSize(24)
+                .setBold()
+                .setFontColor(ColorConstants.BLUE));
+        leftCell.add(new Paragraph("TRAVEL")
+                .setFontSize(12)
+                .setMarginTop(-5));
+                
+        leftCell.add(new Paragraph("EVERYWHERE TRAVEL SAC")
+                .setFontSize(14)
+                .setBold()
+                .setMarginTop(10));
+                
+        leftCell.add(new Paragraph("MZ.J LTE.10 URB.SOLILUZ, TRUJILLO, PERU")
+                .setFontSize(10));
+                
+        leftCell.add(new Paragraph("Teléfono: 044 729-728")
+                .setFontSize(10));
+                
+        leftCell.add(new Paragraph("Celular: +51 944 493 851 / 947 755 582")
+                .setFontSize(10));
+        
+        // Columna derecha - Los dos cuadros apilados
+        Cell rightCell = new Cell()
+                .setBorder(Border.NO_BORDER)
+                .setWidth(UnitValue.createPercentValue(40));
+        
+        // Cuadro del RUC y DOCUMENTO DE COBRANZA
+        Table rucTable = new Table(1).setWidth(UnitValue.createPercentValue(100));
+        
+        Cell rucCell = new Cell()
+                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                .setTextAlignment(TextAlignment.CENTER)
+                .setPadding(8);
+                
+        rucCell.add(new Paragraph("R.U.C. Nº 20602292941")
+                .setFontSize(12)
+                .setBold());
+                
+        rucCell.add(new Paragraph("DOCUMENTO DE COBRANZA")
+                .setFontSize(12)
+                .setBold()
+                .setMarginTop(5));
+                
+        // Agregar número de documento si se tiene
+        if (documento.getNroSerie() != null) {
+            rucCell.add(new Paragraph(documento.getNroSerie())
+                    .setFontSize(12)
+                    .setBold()
+                    .setMarginTop(5));
+        }
+        
+        rucTable.addCell(rucCell);
+        rightCell.add(rucTable);
+        
+        // Espacio reducido entre cuadros (50% menos)
+        rightCell.add(new Paragraph("\n").setMarginTop(7));
+        
+        // Cuadro de información del cliente
+        Table clientInfoTable = new Table(1).setWidth(UnitValue.createPercentValue(100));
+        
+        Cell clientCell = new Cell()
+                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                .setPadding(8);
+        
+        String fechaEmision = documento.getFechaEmision() != null ? 
+            documento.getFechaEmision().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) :
+            LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        
+        String nombreCliente = documento.getClienteEmail() != null ? 
+            documento.getClienteEmail().toUpperCase() : "CLIENTE";
+            
+        String numeroDocumento = documento.getClienteTelefono() != null ? 
+            documento.getClienteTelefono() : "00000000";
+            
+        String direccion = documento.getClienteDireccion() != null ? 
+            documento.getClienteDireccion() : "";
+        
+        // Crear una tabla interna de 4 filas y 2 columnas para organizar cada dato en su propia fila
+        Table innerTable = new Table(2).setWidth(UnitValue.createPercentValue(100));
+        
+        // Fila 1 - Solo Fecha de emisión
+        innerTable.addCell(new Cell().add(new Paragraph("Fecha de emisión:").setBold().setFontSize(9))
+                .setBorder(Border.NO_BORDER).setPadding(1));
+        innerTable.addCell(new Cell().add(new Paragraph(fechaEmision).setFontSize(9))
+                .setBorder(Border.NO_BORDER).setPadding(1));
+        
+        // Fila 2 - Solo Señor(es)
+        innerTable.addCell(new Cell().add(new Paragraph("Señor(es):").setBold().setFontSize(9))
+                .setBorder(Border.NO_BORDER).setPadding(1));
+        innerTable.addCell(new Cell().add(new Paragraph(nombreCliente).setFontSize(9))
+                .setBorder(Border.NO_BORDER).setPadding(1));
+        
+        // Fila 3 - Solo Documento
+        innerTable.addCell(new Cell().add(new Paragraph("Documento - DNI:").setBold().setFontSize(9))
+                .setBorder(Border.NO_BORDER).setPadding(1));
+        innerTable.addCell(new Cell().add(new Paragraph(numeroDocumento).setFontSize(9))
+                .setBorder(Border.NO_BORDER).setPadding(1));
+        
+        // Fila 4 - Solo Dirección
+        innerTable.addCell(new Cell().add(new Paragraph("Dirección:").setBold().setFontSize(9))
+                .setBorder(Border.NO_BORDER).setPadding(1));
+        innerTable.addCell(new Cell().add(new Paragraph(direccion).setFontSize(9))
+                .setBorder(Border.NO_BORDER).setPadding(1));
+        
+        clientCell.add(innerTable);
+        clientInfoTable.addCell(clientCell);
+        rightCell.add(clientInfoTable);
+        
+        headerTable.addCell(leftCell);
+        headerTable.addCell(rightCell);
+        
+        document.add(headerTable);
+        document.add(new Paragraph("\n").setMarginTop(10));
+    }
+
+    // 2. TABLA DE DETALLES DE SERVICIOS
+    private void addServicesTable(Document document, DocumentoCobranzaDTO documento) {
+        // Crear tabla de servicios con el formato exacto
+        Table servicesTable = new Table(6).setWidth(UnitValue.createPercentValue(100));
+        servicesTable.setBorder(new com.itextpdf.layout.borders.SolidBorder(1));
+
+        // Encabezados de tabla con fondo gris
+        servicesTable.addHeaderCell(new Cell().add(new Paragraph("Cant.").setBold().setFontSize(10))
+                .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                .setTextAlignment(TextAlignment.CENTER));
+                
+        servicesTable.addHeaderCell(new Cell().add(new Paragraph("Unidad").setBold().setFontSize(10))
+                .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                .setTextAlignment(TextAlignment.CENTER));
+                
+        servicesTable.addHeaderCell(new Cell().add(new Paragraph("Código").setBold().setFontSize(10))
+                .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                .setTextAlignment(TextAlignment.CENTER));
+                
+        servicesTable.addHeaderCell(new Cell().add(new Paragraph("Descripción").setBold().setFontSize(10))
+                .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                .setTextAlignment(TextAlignment.CENTER));
+                
+        servicesTable.addHeaderCell(new Cell().add(new Paragraph("P.U.").setBold().setFontSize(10))
+                .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                .setTextAlignment(TextAlignment.CENTER));
+                
+        servicesTable.addHeaderCell(new Cell().add(new Paragraph("Total").setBold().setFontSize(10))
+                .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                .setTextAlignment(TextAlignment.CENTER));
+
+        // Agregar filas de detalles
+        for (DocumentoCobranzaDTO.DetalleDocumentoCobranza detalle : documento.getDetalles()) {
+            // Cantidad - primera fila vacía, segunda con valor
+            servicesTable.addCell(new Cell().add(new Paragraph(""))
+                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)));
+            servicesTable.addCell(new Cell().add(new Paragraph("ZZ").setFontSize(9))
+                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                    .setTextAlignment(TextAlignment.CENTER));
+            servicesTable.addCell(new Cell().add(new Paragraph("TKT").setFontSize(9))
+                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                    .setTextAlignment(TextAlignment.CENTER));
+            servicesTable.addCell(new Cell().add(new Paragraph(detalle.getDescripcion() != null ? detalle.getDescripcion() : "").setFontSize(9))
+                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)));
+            servicesTable.addCell(new Cell().add(new Paragraph("$").setFontSize(9))
+                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                    .setTextAlignment(TextAlignment.CENTER));
+            servicesTable.addCell(new Cell().add(new Paragraph("").setFontSize(9))
+                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)));
+            
+            // Segunda fila con cantidad y precios
+            String cantidad = String.valueOf(detalle.getCantidad() != null ? detalle.getCantidad() : 1);
+            servicesTable.addCell(new Cell().add(new Paragraph(cantidad).setFontSize(9))
+                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                    .setTextAlignment(TextAlignment.CENTER));
+            servicesTable.addCell(new Cell().add(new Paragraph("ZZ").setFontSize(9))
+                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                    .setTextAlignment(TextAlignment.CENTER));
+            servicesTable.addCell(new Cell().add(new Paragraph("TKT").setFontSize(9))
+                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                    .setTextAlignment(TextAlignment.CENTER));
+            servicesTable.addCell(new Cell().add(new Paragraph("").setFontSize(9))
+                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)));
+            
+            String precioUnitario = String.format("%.2f", detalle.getPrecioUnitario() != null ? detalle.getPrecioUnitario() : BigDecimal.ZERO);
+            servicesTable.addCell(new Cell().add(new Paragraph(precioUnitario).setFontSize(9))
+                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                    .setTextAlignment(TextAlignment.RIGHT));
+            
+            // Calcular total del detalle: cantidad * precio
+            BigDecimal cantidadBD = detalle.getCantidad() != null ? 
+                new BigDecimal(detalle.getCantidad()) : BigDecimal.ONE;
+            BigDecimal precioBD = detalle.getPrecioUnitario() != null ? 
+                detalle.getPrecioUnitario() : BigDecimal.ZERO;
+            BigDecimal totalDetalle = cantidadBD.multiply(precioBD);
+            
+            String total = String.format("%.2f", totalDetalle);
+            servicesTable.addCell(new Cell().add(new Paragraph("$ " + total).setFontSize(9))
+                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                    .setTextAlignment(TextAlignment.RIGHT));
+        }
+
+        document.add(servicesTable);
+        document.add(new Paragraph("\n"));
+    }
+
+    // 3. TABLA DE RESUMEN (MONEDA, CUOTAS, FORMA DE PAGO)
+    private void addSummaryTable(Document document, DocumentoCobranzaDTO documento) {
+        // Tabla de resumen (Moneda, Cuotas, Forma de Pago)
+        Table resumenTable = new Table(6).setWidth(UnitValue.createPercentValue(100));
+        resumenTable.setBorder(new com.itextpdf.layout.borders.SolidBorder(1));
+        
+        resumenTable.addCell(new Cell().add(new Paragraph("Moneda:").setBold().setFontSize(10))
+                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)));
+                
+        String moneda = documento.getMoneda() != null ? 
+            documento.getMoneda() + " - Dólar Americano" : "USD - Dólar Americano";
+            
+        resumenTable.addCell(new Cell().add(new Paragraph(moneda).setFontSize(10))
+                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)));
+                
+        resumenTable.addCell(new Cell().add(new Paragraph("Cuotas:").setBold().setFontSize(10))
+                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)));
+                
+        resumenTable.addCell(new Cell().add(new Paragraph("0").setFontSize(10))
+                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)));
+                
+        resumenTable.addCell(new Cell().add(new Paragraph("Forma de Pago:").setBold().setFontSize(10))
+                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)));
+                
+        String formaPago = documento.getFormaPago() != null ? 
+            documento.getFormaPago().toUpperCase() : "DEPOSITO";
+            
+        resumenTable.addCell(new Cell().add(new Paragraph(formaPago).setFontSize(10))
+                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)));
+        
+        document.add(resumenTable);
+        document.add(new Paragraph("\n"));
+    }
+
+    // 4. RESUMEN Y TOTALES
+    private void addTotalsSection(Document document, DocumentoCobranzaDTO documento) {
+        // Crear tabla de totales con formato exacto del documento
+        Table totalsTable = new Table(new float[]{3, 1}).setWidth(UnitValue.createPercentValue(50))
+                .setMarginLeft(300);
+        
+        // Agregar filas de totales con el formato exacto
+        totalsTable.addCell(new Cell().add(new Paragraph("Tarifa:").setFontSize(10))
+                .setBorder(Border.NO_BORDER)
+                .setTextAlignment(TextAlignment.LEFT));
+        String subtotal = String.format("%.2f", documento.getSubtotal() != null ? documento.getSubtotal() : BigDecimal.ZERO);
+        totalsTable.addCell(new Cell().add(new Paragraph("$ " + subtotal).setFontSize(10))
+                .setBorder(Border.NO_BORDER)
+                .setTextAlignment(TextAlignment.RIGHT));
+
+        totalsTable.addCell(new Cell().add(new Paragraph("I.G.V.:").setFontSize(10))
+                .setBorder(Border.NO_BORDER)
+                .setTextAlignment(TextAlignment.LEFT));
+        // Calcular IGV (18% del subtotal)
+        BigDecimal igvCalculado = documento.getSubtotal() != null ? 
+            documento.getSubtotal().multiply(new BigDecimal("0.18")) : BigDecimal.ZERO;
+        String igv = String.format("%.2f", igvCalculado);
+        totalsTable.addCell(new Cell().add(new Paragraph("$ " + igv).setFontSize(10))
+                .setBorder(Border.NO_BORDER)
+                .setTextAlignment(TextAlignment.RIGHT));
+
+        totalsTable.addCell(new Cell().add(new Paragraph("Otros Impuestos:").setFontSize(10))
+                .setBorder(Border.NO_BORDER)
+                .setTextAlignment(TextAlignment.LEFT));
+        totalsTable.addCell(new Cell().add(new Paragraph("$ 0.00").setFontSize(10))
+                .setBorder(Border.NO_BORDER)
+                .setTextAlignment(TextAlignment.RIGHT));
+
+        totalsTable.addCell(new Cell().add(new Paragraph("I.S.C.:").setFontSize(10))
+                .setBorder(Border.NO_BORDER)
+                .setTextAlignment(TextAlignment.LEFT));
+        totalsTable.addCell(new Cell().add(new Paragraph("$ 0.00").setFontSize(10))
+                .setBorder(Border.NO_BORDER)
+                .setTextAlignment(TextAlignment.RIGHT));
+
+        totalsTable.addCell(new Cell().add(new Paragraph("OTROS CARGOS:").setFontSize(10))
+                .setBorder(Border.NO_BORDER)
+                .setTextAlignment(TextAlignment.LEFT));
+        String otrosCargos = String.format("%.2f", documento.getCostoEnvio() != null ? documento.getCostoEnvio() : BigDecimal.ZERO);
+        totalsTable.addCell(new Cell().add(new Paragraph("$ " + otrosCargos).setFontSize(10))
+                .setBorder(Border.NO_BORDER)
+                .setTextAlignment(TextAlignment.RIGHT));
+
+        // Línea separadora
+        totalsTable.addCell(new Cell(1, 2).add(new Paragraph("").setFontSize(5))
+                .setBorderTop(new com.itextpdf.layout.borders.SolidBorder(1))
+                .setBorderLeft(Border.NO_BORDER)
+                .setBorderRight(Border.NO_BORDER)
+                .setBorderBottom(Border.NO_BORDER));
+
+        // Total final en negrita
+        totalsTable.addCell(new Cell().add(new Paragraph("PRECIO VENTA:").setBold().setFontSize(11))
+                .setBorder(Border.NO_BORDER)
+                .setTextAlignment(TextAlignment.LEFT));
+        String total = String.format("%.2f", documento.getTotal() != null ? documento.getTotal() : BigDecimal.ZERO);
+        totalsTable.addCell(new Cell().add(new Paragraph("$ " + total).setBold().setFontSize(11))
+                .setBorder(Border.NO_BORDER)
+                .setTextAlignment(TextAlignment.RIGHT));
+
+        document.add(totalsTable);
+        document.add(new Paragraph("\n"));
+    }
+
+    // 5. PIE DE PÁGINA
+    private void addFooter(Document document, DocumentoCobranzaDTO documento) {
+        // Espacio antes del footer
+        document.add(new Paragraph("\n"));
+        
+        // Crear tabla para el footer con el formato del documento real
+        Table footerTable = new Table(1).setWidth(UnitValue.createPercentValue(100));
+        
+        // Sección "CREADO POR"
+        Cell createdByCell = new Cell()
+                .setBorder(Border.NO_BORDER)
+                .setTextAlignment(TextAlignment.LEFT);
+        
+        String createdBy = "CREADO POR: SISTEMA";
+        
+        // Agregar fecha actual
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        String fechaCreacion = now.format(formatter);
+        
+        createdByCell.add(new Paragraph(createdBy).setFontSize(9).setBold());
+        createdByCell.add(new Paragraph("Fecha: " + fechaCreacion).setFontSize(9));
+        
+        footerTable.addCell(createdByCell);
+        document.add(footerTable);
+        
+        // Observaciones si existen
+        if (documento.getObservaciones() != null && !documento.getObservaciones().trim().isEmpty()) {
+            document.add(new Paragraph("\n"));
+            Paragraph obsTitle = new Paragraph("OBSERVACIONES:")
+                    .setBold()
+                    .setFontSize(10)
+                    .setMarginBottom(5);
+            document.add(obsTitle);
+            
+            Paragraph obsContent = new Paragraph(documento.getObservaciones())
+                    .setFontSize(9)
+                    .setMarginBottom(10);
+            document.add(obsContent);
+        }
+    }
+}

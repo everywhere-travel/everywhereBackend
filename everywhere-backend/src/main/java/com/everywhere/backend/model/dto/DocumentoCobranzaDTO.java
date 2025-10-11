@@ -36,8 +36,6 @@ public class DocumentoCobranzaDTO {
         private Integer cantidad;
         private String codigoProducto;
         private String descripcion;
-        private BigDecimal precioUnitario;
-        private BigDecimal comision;
-        private BigDecimal subtotalDetalle;
+        private BigDecimal precioUnitario; 
     }
 }
