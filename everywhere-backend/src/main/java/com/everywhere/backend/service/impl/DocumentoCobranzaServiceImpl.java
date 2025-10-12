@@ -6,10 +6,12 @@ import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
+import com.itextpdf.io.image.ImageDataFactory;
 import com.everywhere.backend.model.dto.CotizacionConDetallesResponseDTO;
 import com.everywhere.backend.model.dto.DetalleCotizacionSimpleDTO;
 import com.everywhere.backend.model.dto.DocumentoCobranzaDTO;
@@ -156,10 +158,10 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         if (entity.getPersona() != null) {
             dto.setClienteEmail(entity.getPersona().getEmail());
             dto.setClienteTelefono(entity.getPersona().getTelefono());
-            dto.setClienteDireccion(entity.getPersona().getDireccion());
         }
         
         if (entity.getSucursal() != null) {
+            dto.setSucursalDescripcion(entity.getSucursal().getDescripcion());
             dto.setPuntoCompra(entity.getSucursal().getDescripcion());
         }
         
@@ -322,16 +324,13 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
             addCompanyHeader(pdfDoc, documento);
             hasValidData = true;
 
-            // 2. TABLA DE DETALLES DE SERVICIOS
+            // 2. TABLA DE RESUMEN (MONEDA, FILE, FORMA DE PAGO)
+            addSummaryTable(pdfDoc, documento);
+
+            // 3. TABLA DE DETALLES DE SERVICIOS
             if (documento.getDetalles() != null && !documento.getDetalles().isEmpty()) {
                 addServicesTable(pdfDoc, documento);
             }
-
-            // 3. TABLA DE RESUMEN (MONEDA, CUOTAS, FORMA DE PAGO)
-            addSummaryTable(pdfDoc, documento);
-
-            // 4. SECCIÓN DE TOTALES
-            addTotalsSection(pdfDoc, documento);
 
             // 5. PIE DE PÁGINA
             addFooter(pdfDoc, documento);
@@ -354,33 +353,96 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         // Crear tabla principal para el encabezado
         Table headerTable = new Table(2).setWidth(UnitValue.createPercentValue(100));
         
-        // Columna izquierda - Logo y datos de empresa
+        // Columna izquierda - Logo y datos de empresa en celdas separadas
         Cell leftCell = new Cell()
                 .setBorder(Border.NO_BORDER)
                 .setWidth(UnitValue.createPercentValue(60));
+        
+        // 1. Celda del Logo/Imagen
+        Table logoTable = new Table(1).setWidth(UnitValue.createPercentValue(100));
+        Cell logoCell = new Cell()
+                .setBorder(Border.NO_BORDER)
+                .setTextAlignment(TextAlignment.LEFT)
+                .setPadding(10)
+                .setHeight(60);
+        
+        // Cargar y agregar la imagen del logo
+        try {
+            // Intentar cargar desde el classpath primero
+            String logoPath = "/logo/everyLogo.png";
+            java.io.InputStream logoStream = getClass().getResourceAsStream(logoPath);
+            
+            if (logoStream != null) {
+                byte[] logoBytes = logoStream.readAllBytes();
+                Image logoImage = new Image(ImageDataFactory.create(logoBytes));
                 
-        // Logo y nombre de empresa (simulado con texto)
-        leftCell.add(new Paragraph("everywhere")
-                .setFontSize(24)
-                .setBold()
-                .setFontColor(ColorConstants.BLUE));
-        leftCell.add(new Paragraph("TRAVEL")
-                .setFontSize(12)
-                .setMarginTop(-5));
+                // Poner un tamaño fijo para que no interfiera con el layout, alineada a la izquierda
+                logoImage.setWidth(150); // Ancho fijo en puntos
+                logoImage.setHeight(50); // Alto fijo en puntos
                 
-        leftCell.add(new Paragraph("EVERYWHERE TRAVEL SAC")
-                .setFontSize(14)
-                .setBold()
-                .setMarginTop(10));
+                logoCell.add(logoImage);
+                logoStream.close();
+            } else {
+                throw new Exception("No se encontró el archivo en el classpath");
+            }
+        } catch (Exception e) {
+            try {
+                // Intentar con ruta absoluta como segunda opción
+                String logoPath = "src/main/resources/logo/everyLogo.png";
+                Image logoImage = new Image(ImageDataFactory.create(logoPath));
                 
-        leftCell.add(new Paragraph("MZ.J LTE.10 URB.SOLILUZ, TRUJILLO, PERU")
-                .setFontSize(10));
+                // Poner un tamaño fijo para que no interfiera con el layout
+                logoImage.setWidth(220); // Ancho fijo en puntos
+                logoImage.setHeight(50); // Alto fijo en puntos
                 
-        leftCell.add(new Paragraph("Teléfono: 044 729-728")
-                .setFontSize(10));
-                
-        leftCell.add(new Paragraph("Celular: +51 944 493 851 / 947 755 582")
-                .setFontSize(10));
+                logoCell.add(logoImage);
+            } catch (Exception e2) {
+                // Si no se puede cargar la imagen, usar texto como fallback
+                System.out.println("No se pudo cargar la imagen del logo: " + e2.getMessage());
+                logoCell.add(new Paragraph("everywhere")
+                        .setFontSize(24)
+                        .setBold()
+                        .setFontColor(ColorConstants.BLUE));
+                logoCell.add(new Paragraph("TRAVEL")
+                        .setFontSize(12)
+                        .setMarginTop(-5));
+            }
+        }
+        
+        logoTable.addCell(logoCell);
+        leftCell.add(logoTable);
+        
+        // Espacio entre celdas
+        leftCell.add(new Paragraph("\n").setMarginTop(7));
+        
+        // 2. Celda única con información de la empresa (3 renglones)
+        Table companyInfoTable = new Table(1).setWidth(UnitValue.createPercentValue(100));
+        Cell companyInfoCell = new Cell()
+                .setBorder(Border.NO_BORDER)
+                .setPadding(8);
+        
+        // Crear tabla interna para organizar la información en renglones
+        Table innerCompanyTable = new Table(1).setWidth(UnitValue.createPercentValue(100));
+        
+        // Renglón 1 - Nombre de la empresa
+        innerCompanyTable.addCell(new Cell().add(new Paragraph("EVERYWHERE TRAVEL SAC").setBold().setFontSize(11))
+                .setBorder(Border.NO_BORDER).setPadding(1).setTextAlignment(TextAlignment.LEFT));
+        
+        // Renglón 2 - Dirección
+        innerCompanyTable.addCell(new Cell().add(new Paragraph("MZ.J' LTE.10 URB.SOLILUZ, TRUJILLO, PERU").setFontSize(9))
+                .setBorder(Border.NO_BORDER).setPadding(1).setTextAlignment(TextAlignment.LEFT));
+        
+        // Renglón 3 - Teléfonos
+        innerCompanyTable.addCell(new Cell().add(new Paragraph("Teléfono: 044 729-728").setFontSize(9))
+                .setBorder(Border.NO_BORDER).setPadding(1).setTextAlignment(TextAlignment.LEFT));
+        innerCompanyTable.addCell(new Cell().add(new Paragraph("Celular: +51 944 493 851 / 947 755 582").setFontSize(9))
+                .setBorder(Border.NO_BORDER).setPadding(1).setTextAlignment(TextAlignment.LEFT));
+
+        companyInfoCell.add(innerCompanyTable);
+        companyInfoTable.addCell(companyInfoCell).setBorder(Border.NO_BORDER);
+        leftCell.add(companyInfoTable);
+
+        leftCell.add(new Paragraph("\n").setMarginTop(7));
         
         // Columna derecha - Los dos cuadros apilados
         Cell rightCell = new Cell()
@@ -396,11 +458,11 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                 .setPadding(8);
                 
         rucCell.add(new Paragraph("R.U.C. Nº 20602292941")
-                .setFontSize(12)
+                .setFontSize(10)
                 .setBold());
                 
         rucCell.add(new Paragraph("DOCUMENTO DE COBRANZA")
-                .setFontSize(12)
+                .setFontSize(14)
                 .setBold()
                 .setMarginTop(5));
                 
@@ -415,8 +477,8 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         rucTable.addCell(rucCell);
         rightCell.add(rucTable);
         
-        // Espacio reducido entre cuadros (50% menos)
-        rightCell.add(new Paragraph("\n").setMarginTop(7));
+        // Espacio reducido entre cuadros (75% menos que original)
+        rightCell.add(new Paragraph("\n").setMarginTop(1));
         
         // Cuadro de información del cliente
         Table clientInfoTable = new Table(1).setWidth(UnitValue.createPercentValue(100));
@@ -435,8 +497,8 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         String numeroDocumento = documento.getClienteTelefono() != null ? 
             documento.getClienteTelefono() : "00000000";
             
-        String direccion = documento.getClienteDireccion() != null ? 
-            documento.getClienteDireccion() : "";
+        String sucursalDescripcion = documento.getSucursalDescripcion() != null ? 
+            documento.getSucursalDescripcion() : "";
         
         // Crear una tabla interna de 4 filas y 2 columnas para organizar cada dato en su propia fila
         Table innerTable = new Table(2).setWidth(UnitValue.createPercentValue(100));
@@ -459,12 +521,12 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         innerTable.addCell(new Cell().add(new Paragraph(numeroDocumento).setFontSize(9))
                 .setBorder(Border.NO_BORDER).setPadding(1));
         
-        // Fila 4 - Solo Dirección
-        innerTable.addCell(new Cell().add(new Paragraph("Dirección:").setBold().setFontSize(9))
+        // Fila 4 - Solo Sucursal
+        innerTable.addCell(new Cell().add(new Paragraph("Sucursal:").setBold().setFontSize(9))
                 .setBorder(Border.NO_BORDER).setPadding(1));
-        innerTable.addCell(new Cell().add(new Paragraph(direccion).setFontSize(9))
+        innerTable.addCell(new Cell().add(new Paragraph(sucursalDescripcion).setFontSize(9))
                 .setBorder(Border.NO_BORDER).setPadding(1));
-        
+
         clientCell.add(innerTable);
         clientInfoTable.addCell(clientCell);
         rightCell.add(clientInfoTable);
@@ -473,25 +535,77 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         headerTable.addCell(rightCell);
         
         document.add(headerTable);
-        document.add(new Paragraph("\n").setMarginTop(10));
+        document.add(new Paragraph("").setMarginTop(1));
     }
 
-    // 2. TABLA DE DETALLES DE SERVICIOS
+    // 2. TABLA DE RESUMEN (MONEDA, FILE, FORMA DE PAGO)
+    private void addSummaryTable(Document document, DocumentoCobranzaDTO documento) {
+        // Tabla de resumen con 3 columnas en una sola fila sin líneas divisorias
+        Table resumenTable = new Table(3).setWidth(UnitValue.createPercentValue(100));
+        resumenTable.setBorder(new com.itextpdf.layout.borders.SolidBorder(1));
+        
+        // Celda 1: Moneda - todo en una línea
+        Cell monedaCell = new Cell()
+                .setBorderLeft(Border.NO_BORDER)
+                .setBorderRight(Border.NO_BORDER)
+                .setBorderTop(new com.itextpdf.layout.borders.SolidBorder(1))
+                .setBorderBottom(new com.itextpdf.layout.borders.SolidBorder(1))
+                .setTextAlignment(TextAlignment.CENTER)
+                .setPadding(8);
+        
+        String moneda = documento.getMoneda() != null ? 
+            documento.getMoneda() + " - Dólar Americano" : "USD - Dólar Americano";
+        
+        monedaCell.add(new Paragraph("Moneda: " + moneda).setFontSize(10));
+        
+        // Celda 2: File - todo en una línea
+        Cell fileCell = new Cell()
+                .setBorderLeft(Border.NO_BORDER)
+                .setBorderRight(Border.NO_BORDER)
+                .setBorderTop(new com.itextpdf.layout.borders.SolidBorder(1))
+                .setBorderBottom(new com.itextpdf.layout.borders.SolidBorder(1))
+                .setTextAlignment(TextAlignment.CENTER)
+                .setPadding(8);
+        
+        String fileVenta = documento.getFileVenta() != null ? 
+            documento.getFileVenta() : "N/A";
+        
+        fileCell.add(new Paragraph("File: " + fileVenta).setFontSize(10));
+        
+        // Celda 3: Forma de Pago - todo en una línea
+        Cell formaPagoCell = new Cell()
+                .setBorderLeft(Border.NO_BORDER)
+                .setBorderRight(Border.NO_BORDER)
+                .setBorderTop(new com.itextpdf.layout.borders.SolidBorder(1))
+                .setBorderBottom(new com.itextpdf.layout.borders.SolidBorder(1))
+                .setTextAlignment(TextAlignment.CENTER)
+                .setPadding(8);
+        
+        String formaPago = documento.getFormaPago() != null ? 
+            documento.getFormaPago().toUpperCase() : "DEPOSITO";
+        
+        formaPagoCell.add(new Paragraph("Forma de Pago: " + formaPago).setFontSize(10));
+        
+        // Agregar las celdas a la tabla
+        resumenTable.addCell(monedaCell);
+        resumenTable.addCell(fileCell);
+        resumenTable.addCell(formaPagoCell);
+        
+        document.add(resumenTable);
+        document.add(new Paragraph("").setMarginTop(2));
+    }
+
+    // 3. TABLA DE DETALLES DE SERVICIOS
     private void addServicesTable(Document document, DocumentoCobranzaDTO documento) {
         // Crear tabla de servicios con el formato exacto
-        Table servicesTable = new Table(6).setWidth(UnitValue.createPercentValue(100));
+        Table servicesTable = new Table(5).setWidth(UnitValue.createPercentValue(100));
         servicesTable.setBorder(new com.itextpdf.layout.borders.SolidBorder(1));
 
         // Encabezados de tabla con fondo gris
         servicesTable.addHeaderCell(new Cell().add(new Paragraph("Cant.").setBold().setFontSize(10))
                 .setBackgroundColor(ColorConstants.LIGHT_GRAY)
                 .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
-                .setTextAlignment(TextAlignment.CENTER));
-                
-        servicesTable.addHeaderCell(new Cell().add(new Paragraph("Unidad").setBold().setFontSize(10))
-                .setBackgroundColor(ColorConstants.LIGHT_GRAY)
-                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
-                .setTextAlignment(TextAlignment.CENTER));
+                .setTextAlignment(TextAlignment.CENTER)); 
                 
         servicesTable.addHeaderCell(new Cell().add(new Paragraph("Código").setBold().setFontSize(10))
                 .setBackgroundColor(ColorConstants.LIGHT_GRAY)
@@ -517,10 +631,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         for (DocumentoCobranzaDTO.DetalleDocumentoCobranza detalle : documento.getDetalles()) {
             // Cantidad - primera fila vacía, segunda con valor
             servicesTable.addCell(new Cell().add(new Paragraph(""))
-                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)));
-            servicesTable.addCell(new Cell().add(new Paragraph("ZZ").setFontSize(9))
-                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
-                    .setTextAlignment(TextAlignment.CENTER));
+                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))); 
             servicesTable.addCell(new Cell().add(new Paragraph("TKT").setFontSize(9))
                     .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
                     .setTextAlignment(TextAlignment.CENTER));
@@ -536,10 +647,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
             String cantidad = String.valueOf(detalle.getCantidad() != null ? detalle.getCantidad() : 1);
             servicesTable.addCell(new Cell().add(new Paragraph(cantidad).setFontSize(9))
                     .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
-                    .setTextAlignment(TextAlignment.CENTER));
-            servicesTable.addCell(new Cell().add(new Paragraph("ZZ").setFontSize(9))
-                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
-                    .setTextAlignment(TextAlignment.CENTER));
+                    .setTextAlignment(TextAlignment.CENTER)); 
             servicesTable.addCell(new Cell().add(new Paragraph("TKT").setFontSize(9))
                     .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
                     .setTextAlignment(TextAlignment.CENTER));
@@ -564,109 +672,25 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                     .setTextAlignment(TextAlignment.RIGHT));
         }
 
-        document.add(servicesTable);
-        document.add(new Paragraph("\n"));
-    }
+        servicesTable.addCell(new Cell(3, 1));
 
-    // 3. TABLA DE RESUMEN (MONEDA, CUOTAS, FORMA DE PAGO)
-    private void addSummaryTable(Document document, DocumentoCobranzaDTO documento) {
-        // Tabla de resumen (Moneda, Cuotas, Forma de Pago)
-        Table resumenTable = new Table(6).setWidth(UnitValue.createPercentValue(100));
-        resumenTable.setBorder(new com.itextpdf.layout.borders.SolidBorder(1));
-        
-        resumenTable.addCell(new Cell().add(new Paragraph("Moneda:").setBold().setFontSize(10))
-                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)));
-                
-        String moneda = documento.getMoneda() != null ? 
-            documento.getMoneda() + " - Dólar Americano" : "USD - Dólar Americano";
-            
-        resumenTable.addCell(new Cell().add(new Paragraph(moneda).setFontSize(10))
-                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)));
-                
-        resumenTable.addCell(new Cell().add(new Paragraph("Cuotas:").setBold().setFontSize(10))
-                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)));
-                
-        resumenTable.addCell(new Cell().add(new Paragraph("0").setFontSize(10))
-                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)));
-                
-        resumenTable.addCell(new Cell().add(new Paragraph("Forma de Pago:").setBold().setFontSize(10))
-                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)));
-                
-        String formaPago = documento.getFormaPago() != null ? 
-            documento.getFormaPago().toUpperCase() : "DEPOSITO";
-            
-        resumenTable.addCell(new Cell().add(new Paragraph(formaPago).setFontSize(10))
-                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)));
-        
-        document.add(resumenTable);
-        document.add(new Paragraph("\n"));
-    }
+        servicesTable.addCell(new Cell(1, 2).add(new Paragraph("Son ").setFontSize(9)));
 
-    // 4. RESUMEN Y TOTALES
-    private void addTotalsSection(Document document, DocumentoCobranzaDTO documento) {
-        // Crear tabla de totales con formato exacto del documento
-        Table totalsTable = new Table(new float[]{3, 1}).setWidth(UnitValue.createPercentValue(50))
-                .setMarginLeft(300);
-        
-        // Agregar filas de totales con el formato exacto
-        totalsTable.addCell(new Cell().add(new Paragraph("Tarifa:").setFontSize(10))
-                .setBorder(Border.NO_BORDER)
-                .setTextAlignment(TextAlignment.LEFT));
+        servicesTable.addCell("Subtotal");
         String subtotal = String.format("%.2f", documento.getSubtotal() != null ? documento.getSubtotal() : BigDecimal.ZERO);
-        totalsTable.addCell(new Cell().add(new Paragraph("$ " + subtotal).setFontSize(10))
-                .setBorder(Border.NO_BORDER)
-                .setTextAlignment(TextAlignment.RIGHT));
+        servicesTable.addCell("$ " + subtotal);
 
-        totalsTable.addCell(new Cell().add(new Paragraph("I.G.V.:").setFontSize(10))
-                .setBorder(Border.NO_BORDER)
-                .setTextAlignment(TextAlignment.LEFT));
-        // Calcular IGV (18% del subtotal)
-        BigDecimal igvCalculado = documento.getSubtotal() != null ? 
-            documento.getSubtotal().multiply(new BigDecimal("0.18")) : BigDecimal.ZERO;
-        String igv = String.format("%.2f", igvCalculado);
-        totalsTable.addCell(new Cell().add(new Paragraph("$ " + igv).setFontSize(10))
-                .setBorder(Border.NO_BORDER)
-                .setTextAlignment(TextAlignment.RIGHT));
+        servicesTable.addCell(new Cell(2, 2)); 
 
-        totalsTable.addCell(new Cell().add(new Paragraph("Otros Impuestos:").setFontSize(10))
-                .setBorder(Border.NO_BORDER)
-                .setTextAlignment(TextAlignment.LEFT));
-        totalsTable.addCell(new Cell().add(new Paragraph("$ 0.00").setFontSize(10))
-                .setBorder(Border.NO_BORDER)
-                .setTextAlignment(TextAlignment.RIGHT));
+        servicesTable.addCell(new Cell().add(new Paragraph("COSTO DE ENVIO ").setFontSize(9)));
+        String costoEnvio = String.format("%.2f", documento.getCostoEnvio() != null ? documento.getCostoEnvio() : BigDecimal.ZERO);
+        servicesTable.addCell("$ " + costoEnvio);
 
-        totalsTable.addCell(new Cell().add(new Paragraph("I.S.C.:").setFontSize(10))
-                .setBorder(Border.NO_BORDER)
-                .setTextAlignment(TextAlignment.LEFT));
-        totalsTable.addCell(new Cell().add(new Paragraph("$ 0.00").setFontSize(10))
-                .setBorder(Border.NO_BORDER)
-                .setTextAlignment(TextAlignment.RIGHT));
-
-        totalsTable.addCell(new Cell().add(new Paragraph("OTROS CARGOS:").setFontSize(10))
-                .setBorder(Border.NO_BORDER)
-                .setTextAlignment(TextAlignment.LEFT));
-        String otrosCargos = String.format("%.2f", documento.getCostoEnvio() != null ? documento.getCostoEnvio() : BigDecimal.ZERO);
-        totalsTable.addCell(new Cell().add(new Paragraph("$ " + otrosCargos).setFontSize(10))
-                .setBorder(Border.NO_BORDER)
-                .setTextAlignment(TextAlignment.RIGHT));
-
-        // Línea separadora
-        totalsTable.addCell(new Cell(1, 2).add(new Paragraph("").setFontSize(5))
-                .setBorderTop(new com.itextpdf.layout.borders.SolidBorder(1))
-                .setBorderLeft(Border.NO_BORDER)
-                .setBorderRight(Border.NO_BORDER)
-                .setBorderBottom(Border.NO_BORDER));
-
-        // Total final en negrita
-        totalsTable.addCell(new Cell().add(new Paragraph("PRECIO VENTA:").setBold().setFontSize(11))
-                .setBorder(Border.NO_BORDER)
-                .setTextAlignment(TextAlignment.LEFT));
+        servicesTable.addCell(new Cell().add(new Paragraph("PRECIO VENTA ").setFontSize(9)));
         String total = String.format("%.2f", documento.getTotal() != null ? documento.getTotal() : BigDecimal.ZERO);
-        totalsTable.addCell(new Cell().add(new Paragraph("$ " + total).setBold().setFontSize(11))
-                .setBorder(Border.NO_BORDER)
-                .setTextAlignment(TextAlignment.RIGHT));
+        servicesTable.addCell("$ " + total);
 
-        document.add(totalsTable);
+        document.add(servicesTable);
         document.add(new Paragraph("\n"));
     }
 

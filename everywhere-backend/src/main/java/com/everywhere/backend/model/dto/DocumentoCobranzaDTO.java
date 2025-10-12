@@ -17,7 +17,7 @@ public class DocumentoCobranzaDTO {
     private LocalDateTime fechaEmision;
     private String clienteEmail;
     private String clienteTelefono;
-    private String clienteDireccion;
+    private String sucursalDescripcion;
     private String puntoCompra;
     private String moneda;
     private String formaPago;
