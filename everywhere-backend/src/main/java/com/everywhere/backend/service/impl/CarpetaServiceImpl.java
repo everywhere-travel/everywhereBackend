@@ -166,5 +166,12 @@ public class CarpetaServiceImpl implements CarpetaService {
                 .map(CarpetaMapper::toResponse)
                 .collect(Collectors.toList());
     }
+    @Override
+    public List<CarpetaResponseDto> findHijosByPadreId(Integer carpetaPadreId) {
+        return carpetaRepository.findByCarpetaPadreId(carpetaPadreId)
+                .stream()
+                .map(CarpetaMapper::toResponse)
+                .collect(Collectors.toList());
+    }
 
 }
