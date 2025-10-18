@@ -20,10 +20,14 @@ import com.everywhere.backend.model.entity.DocumentoCobranza;
 import com.everywhere.backend.model.entity.DetalleDocumentoCobranza;
 import com.everywhere.backend.model.entity.FormaPago;
 import com.everywhere.backend.model.entity.Personas;
+import com.everywhere.backend.model.entity.PersonaNatural;
+import com.everywhere.backend.model.entity.PersonaJuridica;
 import com.everywhere.backend.model.entity.Producto;
 import com.everywhere.backend.model.entity.Sucursal;
 import com.everywhere.backend.repository.DetalleDocumentoCobranzaRepository;
 import com.everywhere.backend.repository.DocumentoCobranzaRepository;
+import com.everywhere.backend.repository.PersonaNaturalRepository;
+import com.everywhere.backend.repository.PersonaJuridicaRepository;
 import com.everywhere.backend.service.CotizacionService;
 import com.everywhere.backend.service.DocumentoCobranzaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +54,12 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
     @Autowired
     private DetalleDocumentoCobranzaRepository detalleDocumentoCobranzaRepository;
+
+    @Autowired
+    private PersonaNaturalRepository personaNaturalRepository;
+
+    @Autowired
+    private PersonaJuridicaRepository personaJuridicaRepository;
 
     // ========== MÉTODOS PÚBLICOS DE LA INTERFAZ ==========
 
@@ -161,6 +171,33 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         if (entity.getPersona() != null) {
             dto.setClienteEmail(entity.getPersona().getEmail());
             dto.setClienteTelefono(entity.getPersona().getTelefono());
+            
+            // Buscar información adicional del cliente (nombre y documento)
+            String nombreCompleto;
+            String documento;
+            
+            // Buscar en PersonaNatural primero
+            Optional<PersonaNatural> personaNatural = personaNaturalRepository.findByPersonasId(entity.getPersona().getId());
+            if (personaNatural.isPresent()) {
+                PersonaNatural pn = personaNatural.get();
+                nombreCompleto = (pn.getNombres() + " " + pn.getApellidos()).trim();
+                documento = pn.getDocumento() != null ? pn.getDocumento() : "00000000";
+            } else {
+                // Si no es persona natural, buscar en PersonaJuridica
+                Optional<PersonaJuridica> personaJuridica = personaJuridicaRepository.findByPersonasId(entity.getPersona().getId());
+                if (personaJuridica.isPresent()) {
+                    PersonaJuridica pj = personaJuridica.get();
+                    nombreCompleto = pj.getRazonSocial() != null ? pj.getRazonSocial() : "EMPRESA";
+                    documento = pj.getRuc() != null ? pj.getRuc() : "00000000000";
+                } else {
+                    // Valores por defecto si no se encuentra en ninguna tabla
+                    nombreCompleto = "CLIENTE";
+                    documento = "00000000";
+                }
+            }
+            
+            dto.setClienteNombre(nombreCompleto);
+            dto.setClienteDocumento(documento);
         }
 
         if (entity.getSucursal() != null) {
@@ -622,10 +659,10 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                 ? documento.getFechaEmision().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
                 : LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 
-        String nombreCliente = documento.getClienteEmail() != null ? documento.getClienteEmail().toUpperCase()
+        String nombreCliente = documento.getClienteNombre() != null ? documento.getClienteNombre().toUpperCase()
                 : "CLIENTE";
 
-        String numeroDocumento = documento.getClienteTelefono() != null ? documento.getClienteTelefono() : "00000000";
+        String numeroDocumento = documento.getClienteDocumento() != null ? documento.getClienteDocumento() : "00000000";
 
         String sucursalDescripcion = documento.getSucursalDescripcion() != null ? documento.getSucursalDescripcion()
                 : "";

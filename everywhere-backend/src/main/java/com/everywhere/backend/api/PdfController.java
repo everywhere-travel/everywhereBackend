@@ -35,7 +35,7 @@ public class PdfController {
             
 
             HttpHeaders headers = new HttpHeaders();
-            headers.add("Content-Disposition", "inline; filename=documento_cobranza_" + documentoDto.getNroSerie() + ".pdf");
+            headers.add("Content-Disposition", "inline; filename=" + documentoDto.getNroSerie() + ".pdf");
 
             return ResponseEntity.ok()
                     .headers(headers)
