@@ -6,10 +6,6 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import org.apache.catalina.connector.Request;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,7 +27,7 @@ public class JWTFilter extends GenericFilterBean {
 
         String bearerToken = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
 
-        // TODO: Verificar si el token no es nulo/vacío y si empieza con el prefijo "Bearer "
+        // Verificar si el token no es nulo/vacío y si empieza con el prefijo "Bearer "
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             // Eliminar el prefijo "Bearer " para obtener solo el token
             String token = bearerToken.substring(7);
@@ -39,12 +35,12 @@ public class JWTFilter extends GenericFilterBean {
             // Validar que el token tenga el formato correcto de JWT (exactamente 2 puntos)
             if (isValidJwtFormat(token)) {
                 try {
-                    // TODO: Validar el token antes de procesarlo
+                    // Validar el token antes de procesarlo
                     if (tokenProvider.validateToken(token)) {
-                        // TODO: Utilizar el TokenProvider para obtener la autenticación a partir del token JWT
+                        // Utilizar el TokenProvider para obtener la autenticación a partir del token JWT
                         Authentication authentication = tokenProvider.getAuthentication(token);
 
-                        // TODO: Establecer la autenticación en el contexto de seguridad de Spring para la solicitud actual
+                        // Establecer la autenticación en el contexto de seguridad de Spring para la solicitud actual
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                     }
                 } catch (Exception e) {
@@ -56,7 +52,7 @@ public class JWTFilter extends GenericFilterBean {
             }
         }
 
-        // TODO: Continuar con la cadena de filtros, permitiendo que la solicitud siga su curso
+        // Continuar con la cadena de filtros, permitiendo que la solicitud siga su curso
         chain.doFilter(request, response);
     }
 

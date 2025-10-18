@@ -32,13 +32,12 @@ public class AuthorizationService {
 
         try {
             Role userRole = Role.fromName(roleName);
-            boolean hasModuleAccess = userRole.hasModuleAccess(module);
-            boolean hasPermissionAccess = userRole.hasPermission(permission);
+            boolean hasAccess = userRole.hasPermission(module, permission);
 
-            log.info("Rol {} - Acceso al módulo {}: {}, Permiso {}: {}",
-                    roleName, module, hasModuleAccess, permission, hasPermissionAccess);
+            log.info("Rol {} - Acceso al módulo {} con permiso {}: {}",
+                    roleName, module, permission, hasAccess);
 
-            return userRole.canAccess(module, permission);
+            return hasAccess;
         } catch (IllegalArgumentException e) {
             log.error("Rol no encontrado en enum: {} para usuario: {}", roleName, user.getEmail());
             return false;
@@ -69,6 +68,6 @@ public class AuthorizationService {
 
     public boolean isAdminOrSistemas() {
         Role role = getCurrentUserRole();
-        return role == Role.ADMIN || role == Role.SISTEMAS;
+        return role != null && (role == Role.ADMIN || role == Role.SISTEMAS);
     }
 }

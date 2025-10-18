@@ -10,7 +10,6 @@ import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -256,6 +255,7 @@ public class CotizacionServiceImpl implements CotizacionService {
         detalleSimple.setUnidad(detalleCompleto.getUnidad());
         detalleSimple.setDescripcion(detalleCompleto.getDescripcion());
         detalleSimple.setPrecioHistorico(detalleCompleto.getPrecioHistorico());
+        detalleSimple.setSeleccionado(detalleCompleto.getSeleccionado());
         detalleSimple.setCreado(detalleCompleto.getCreado());
         detalleSimple.setActualizado(detalleCompleto.getActualizado());
         detalleSimple.setComision(detalleCompleto.getComision());
@@ -264,6 +264,14 @@ public class CotizacionServiceImpl implements CotizacionService {
         detalleSimple.setProveedor(detalleCompleto.getProveedor());
         // NO seteamos la cotización para evitar referencia circular
         return detalleSimple;
+    }
+
+    @Override
+    public List<CotizacionResponseDto> findCotizacionesSinLiquidacion() {
+        List<Cotizacion> cotizaciones = cotizacionRepository.findCotizacionesSinLiquidacion();
+        return cotizaciones.stream()
+                .map(CotizacionMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
 }

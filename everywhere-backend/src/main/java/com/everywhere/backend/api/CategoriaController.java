@@ -17,31 +17,31 @@ public class CategoriaController {
 	private CategoriaService categoriaService;
 
 	@GetMapping
-    @RequirePermission(module = "COTIZACIONES", permission = "READ")
+    @RequirePermission(module = "CATEGORIA", permission = "READ")
 	public List<CategoriaResponseDto> getAll() {
 		return categoriaService.findAll();
 	}
 
 	@GetMapping("/{id}")
-    @RequirePermission(module = "COTIZACIONES", permission = "READ")
+    @RequirePermission(module = "CATEGORIA", permission = "READ")
 	public ResponseEntity<CategoriaResponseDto> getById(@PathVariable int id) {
 		return ResponseEntity.ok(categoriaService.findById(id));
 	}
 
 	@PostMapping
-    @RequirePermission(module = "COTIZACIONES", permission = "CREATE")
+    @RequirePermission(module = "CATEGORIA", permission = "CREATE")
 	public ResponseEntity<CategoriaResponseDto> create(@RequestBody CategoriaRequestDto dto) {
 		return ResponseEntity.ok(categoriaService.create(dto));
 	}
 
 	@PutMapping("/{id}")
-    @RequirePermission(module = "COTIZACIONES", permission = "UPDATE")
+    @RequirePermission(module = "CATEGORIA", permission = "UPDATE")
 	public ResponseEntity<CategoriaResponseDto> update(@PathVariable int id, @RequestBody CategoriaRequestDto dto) {
 		return ResponseEntity.ok(categoriaService.update(id, dto));
 	}
 
 	@DeleteMapping("/{id}")
-    @RequirePermission(module = "COTIZACIONES", permission = "DELETE")
+    @RequirePermission(module = "CATEGORIA", permission = "DELETE")
 	public ResponseEntity<Void> delete(@PathVariable int id) {
 		categoriaService.delete(id);
 		return ResponseEntity.noContent().build();

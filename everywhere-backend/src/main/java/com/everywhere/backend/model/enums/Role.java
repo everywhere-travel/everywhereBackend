@@ -1,50 +1,102 @@
 package com.everywhere.backend.model.enums;
 
+import java.util.Map;
 import java.util.Set;
+import static java.util.Map.entry;
 
 public enum Role {
-    ADMIN(1, "ADMIN",
-        Set.of("READ", "CREATE", "UPDATE", "DELETE"),
-        Set.of("COTIZACIONES", "PERSONAS", "LIQUIDACIONES", "VIAJEROS", "SISTEMA", "CONTABILIDAD", "ADMINISTRACION", "VENTAS", "USUARIOS", "PRODUCTOS", "PROVEEDORES", "SUCURSALES")),
 
-    VENTAS_ADMIN(2, "VENTAS_ADMIN",
-        Set.of("READ", "CREATE", "UPDATE", "DELETE"),
-        Set.of("COTIZACIONES", "PERSONAS", "VIAJEROS")),
+    GERENTE(1, "GERENTE", Map.ofEntries(
+            entry("CLIENTES", Set.of("READ","CREATE","UPDATE","DELETE")),
+            entry("VIAJEROS", Set.of("READ","CREATE","UPDATE","DELETE")),
+            entry("VIAJEROS_FREC", Set.of("READ","CREATE","UPDATE","DELETE")),
+            entry("COTIZACIONES", Set.of("READ","CREATE","UPDATE","DELETE")),
+            entry("LIQUIDACIONES", Set.of("READ","CREATE","UPDATE","DELETE")),
+            entry("PRODUCTOS", Set.of("READ","CREATE","UPDATE","DELETE")),
+            entry("PROVEEDORES", Set.of("READ","CREATE","UPDATE","DELETE")),
+            entry("OPERADORES", Set.of("READ","CREATE","UPDATE","DELETE")),
+            entry("CARPETA", Set.of("READ","CREATE","UPDATE","DELETE")),
+            entry("CATEGORIA", Set.of("READ","CREATE","UPDATE","DELETE")),
+            entry("SUCURSALES", Set.of("READ","CREATE","UPDATE","DELETE")),
+            entry("PERSONAS", Set.of("READ","CREATE","UPDATE","DELETE")),
+            entry("OPERADOR", Set.of("READ","CREATE","UPDATE","DELETE")),
+            entry("FORMA-PAGO", Set.of("READ","CREATE","UPDATE","DELETE")),
+            entry("COUNTERS", Set.of("READ","CREATE","UPDATE","DELETE")),
+            entry("DOCUMENTOS", Set.of("READ","CREATE","UPDATE","DELETE"))
+    )),
 
-    VENTAS_JUNIOR(3, "VENTAS_JUNIOR",
-        Set.of("READ", "CREATE", "UPDATE"),
-        Set.of("COTIZACIONES", "PERSONAS", "VIAJEROS")),
+    VENTAS(2, "VENTAS", Map.ofEntries(
+            entry("CLIENTES", Set.of("CREATE","READ","UPDATE")),
+            entry("VIAJEROS", Set.of("CREATE","READ","UPDATE","DELETE")),
+            entry("VIAJEROS_FREC", Set.of("CREATE","READ","UPDATE","DELETE")),
+            entry("COTIZACIONES", Set.of("CREATE","READ","UPDATE","DELETE")),
+            entry("LIQUIDACIONES", Set.of("CREATE","READ","UPDATE","DELETE")),
+            entry("PRODUCTOS", Set.of("READ")),
+            entry("PROVEEDORES", Set.of("READ")),
+            entry("OPERADOR", Set.of("CREATE","READ","UPDATE","DELETE")),
+            entry("CARPETA", Set.of("CREATE","READ","UPDATE","DELETE"))
+    )),
 
-    ADMINISTRACION_ADMIN(4, "ADMINISTRACION_ADMIN",
-        Set.of("READ", "UPDATE"),
-        Set.of("COTIZACIONES", "PERSONAS", "VIAJEROS", "LIQUIDACIONES", "CONTABILIDAD", "PRODUCTOS", "PROVEEDORES", "SUCURSALES")),
 
-    ADMINISTRACION_JUNIOR(5, "ADMINISTRACION_JUNIOR",
-        Set.of("READ", "UPDATE"),
-        Set.of("COTIZACIONES", "PERSONAS", "VIAJEROS", "CONTABILIDAD", "PRODUCTOS", "PROVEEDORES", "SUCURSALES")),
+    ADMINISTRAR(3, "ADMINISTRAR", Map.ofEntries(
+            entry("CLIENTES", Set.of("CREATE","READ","UPDATE")),
+            entry("VIAJEROS", Set.of("CREATE","READ","UPDATE")),
+            entry("COTIZACIONES", Set.of("READ")),
+            entry("LIQUIDACIONES", Set.of("CREATE","READ","UPDATE")),
+            entry("PRODUCTOS", Set.of("CREATE","READ","UPDATE","DELETE")),
+            entry("PROVEEDORES", Set.of("CREATE","READ","UPDATE","DELETE")),
+            entry("OPERADOR", Set.of("CREATE","READ","UPDATE","DELETE")),
+            entry("CARPETA", Set.of("CREATE","READ","UPDATE","DELETE"))
+    )),
 
-    SISTEMAS(6, "SISTEMAS",
-        Set.of("READ", "CREATE", "UPDATE", "DELETE"),
-        Set.of("COTIZACIONES", "PERSONAS", "LIQUIDACIONES", "VIAJEROS", "SISTEMA", "CONTABILIDAD", "ADMINISTRACION", "VENTAS", "USUARIOS", "PRODUCTOS", "PROVEEDORES", "SUCURSALES")),
 
-    CONTABILIDAD_ADMIN(7, "CONTABILIDAD_ADMIN",
-        Set.of("READ", "CREATE", "UPDATE"),
-        Set.of("COTIZACIONES", "PERSONAS", "LIQUIDACIONES", "VIAJEROS", "CONTABILIDAD", "PRODUCTOS", "PROVEEDORES", "SUCURSALES")),
+    ADMIN(4, "ADMIN", Map.ofEntries(
+            entry("ALL_MODULES", Set.of("READ","CREATE","UPDATE","DELETE"))
+    )),
 
-    CONTABILIDAD_JUNIOR(8, "CONTABILIDAD_JUNIOR",
-        Set.of("READ", "CREATE", "UPDATE"),
-        Set.of("COTIZACIONES", "PERSONAS", "LIQUIDACIONES", "VIAJEROS", "CONTABILIDAD", "PRODUCTOS", "PROVEEDORES", "SUCURSALES"));
+    SISTEMAS(5, "SISTEMAS", Map.ofEntries(
+            entry("ALL_MODULES", Set.of("READ","CREATE","UPDATE","DELETE"))
+    )),
+
+    OPERACIONES(6, "OPERACIONES", Map.ofEntries(
+            entry("CLIENTES", Set.of("CREATE","READ","UPDATE","DELETE")),
+            entry("VIAJEROS", Set.of("CREATE","READ","UPDATE","DELETE")),
+            entry("PRODUCTOS", Set.of("CREATE","READ","UPDATE","DELETE")),
+            entry("PROVEEDORES", Set.of("CREATE","READ","UPDATE","DELETE")),
+            entry("OPERADOR", Set.of("CREATE","READ","UPDATE","DELETE")),
+            entry("PERSONAS", Set.of("CREATE","READ","UPDATE","DELETE"))
+    )),  // <-- Cerrar Map.ofEntries y agregar coma para continuar con el siguiente enum
+
+    VENTAS_JUNIOR(7, "VENTAS_JUNIOR", Map.ofEntries(
+            entry("CLIENTES", Set.of("CREATE","READ")),
+            entry("VIAJEROS", Set.of("CREATE","READ")),
+            entry("COTIZACIONES", Set.of("CREATE","READ","UPDATE")),// Control interno más fino
+            entry("LIQUIDACIONES", Set.of("CREATE","READ","DELETE")),// Control interno más fino
+            entry("CARPETA", Set.of("CREATE","READ")),
+            entry("PERSONAS", Set.of("CREATE","READ"))
+
+    )),
+
+    GERENTE_ARGENTINA(8, "GERENTE_ARGENTINA", Map.ofEntries(
+            entry("CLIENTES", Set.of("CREATE","READ","UPDATE","DELETE")),
+            entry("VIAJEROS", Set.of("CREATE","READ","UPDATE","DELETE")),
+            entry("COTIZACIONES", Set.of("CREATE","READ","UPDATE","DELETE")), // Control interno para permisos más finos
+            entry("LIQUIDACIONES", Set.of("READ")),
+            entry("PROVEEDORES", Set.of("READ")),
+            entry("OPERADOR", Set.of("READ")),
+            entry("CARPETA", Set.of("CREATE","READ")),
+            entry("PERSONAS", Set.of("CREATE","READ","UPDATE","DELETE"))
+
+    ));
 
     private final Integer id;
     private final String name;
-    private final Set<String> permissions;
-    private final Set<String> modules;
+    private final Map<String, Set<String>> modulePermissions;
 
-    Role(Integer id, String name, Set<String> permissions, Set<String> modules) {
+    Role(Integer id, String name, Map<String, Set<String>> modulePermissions) {
         this.id = id;
         this.name = name;
-        this.permissions = permissions;
-        this.modules = modules;
+        this.modulePermissions = modulePermissions;
     }
 
     public Integer getId() {
@@ -55,12 +107,27 @@ public enum Role {
         return name;
     }
 
-    public Set<String> getPermissions() {
-        return permissions;
+    public Map<String, Set<String>> getModulePermissions() {
+        return modulePermissions;
     }
 
-    public Set<String> getModules() {
-        return modules;
+    // Verifica si un rol tiene un permiso específico sobre un módulo
+    public boolean hasPermission(String module, String action) {
+        // Admin y Sistemas pueden acceder a todo
+        if (modulePermissions.containsKey("ALL_MODULES")) {
+            return modulePermissions.get("ALL_MODULES").contains(action);
+        }
+        return modulePermissions.containsKey(module) && modulePermissions.get(module).contains(action);
+    }
+
+    // Método para obtener rol desde el nombre
+    public static Role fromName(String name) {
+        for (Role role : values()) {
+            if (role.getName().equalsIgnoreCase(name)) {
+                return role;
+            }
+        }
+        throw new IllegalArgumentException("Role not found for name: " + name);
     }
 
     public static Role fromId(Integer id) {
@@ -70,26 +137,5 @@ public enum Role {
             }
         }
         throw new IllegalArgumentException("Role not found for id: " + id);
-    }
-
-    public static Role fromName(String name) {
-        for (Role role : values()) {
-            if (role.getName().equals(name)) {
-                return role;
-            }
-        }
-        throw new IllegalArgumentException("Role not found for name: " + name);
-    }
-
-    public boolean hasPermission(String permission) {
-        return this.permissions.contains(permission);
-    }
-
-    public boolean hasModuleAccess(String module) {
-        return this.modules.contains(module);
-    }
-
-    public boolean canAccess(String module, String permission) {
-        return hasModuleAccess(module) && hasPermission(permission);
     }
 }

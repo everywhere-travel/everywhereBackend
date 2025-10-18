@@ -92,10 +92,27 @@ public class DetalleCotizacionController {
 
     //  Setear proveedor en un detalle
     @PutMapping("/{detalleId}/proveedor/{proveedorId}")
+    @RequirePermission(module = "COTIZACIONES", permission = "UPDATE")
     public ResponseEntity<DetalleCotizacionResponseDto> setProveedor(
             @PathVariable int detalleId,
             @PathVariable int proveedorId
     ) {
         return ResponseEntity.ok(detalleCotizacionService.setProveedor(detalleId, proveedorId));
+    }
+
+    //  Actualizar solo el campo seleccionado de un detalle
+    @PutMapping("/{detalleId}/seleccionado")
+    @RequirePermission(module = "COTIZACIONES", permission = "UPDATE")
+    public ResponseEntity<DetalleCotizacionResponseDto> updateSeleccionado(
+            @PathVariable int detalleId,
+            @RequestParam Boolean seleccionado
+    ) {
+        if (detalleId <= 0) {
+            return ResponseEntity.badRequest().build();
+        }
+        if (seleccionado == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(detalleCotizacionService.updateSeleccionado(detalleId, seleccionado));
     }
 }

@@ -2,7 +2,6 @@ package com.everywhere.backend.service;
 
 import com.everywhere.backend.model.dto.DocumentoRequestDto;
 import com.everywhere.backend.model.dto.DocumentoResponseDto;
-import com.everywhere.backend.model.entity.Documento;
 
 import java.util.List;
 

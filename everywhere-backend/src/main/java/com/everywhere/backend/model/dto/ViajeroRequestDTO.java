@@ -1,7 +1,6 @@
 package com.everywhere.backend.model.dto;
 
-import lombok.Data;
-import jakarta.validation.constraints.Size;
+import lombok.Data; 
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 

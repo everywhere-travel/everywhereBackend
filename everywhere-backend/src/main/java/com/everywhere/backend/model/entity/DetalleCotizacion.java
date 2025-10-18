@@ -1,8 +1,4 @@
 package com.everywhere.backend.model.entity;
-import com.everywhere.backend.model.entity.Categoria;
-import com.everywhere.backend.model.entity.Cotizacion;
-import com.everywhere.backend.model.entity.Producto;
-import com.everywhere.backend.model.entity.Proveedor;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -29,8 +25,11 @@ public class DetalleCotizacion {
     @Column(name = "dcot_desc_vac", length = 250)
     private String descripcion;
 
-    @Column(name = "dcot_prec_hist_dc", precision = 15, scale = 2)
+    @Column(name = "dcot_prec_hist_dc")
     private BigDecimal precioHistorico;
+
+    @Column(name = "dcot_select_bol")
+    private Boolean seleccionado;
 
     @Column(name = "dcot_cre_tmp", updatable = false)
     private LocalDateTime creado;
@@ -38,7 +37,7 @@ public class DetalleCotizacion {
     @Column(name = "dcot_upd_tmp", updatable = true)
     private LocalDateTime actualizado;
 
-    @Column(name = "dcot_comision_dc", precision = 5, scale = 2)
+    @Column(name = "dcot_comision_dc")
     private BigDecimal comision;
 
 
