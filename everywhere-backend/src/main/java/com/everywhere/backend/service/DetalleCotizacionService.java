@@ -25,4 +25,7 @@ public interface DetalleCotizacionService {
     DetalleCotizacionResponseDto setProducto(int detalleId, int productoId);
 
     DetalleCotizacionResponseDto setProveedor(int detalleId, int proveedorId);
+
+    // Método específico para actualizar solo el campo seleccionado
+    DetalleCotizacionResponseDto updateSeleccionado(int detalleId, Boolean seleccionado);
 }

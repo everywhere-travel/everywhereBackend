@@ -1,10 +1,8 @@
 package com.everywhere.backend.repository;
 
-import com.everywhere.backend.model.dto.CounterResponseDto;
 import com.everywhere.backend.model.entity.Counter;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface CounterRepository extends JpaRepository<Counter, Integer> {

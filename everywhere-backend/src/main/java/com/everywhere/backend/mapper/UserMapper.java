@@ -2,6 +2,7 @@ package com.everywhere.backend.mapper;
 
 import com.everywhere.backend.model.dto.*;
 import com.everywhere.backend.model.entity.User;
+import com.everywhere.backend.model.enums.Role;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
@@ -23,15 +24,25 @@ public class UserMapper {
      */
     public AuthResponseDTO toAuthResponseDTO(User user, String token) {
         AuthResponseDTO authResponseDTO = new AuthResponseDTO();
+
         authResponseDTO.setId(user.getId());
         authResponseDTO.setToken(token);
-        authResponseDTO.setRole(user.getRole().getName());
 
-        // Como los usuarios se crean manualmente en BD, usar datos básicos
-        authResponseDTO.setName(user.getEmail()); // Usar email como nombre temporal
+        // Obtener rol como enum para acceder a permisos
+        Role role = Role.fromName(user.getRole().getName());
+        authResponseDTO.setRole(role.getName());
+
+        // Cargar permisos desde el rol, no desde el usuario
+        authResponseDTO.setPermissions(role.getModulePermissions());
+
+        // Usar email como nombre temporal
+        authResponseDTO.setName(user.getEmail());
+
+        authResponseDTO.setPermissions(role.getModulePermissions());
 
         return authResponseDTO;
     }
+
 
     /**
      * Convierte User básico a DTO simple

@@ -13,5 +13,6 @@ public class DetalleCotizacionRequestDto {
     private Integer categoria;
     private BigDecimal comision;
     private BigDecimal precioHistorico;
+    private Boolean seleccionado;
 
 }

@@ -27,4 +27,5 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
 
     // Listar carpetas recientes (luego se limita con Pageable en el service)
     List<Carpeta> findAllByOrderByCreadoDesc();
+
 }

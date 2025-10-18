@@ -24,7 +24,7 @@ public class OperadorController {
     }
 
     @GetMapping
-    @RequirePermission(module = "CONTABILIDAD", permission = "READ")
+    @RequirePermission(module = "OPERADOR", permission = "READ")
     public ResponseEntity<List<OperadorResponseDTO>> findAll() {
         List<OperadorResponseDTO> response = operadorService.findAll()
                 .stream()
@@ -34,7 +34,7 @@ public class OperadorController {
     }
 
     @GetMapping("/{id}")
-    @RequirePermission(module = "CONTABILIDAD", permission = "READ")
+    @RequirePermission(module = "OPERADOR", permission = "READ")
     public ResponseEntity<OperadorResponseDTO> getById(@PathVariable Integer id) {
         return operadorService.findById(id)
                 .map(OperadorMapper::toResponse)
@@ -43,7 +43,7 @@ public class OperadorController {
     }
 
     @PostMapping
-    @RequirePermission(module = "CONTABILIDAD", permission = "CREATE")
+    @RequirePermission(module = "OPERADOR", permission = "CREATE")
     public ResponseEntity<OperadorResponseDTO> create(@RequestBody OperadorRequestDto dto) {
         Operador operador = OperadorMapper.toEntity(dto);
         Operador nuevoOperador = operadorService.save(operador);
@@ -51,7 +51,7 @@ public class OperadorController {
     }
 
     @PutMapping("/{id}")
-    @RequirePermission(module = "CONTABILIDAD", permission = "UPDATE")
+    @RequirePermission(module = "OPERADOR", permission = "UPDATE")
     public ResponseEntity<OperadorResponseDTO> update(
             @PathVariable Integer id,
             @RequestBody OperadorRequestDto dto) {
@@ -69,7 +69,7 @@ public class OperadorController {
 
 
     @DeleteMapping("/{id}")
-    @RequirePermission(module = "CONTABILIDAD", permission = "DELETE")
+    @RequirePermission(module = "OPERADOR", permission = "DELETE")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         if (operadorService.findById(id).isEmpty()) {
             return ResponseEntity.notFound().build();
