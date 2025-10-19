@@ -48,7 +48,8 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
 
     @Override
     public List<DetalleCotizacionResponseDto> findAll() {
-        return detalleCotizacionRepository.findAll()
+        // Usar findAllWithRelations para cargar todas las relaciones de una vez
+        return detalleCotizacionRepository.findAllWithRelations()
                 .stream()
                 .map(DetalleCotizacionMapper::toResponse)
                 .collect(Collectors.toList());
@@ -56,13 +57,15 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
 
     @Override
     public Optional<DetalleCotizacionResponseDto> findById(int id) {
-        return detalleCotizacionRepository.findById(id)
+        // Usar findByIdWithRelations para cargar todas las relaciones de una vez
+        return detalleCotizacionRepository.findByIdWithRelations(id)
                 .map(DetalleCotizacionMapper::toResponse);
     }
 
     @Override
     public List<DetalleCotizacionResponseDto> findByCotizacionId(int cotizacionId) {
-        return detalleCotizacionRepository.findByCotizacionId(cotizacionId)
+        // Usar findByCotizacionIdWithRelations para cargar todas las relaciones de una vez
+        return detalleCotizacionRepository.findByCotizacionIdWithRelations(cotizacionId)
                 .stream()
                 .map(DetalleCotizacionMapper::toResponse)
                 .collect(Collectors.toList());

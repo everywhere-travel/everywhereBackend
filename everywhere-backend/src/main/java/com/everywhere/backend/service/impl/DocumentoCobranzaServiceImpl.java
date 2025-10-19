@@ -66,6 +66,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     @Override
     public DocumentoCobranzaResponseDTO createDocumentoCobranza(Integer cotizacionId, String fileVenta,
             Double costoEnvio) {
+        // Verificar si ya existe un documento para esta cotización
         DocumentoCobranza existente = documentoCobranzaRepository.findByCotizacionId(cotizacionId).orElse(null);
         if (existente != null) {
             throw new RuntimeException("Ya existe un documento de cobranza para la cotización ID: " + cotizacionId);
@@ -283,33 +284,38 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
     @Override
     public DocumentoCobranzaResponseDTO findById(Long id) {
-        DocumentoCobranza entity = documentoCobranzaRepository.findById(id).orElse(null);
+        // Usar findByIdWithRelations para cargar todas las relaciones de una vez
+        DocumentoCobranza entity = documentoCobranzaRepository.findByIdWithRelations(id).orElse(null);
         return entity != null ? convertToResponseDTO(entity) : null;
     }
 
     @Override
     public DocumentoCobranzaResponseDTO findByNumero(String numero) {
-        DocumentoCobranza entity = documentoCobranzaRepository.findByNumero(numero).orElse(null);
+        // Usar findByNumeroWithRelations para cargar todas las relaciones de una vez
+        DocumentoCobranza entity = documentoCobranzaRepository.findByNumeroWithRelations(numero).orElse(null);
         return entity != null ? convertToResponseDTO(entity) : null;
     }
 
     @Override
     public List<DocumentoCobranzaResponseDTO> findAll() {
-        return documentoCobranzaRepository.findAll().stream()
+        // Usar findAllWithRelations para cargar todas las relaciones de una vez
+        return documentoCobranzaRepository.findAllWithRelations().stream()
                 .map(this::convertToResponseDTO)
-                .collect(java.util.stream.Collectors.toList());
+                .toList();
     }
 
     @Override
     public DocumentoCobranzaResponseDTO findByCotizacionId(Integer cotizacionId) {
-        DocumentoCobranza entity = documentoCobranzaRepository.findByCotizacionId(cotizacionId).orElse(null);
+        // Usar findByCotizacionIdWithRelations para cargar todas las relaciones de una vez
+        DocumentoCobranza entity = documentoCobranzaRepository.findByCotizacionIdWithRelations(cotizacionId).orElse(null);
         return entity != null ? convertToResponseDTO(entity) : null;
     }
 
     // ========== MÉTODOS PRIVADOS ==========
 
     private DocumentoCobranza findDocumentoById(Long id) {
-        return documentoCobranzaRepository.findById(id).orElse(null);
+        // Usar findByIdWithRelations para cargar todas las relaciones de una vez
+        return documentoCobranzaRepository.findByIdWithRelations(id).orElse(null);
     }
 
     private String generateNextDocumentNumber() {
