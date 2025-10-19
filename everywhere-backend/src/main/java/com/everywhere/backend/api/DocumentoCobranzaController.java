@@ -18,7 +18,7 @@ public class DocumentoCobranzaController {
     private DocumentoCobranzaService documentoCobranzaService;
 
     @PostMapping
-    @RequirePermission(module = "DOCUMENTOS", permission = "CREATE")
+    @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "CREATE")
     public ResponseEntity<?> createDocumentoCobranza(
             @RequestParam Integer cotizacionId,
             @RequestParam String fileVenta,
@@ -35,7 +35,7 @@ public class DocumentoCobranzaController {
     }
 
     @GetMapping
-    @RequirePermission(module = "DOCUMENTOS", permission = "READ")
+    @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "READ")
     public ResponseEntity<List<DocumentoCobranzaResponseDTO>> getAllDocumentos() {
         try {
             List<DocumentoCobranzaResponseDTO> documentos = documentoCobranzaService.findAll();
@@ -46,7 +46,7 @@ public class DocumentoCobranzaController {
     }
 
     @GetMapping("/{id}")
-    @RequirePermission(module = "DOCUMENTOS", permission = "READ")
+    @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "READ")
     public ResponseEntity<?> getDocumentoById(@PathVariable Long id) {
         try {
             DocumentoCobranzaResponseDTO documento = documentoCobranzaService.findById(id);
@@ -62,7 +62,7 @@ public class DocumentoCobranzaController {
     }
 
     @GetMapping("/numero/{numero}")
-    @RequirePermission(module = "DOCUMENTOS", permission = "READ")
+    @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "READ")
     public ResponseEntity<?> getDocumentoByNumero(@PathVariable String numero) {
         try {
             DocumentoCobranzaResponseDTO documento = documentoCobranzaService.findByNumero(numero);
@@ -78,7 +78,7 @@ public class DocumentoCobranzaController {
     }
 
     @GetMapping("/cotizacion/{cotizacionId}")
-    @RequirePermission(module = "DOCUMENTOS", permission = "READ")
+    @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "READ")
     public ResponseEntity<?> getDocumentoByCotizacion(@PathVariable Integer cotizacionId) {
         try {
             DocumentoCobranzaResponseDTO documento = documentoCobranzaService.findByCotizacionId(cotizacionId);

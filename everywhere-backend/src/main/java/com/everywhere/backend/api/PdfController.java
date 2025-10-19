@@ -20,7 +20,7 @@ public class PdfController {
     private final DocumentoCobranzaService documentoCobranzaService;
 
     @GetMapping("/documento-cobranza/{id}")
-    @RequirePermission(module = "DOCUMENTOS", permission = "READ")
+    @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "READ")
     public ResponseEntity<InputStreamResource> generateDocumentoCobranzaPdf(@PathVariable Long id) {
 
         try {
