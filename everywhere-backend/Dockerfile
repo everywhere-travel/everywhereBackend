@@ -8,4 +8,13 @@ FROM openjdk:21-jdk-slim
 WORKDIR /app
 COPY --from=build /app/target/*.jar everywhere-backend.jar
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","everywhere-backend.jar"]
+
+# Configuración de memoria optimizada para Render
+ENTRYPOINT ["java", \
+    "-Xms256m", \
+    "-Xmx512m", \
+    "-XX:+UseG1GC", \
+    "-XX:MaxGCPauseMillis=100", \
+    "-XX:+UseStringDeduplication", \
+    "-Djava.security.egd=file:/dev/./urandom", \
+    "-jar", "everywhere-backend.jar"]
