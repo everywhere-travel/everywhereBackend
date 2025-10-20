@@ -16,6 +16,8 @@ import com.everywhere.backend.model.dto.CotizacionConDetallesResponseDTO;
 import com.everywhere.backend.model.dto.DetalleCotizacionSimpleDTO;
 import com.everywhere.backend.model.dto.DocumentoCobranzaDTO;
 import com.everywhere.backend.model.dto.DocumentoCobranzaResponseDTO;
+import com.everywhere.backend.model.dto.DocumentoCobranzaUpdateDTO;
+import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.model.entity.DocumentoCobranza;
 import com.everywhere.backend.model.entity.DetalleDocumentoCobranza;
 import com.everywhere.backend.model.entity.FormaPago;
@@ -948,5 +950,27 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                         }
                     }
                 });
+    }
+
+    @Override
+    public DocumentoCobranzaResponseDTO updateDocumento(Long id, DocumentoCobranzaUpdateDTO updateDTO) {
+        DocumentoCobranza documento = documentoCobranzaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Documento de cobranza no encontrado con ID: " + id));
+
+        // Actualizar solo los campos que vienen en el DTO (no nulos)
+        if (updateDTO.getFileVenta() != null) {
+            documento.setFileVenta(updateDTO.getFileVenta());
+        }
+        
+        if (updateDTO.getCostoEnvio() != null) {
+            documento.setCostoEnvio(updateDTO.getCostoEnvio());
+        }
+        
+        if (updateDTO.getObservaciones() != null) {
+            documento.setObservaciones(updateDTO.getObservaciones());
+        }
+
+        DocumentoCobranza updated = documentoCobranzaRepository.save(documento);
+        return convertToResponseDTO(updated);
     }
 }

@@ -1,7 +1,9 @@
 package com.everywhere.backend.api;
 
 import com.everywhere.backend.model.dto.DocumentoCobranzaResponseDTO;
+import com.everywhere.backend.model.dto.DocumentoCobranzaUpdateDTO;
 import com.everywhere.backend.security.RequirePermission;
+import jakarta.validation.Valid;
 import com.everywhere.backend.service.DocumentoCobranzaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -61,35 +63,18 @@ public class DocumentoCobranzaController {
         }
     }
 
-    @GetMapping("/numero/{numero}")
-    @RequirePermission(module = "DOCUMENTOS", permission = "READ")
-    public ResponseEntity<?> getDocumentoByNumero(@PathVariable String numero) {
+    @PutMapping("/{id}")
+    @RequirePermission(module = "DOCUMENTOS", permission = "UPDATE")
+    public ResponseEntity<?> updateDocumento(
+            @PathVariable Long id,
+            @Valid @RequestBody DocumentoCobranzaUpdateDTO updateDTO) {
         try {
-            DocumentoCobranzaResponseDTO documento = documentoCobranzaService.findByNumero(numero);
-            
-            if (documento == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Documento no encontrado");
-            }
-            
+            DocumentoCobranzaResponseDTO documento = documentoCobranzaService.updateDocumento(id, updateDTO);
             return ResponseEntity.ok(documento);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    @GetMapping("/cotizacion/{cotizacionId}")
-    @RequirePermission(module = "DOCUMENTOS", permission = "READ")
-    public ResponseEntity<?> getDocumentoByCotizacion(@PathVariable Integer cotizacionId) {
-        try {
-            DocumentoCobranzaResponseDTO documento = documentoCobranzaService.findByCotizacionId(cotizacionId);
-            
-            if (documento == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No existe documento de cobranza para la cotización " + cotizacionId);
-            }
-            
-            return ResponseEntity.ok(documento);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar documento de cobranza");
         }
     }
 }
