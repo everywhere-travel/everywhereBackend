@@ -54,11 +54,11 @@ public enum Role {
             entry("ALL_MODULES", Set.of("READ","CREATE","UPDATE","DELETE"))
     )),
 
-    SISTEMAS(5, "SISTEMAS", Map.ofEntries(
+    SISTEMAS(6, "SISTEMAS", Map.ofEntries(
             entry("ALL_MODULES", Set.of("READ","CREATE","UPDATE","DELETE"))
     )),
 
-    OPERACIONES(6, "OPERACIONES", Map.ofEntries(
+    OPERACIONES(5, "OPERACIONES", Map.ofEntries(
             entry("CLIENTES", Set.of("CREATE","READ","UPDATE","DELETE")),
             entry("VIAJEROS", Set.of("CREATE","READ","UPDATE","DELETE")),
             entry("PRODUCTOS", Set.of("CREATE","READ","UPDATE","DELETE")),
