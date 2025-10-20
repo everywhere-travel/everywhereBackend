@@ -20,7 +20,7 @@ public class DocumentoCobranzaController {
     private DocumentoCobranzaService documentoCobranzaService;
 
     @PostMapping
-    @RequirePermission(module = "DOCUMENTOS", permission = "CREATE")
+    @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "CREATE")
     public ResponseEntity<?> createDocumentoCobranza(
             @RequestParam Integer cotizacionId,
             @RequestParam String fileVenta,
@@ -37,7 +37,7 @@ public class DocumentoCobranzaController {
     }
 
     @GetMapping
-    @RequirePermission(module = "DOCUMENTOS", permission = "READ")
+    @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "READ")
     public ResponseEntity<List<DocumentoCobranzaResponseDTO>> getAllDocumentos() {
         try {
             List<DocumentoCobranzaResponseDTO> documentos = documentoCobranzaService.findAll();
@@ -48,7 +48,7 @@ public class DocumentoCobranzaController {
     }
 
     @GetMapping("/{id}")
-    @RequirePermission(module = "DOCUMENTOS", permission = "READ")
+    @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "READ")
     public ResponseEntity<?> getDocumentoById(@PathVariable Long id) {
         try {
             DocumentoCobranzaResponseDTO documento = documentoCobranzaService.findById(id);
@@ -64,7 +64,7 @@ public class DocumentoCobranzaController {
     }
 
     @PutMapping("/{id}")
-    @RequirePermission(module = "DOCUMENTOS", permission = "UPDATE")
+    @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "UPDATE")
     public ResponseEntity<?> updateDocumento(
             @PathVariable Long id,
             @Valid @RequestBody DocumentoCobranzaUpdateDTO updateDTO) {
