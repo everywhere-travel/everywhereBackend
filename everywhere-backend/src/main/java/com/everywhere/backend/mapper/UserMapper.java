@@ -36,7 +36,7 @@ public class UserMapper {
         authResponseDTO.setPermissions(role.getModulePermissions());
 
         // Usar email como nombre temporal
-        authResponseDTO.setName(user.getEmail());
+        authResponseDTO.setName(user.getNombre());
 
         authResponseDTO.setPermissions(role.getModulePermissions());
 
@@ -51,7 +51,7 @@ public class UserMapper {
         UserBasicDTO userBasicDTO = new UserBasicDTO();
         userBasicDTO.setId(user.getId());
         userBasicDTO.setEmail(user.getEmail());
-        userBasicDTO.setName(user.getEmail()); // Usar email como identificador
+        userBasicDTO.setName(user.getNombre()); // Usar email como identificador
         return userBasicDTO;
     }
 }
