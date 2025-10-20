@@ -105,7 +105,6 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
             documento.setFormaPago(formaPago);
         }
 
-        documento.setNroSerie(generateNextSerieNumber());
         documento.setFileVenta(fileVenta);
         documento.setCostoEnvio(costoEnvio);
         documento.setMoneda(cotizacion.getMoneda());
@@ -162,7 +161,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     public DocumentoCobranzaDTO convertToDTO(DocumentoCobranza entity) {
         DocumentoCobranzaDTO dto = new DocumentoCobranzaDTO();
 
-        dto.setNroSerie(entity.getNroSerie());
+        // Campos básicos
         dto.setFileVenta(entity.getFileVenta());
         dto.setCostoEnvio(
                 entity.getCostoEnvio() != null ? BigDecimal.valueOf(entity.getCostoEnvio()) : BigDecimal.ZERO);
@@ -170,9 +169,14 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         dto.setMoneda(entity.getMoneda());
         dto.setObservaciones(entity.getObservaciones());
 
+        // Información de cotización
+        if (entity.getCotizacion() != null) {
+            dto.setCodigoCotizacion(entity.getCotizacion().getCodigoCotizacion());
+        }
+
         if (entity.getPersona() != null) {
-            dto.setClienteEmail(entity.getPersona().getEmail());
             dto.setClienteTelefono(entity.getPersona().getTelefono());
+            dto.setClienteDireccion(entity.getPersona().getDireccion());
             
             // Buscar información adicional del cliente (nombre y documento)
             String nombreCompleto;
@@ -256,18 +260,33 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         dto.setNumero(entity.getNumero());
         dto.setFechaEmision(entity.getFechaEmision());
         dto.setObservaciones(entity.getObservaciones());
-        dto.setNroSerie(entity.getNroSerie());
         dto.setFileVenta(entity.getFileVenta());
         dto.setCostoEnvio(entity.getCostoEnvio());
         dto.setMoneda(entity.getMoneda());
 
         if (entity.getCotizacion() != null) {
             dto.setCotizacionId(entity.getCotizacion().getId());
+            dto.setCodigoCotizacion(entity.getCotizacion().getCodigoCotizacion());
         }
 
         if (entity.getPersona() != null) {
             dto.setPersonaId(entity.getPersona().getId());
-            dto.setClienteEmail(entity.getPersona().getEmail());
+            
+            // Buscar nombre completo del cliente
+            Optional<PersonaNatural> personaNatural = personaNaturalRepository.findByPersonasId(entity.getPersona().getId());
+            if (personaNatural.isPresent()) {
+                PersonaNatural pn = personaNatural.get();
+                String nombreCompleto = (pn.getNombres() + " " + pn.getApellidos()).trim();
+                dto.setClienteNombre(nombreCompleto);
+            } else {
+                Optional<PersonaJuridica> personaJuridica = personaJuridicaRepository.findByPersonasId(entity.getPersona().getId());
+                if (personaJuridica.isPresent()) {
+                    PersonaJuridica pj = personaJuridica.get();
+                    dto.setClienteNombre(pj.getRazonSocial() != null ? pj.getRazonSocial() : "EMPRESA");
+                } else {
+                    dto.setClienteNombre("CLIENTE");
+                }
+            }
         }
 
         if (entity.getSucursal() != null) {
@@ -334,10 +353,6 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         }
 
         return "DC01-000000300";
-    }
-
-    private String generateNextSerieNumber() {
-        return "DC-" + System.currentTimeMillis();
     }
 
     private String convertirNumeroALetras(double numero, String moneda) {
@@ -636,9 +651,9 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                 .setBold()
                 .setMarginTop(5));
 
-        // Agregar número de documento si se tiene
-        if (documento.getNroSerie() != null) {
-            rucCell.add(new Paragraph(documento.getNroSerie())
+        // Agregar número de documento basado en cotización
+        if (documento.getCodigoCotizacion() != null) {
+            rucCell.add(new Paragraph("COT: " + documento.getCodigoCotizacion())
                     .setFontSize(12)
                     .setBold()
                     .setMarginTop(5));
