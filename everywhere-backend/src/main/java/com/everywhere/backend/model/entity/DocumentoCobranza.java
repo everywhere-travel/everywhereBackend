@@ -31,37 +31,34 @@ public class DocumentoCobranza {
     private String observaciones;
 
     // Relaciones con otras entidades
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "carp_id_int")
     private Carpeta carpeta;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "form_id_int")
     private FormaPago formaPago;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "usr_id_int")
     private User usuario;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "suc_id_int")
     private Sucursal sucursal;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "per_id_int")
     private Personas persona;
 
     // Relación con detalles
-    @OneToMany(mappedBy = "documentoCobranza", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "documentoCobranza", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<DetalleDocumentoCobranza> detalles;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cot_id_int", unique = true)
     private Cotizacion cotizacion;
-
-    @Column(name = "doc_co_nro_ser_vac", length = 50)
-    private String nroSerie;
 
     @Column(name = "doc_co_file_ven_vac", length = 100)
     private String fileVenta;

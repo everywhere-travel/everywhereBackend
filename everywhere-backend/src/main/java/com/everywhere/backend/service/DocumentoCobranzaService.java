@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.everywhere.backend.model.dto.DocumentoCobranzaDTO;
 import com.everywhere.backend.model.dto.DocumentoCobranzaResponseDTO;
+import com.everywhere.backend.model.dto.DocumentoCobranzaUpdateDTO;
 import com.everywhere.backend.model.entity.DocumentoCobranza;
 
 public interface DocumentoCobranzaService {
@@ -17,4 +18,5 @@ public interface DocumentoCobranzaService {
     DocumentoCobranzaResponseDTO findByNumero(String numero);
     List<DocumentoCobranzaResponseDTO> findAll();
     DocumentoCobranzaResponseDTO findByCotizacionId(Integer cotizacionId);
+    DocumentoCobranzaResponseDTO updateDocumento(Long id, DocumentoCobranzaUpdateDTO updateDTO);
 }
