@@ -9,16 +9,16 @@ import java.util.List;
 public class DocumentoCobranzaDTO {
     
     // Campos manuales
-    private String nroSerie;
     private String fileVenta;
     private BigDecimal costoEnvio;
     
     // Campos de cotización
+    private String codigoCotizacion;   // Número de cotización
     private LocalDateTime fechaEmision;
-    private String clienteEmail;
-    private String clienteTelefono;
     private String clienteNombre;      // Nombre completo del cliente
+    private String clienteTelefono;
     private String clienteDocumento;   // DNI o RUC del cliente
+    private String clienteDireccion;   // Dirección del cliente
     private String sucursalDescripcion;
     private String puntoCompra;
     private String moneda;
