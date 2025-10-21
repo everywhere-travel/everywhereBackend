@@ -186,7 +186,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
             Optional<PersonaNatural> personaNatural = personaNaturalRepository.findByPersonasId(entity.getPersona().getId());
             if (personaNatural.isPresent()) {
                 PersonaNatural pn = personaNatural.get();
-                nombreCompleto = (pn.getNombres() + " " + pn.getApellidos()).trim();
+                nombreCompleto = (pn.getNombres() + " " + pn.getApellidosPaterno() + " " + pn.getApellidosMaterno()).trim();
                 documento = pn.getDocumento() != null ? pn.getDocumento() : "00000000";
             } else {
                 // Si no es persona natural, buscar en PersonaJuridica
@@ -276,7 +276,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
             Optional<PersonaNatural> personaNatural = personaNaturalRepository.findByPersonasId(entity.getPersona().getId());
             if (personaNatural.isPresent()) {
                 PersonaNatural pn = personaNatural.get();
-                String nombreCompleto = (pn.getNombres() + " " + pn.getApellidos()).trim();
+                String nombreCompleto = (pn.getNombres() + " " + pn.getApellidosPaterno() + " " + pn.getApellidosMaterno()).trim();
                 dto.setClienteNombre(nombreCompleto);
             } else {
                 Optional<PersonaJuridica> personaJuridica = personaJuridicaRepository.findByPersonasId(entity.getPersona().getId());
