@@ -44,7 +44,7 @@ public class PersonaMapper {
     }
 
     public PersonaDisplayDto toDisplayDTO(PersonaNatural natural) {
-        String nombreCompleto = natural.getNombres() + " " + natural.getApellidos();
+        String nombreCompleto = natural.getNombres() + " " + natural.getApellidosPaterno() + " " + natural.getApellidosMaterno();
         return new PersonaDisplayDto(
                 natural.getId(),
                 "NATURAL",

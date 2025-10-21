@@ -40,10 +40,17 @@ public class PersonaNaturalController {
         return ResponseEntity.ok(personas);
     }
 
-    @GetMapping("/apellidos")
+    @GetMapping("/apellidos-paterno")
     @RequirePermission(module = "PERSONAS", permission = "READ")
-    public ResponseEntity<List<PersonaNaturalResponseDTO>> getPersonasNaturalesByApellido(@RequestParam String apellidos) {
-        List<PersonaNaturalResponseDTO> personas = personaNaturalService.findByApellidos(apellidos.trim());
+    public ResponseEntity<List<PersonaNaturalResponseDTO>> getPersonasNaturalesByApellidoPaterno(@RequestParam String apellidos) {
+        List<PersonaNaturalResponseDTO> personas = personaNaturalService.findByApellidosPaternos(apellidos.trim());
+        return ResponseEntity.ok(personas);
+    } 
+
+    @GetMapping("/apellidos-materno")
+    @RequirePermission(module = "PERSONAS", permission = "READ")
+    public ResponseEntity<List<PersonaNaturalResponseDTO>> getPersonasNaturalesByApellidoMaterno(@RequestParam String apellidos) {
+        List<PersonaNaturalResponseDTO> personas = personaNaturalService.findByApellidosMaternos(apellidos.trim());
         return ResponseEntity.ok(personas);
     } 
 
@@ -61,10 +68,10 @@ public class PersonaNaturalController {
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaPersona);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @RequirePermission(module = "PERSONAS", permission = "UPDATE")
-    public ResponseEntity<PersonaNaturalResponseDTO> updatePersonaNatural(@PathVariable Integer id, @Valid @RequestBody PersonaNaturalRequestDTO personaNaturalRequestDTO) {
-        PersonaNaturalResponseDTO personaActualizada = personaNaturalService.update(id, personaNaturalRequestDTO);
+    public ResponseEntity<PersonaNaturalResponseDTO> patchPersonaNatural(@PathVariable Integer id, @RequestBody PersonaNaturalRequestDTO personaNaturalRequestDTO) {
+        PersonaNaturalResponseDTO personaActualizada = personaNaturalService.patch(id, personaNaturalRequestDTO);
         return ResponseEntity.ok(personaActualizada);
     }
 

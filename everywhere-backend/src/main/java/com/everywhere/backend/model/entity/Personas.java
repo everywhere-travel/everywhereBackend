@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 @Data
 @Entity
 @Table(name = "personas")
@@ -26,9 +29,11 @@ public class Personas {
     @Column(name = "per_obs_vac", length = 250)
     private String observacion;
 
+    @CreationTimestamp
     @Column(name = "per_cre_tmp", updatable = false)
     private LocalDateTime creado;
 
+    @UpdateTimestamp
     @Column(name = "per_upd_tmp")
     private LocalDateTime actualizado;
 }

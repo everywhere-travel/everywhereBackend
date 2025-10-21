@@ -10,8 +10,9 @@ public interface PersonaNaturalService {
     PersonaNaturalResponseDTO findById(Integer id);
     List<PersonaNaturalResponseDTO> findByDocumento(String documento);
     List<PersonaNaturalResponseDTO> findByNombres(String nombres);
-    List<PersonaNaturalResponseDTO> findByApellidos(String apellidos);
-    PersonaNaturalResponseDTO save(PersonaNaturalRequestDTO personaNaturalRequestDTO);
-    PersonaNaturalResponseDTO update(Integer id, PersonaNaturalRequestDTO personaNaturalRequestDTO);
+    List<PersonaNaturalResponseDTO> findByApellidosPaternos(String apellidosPaternos);
+    List<PersonaNaturalResponseDTO> findByApellidosMaternos(String apellidosMaternos);
+    PersonaNaturalResponseDTO save(PersonaNaturalRequestDTO personaNaturalRequestDTO); 
+    PersonaNaturalResponseDTO patch(Integer id, PersonaNaturalRequestDTO personaNaturalRequestDTO);
     void deleteById(Integer id);
 }
