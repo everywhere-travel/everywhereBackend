@@ -15,9 +15,9 @@ public class PersonaNaturalResponseDTO {
     private Integer id;
     private String documento;
     private String nombres;
-    private String apellidos;
-    private Boolean cliente;
-    private String categoria;
+    private String apellidosPaterno;
+    private String apellidosMaterno;
+    private String sexo;
     private LocalDateTime creado;
     private LocalDateTime actualizado;
     private PersonaResponseDTO persona;

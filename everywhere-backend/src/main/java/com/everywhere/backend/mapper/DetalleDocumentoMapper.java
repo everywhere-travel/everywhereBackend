@@ -51,13 +51,11 @@ public class DetalleDocumentoMapper {
         detalle.setFechaVencimiento(LocalDate.parse(dto.getFechaVencimiento()));
         detalle.setOrigen(dto.getOrigen());
 
-        // ✅ Traer Documento completo desde la BD
         if (dto.getDocumentoId() != null) {
             documentoRepository.findById(dto.getDocumentoId())
                     .ifPresent(detalle::setDocumento);
         }
 
-        // ✅ Traer Viajero completo desde la BD
         if (dto.getViajeroId() != null) {
             viajeroRepository.findById(dto.getViajeroId())
                     .ifPresent(detalle::setViajero);

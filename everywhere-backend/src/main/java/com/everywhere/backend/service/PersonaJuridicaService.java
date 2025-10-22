@@ -11,6 +11,6 @@ public interface PersonaJuridicaService {
     List<PersonaJuridicaResponseDTO> findByRuc(String ruc);
     List<PersonaJuridicaResponseDTO> findByRazonSocial(String razonSocial);
     PersonaJuridicaResponseDTO save(PersonaJuridicaRequestDTO personaJuridicaRequestDTO);
-    PersonaJuridicaResponseDTO update(Integer id, PersonaJuridicaRequestDTO personaJuridicaRequestDTO);
+    PersonaJuridicaResponseDTO patch(Integer id, PersonaJuridicaRequestDTO personaJuridicaRequestDTO);
     void deleteById(Integer id);
 }
