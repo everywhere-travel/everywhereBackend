@@ -12,7 +12,7 @@ public interface PersonaService {
     List<PersonaResponseDTO> findByEmail(String email);
     List<PersonaResponseDTO> findByTelefono(String telefono);
     PersonaResponseDTO save(PersonaRequestDTO personaRequestDTO);
-    PersonaResponseDTO update(Integer id, PersonaRequestDTO personaRequestDTO);
+    PersonaResponseDTO patch(Integer id, PersonaRequestDTO personaRequestDTO);
     void deleteById(Integer id);
     PersonaDisplayDto findPersonaNaturalOrJuridicaById(Integer id);
 }

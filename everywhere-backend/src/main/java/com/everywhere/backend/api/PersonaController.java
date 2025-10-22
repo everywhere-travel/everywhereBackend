@@ -56,10 +56,10 @@ public class PersonaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaPersona);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @RequirePermission(module = "PERSONAS", permission = "UPDATE")
-    public ResponseEntity<PersonaResponseDTO> updatePersona(@PathVariable Integer id, @Valid @RequestBody PersonaRequestDTO personaRequestDTO) {
-        PersonaResponseDTO personaActualizada = personaService.update(id, personaRequestDTO);
+    public ResponseEntity<PersonaResponseDTO> patchPersona(@PathVariable Integer id, @Valid @RequestBody PersonaRequestDTO personaRequestDTO) {
+        PersonaResponseDTO personaActualizada = personaService.patch(id, personaRequestDTO);
         return ResponseEntity.ok(personaActualizada);
     }
 
