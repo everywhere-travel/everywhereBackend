@@ -17,31 +17,24 @@ public class PersonaJuridicaMapper {
     private final PersonaMapper personaMapper;
 
     public PersonaJuridicaResponseDTO toResponseDTO(PersonaJuridica personaJuridica) {
-        PersonaJuridicaResponseDTO dto = modelMapper.map(personaJuridica, PersonaJuridicaResponseDTO.class);
+        PersonaJuridicaResponseDTO personaJuridicaResponseDTO = modelMapper.map(personaJuridica, PersonaJuridicaResponseDTO.class);
         if (personaJuridica.getPersonas() != null) {
-            dto.setPersona(personaMapper.toResponseDTO(personaJuridica.getPersonas()));
+            personaJuridicaResponseDTO.setPersona(personaMapper.toResponseDTO(personaJuridica.getPersonas()));
         }
-        return dto;
+        return personaJuridicaResponseDTO;
     }
 
-    public PersonaJuridica toEntity(PersonaJuridicaRequestDTO dto) {
-        return modelMapper.map(dto, PersonaJuridica.class);
+    public PersonaJuridica toEntity(PersonaJuridicaRequestDTO personaJuridicaRequestDTO) {
+        return modelMapper.map(personaJuridicaRequestDTO, PersonaJuridica.class);
     }
 
-    public void updateEntityFromDTO(PersonaJuridicaRequestDTO dto, PersonaJuridica entity) {
-        // Actualizar campos específicos de PersonaJuridica
-        if (dto.getRuc() != null) {
-            entity.setRuc(dto.getRuc());
-        }
-        if (dto.getRazonSocial() != null) {
-            entity.setRazonSocial(dto.getRazonSocial());
-        }
+    public void updateEntityFromDTO(PersonaJuridicaRequestDTO personaJuridicaRequestDTO, PersonaJuridica personaJuridica) {
+        modelMapper.getConfiguration().setSkipNullEnabled(true); // Configurar ModelMapper para saltar campos null 
+        modelMapper.map(personaJuridicaRequestDTO, personaJuridica); // Mapeo automático
 
         // Actualizar persona base si existe
-        if (dto.getPersona() != null && entity.getPersonas() != null) {
-            personaMapper.updateEntityFromDTO(dto.getPersona(), entity.getPersonas());
+        if (personaJuridicaRequestDTO.getPersona() != null && personaJuridica.getPersonas() != null) {
+            personaMapper.updateEntityFromDTO(personaJuridicaRequestDTO.getPersona(), personaJuridica.getPersonas());
         }
-
-        entity.setActualizado(LocalDateTime.now());
     }
 }

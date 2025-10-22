@@ -5,7 +5,9 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 @Data
 @Entity
@@ -17,16 +19,17 @@ public class Personas {
     @Column(name = "per_id_int")
     private Integer id;
 
-    @Column(name = "per_email_vac", length = 150)
+    @Column(name = "per_email_vac")
     private String email;
 
-    @Column(name = "per_telf_vac", length = 50)
+    @Column(name = "per_telf_vac")
     private String telefono;
 
-    @Column(name = "per_direc_vac", length = 200)
+    @Column(name = "per_direc_vac")
     private String direccion;
 
-    @Column(name = "per_obs_vac", length = 250)
+    @Column(name = "per_obs_vac")
+    @JdbcTypeCode(SqlTypes.LONGNVARCHAR)
     private String observacion;
 
     @CreationTimestamp
