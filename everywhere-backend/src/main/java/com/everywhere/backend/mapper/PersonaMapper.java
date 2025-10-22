@@ -10,8 +10,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Component
 @RequiredArgsConstructor
 public class PersonaMapper {
@@ -22,43 +20,31 @@ public class PersonaMapper {
         return modelMapper.map(persona, PersonaResponseDTO.class);
     }
 
-    public Personas toEntity(PersonaRequestDTO dto) {
-        return modelMapper.map(dto, Personas.class);
+    public Personas toEntity(PersonaRequestDTO personaRequestDTO) {
+        return modelMapper.map(personaRequestDTO, Personas.class);
     }
 
-    public void updateEntityFromDTO(PersonaRequestDTO dto, Personas entity) {
-        // Solo mapea campos no nulos
-        if (dto.getEmail() != null) {
-            entity.setEmail(dto.getEmail());
-        }
-        if (dto.getTelefono() != null) {
-            entity.setTelefono(dto.getTelefono());
-        }
-        if (dto.getDireccion() != null) {
-            entity.setDireccion(dto.getDireccion());
-        }
-        if (dto.getObservacion() != null) {
-            entity.setObservacion(dto.getObservacion());
-        }
-        entity.setActualizado(LocalDateTime.now());
+    public void updateEntityFromDTO(PersonaRequestDTO personaRequestDTO, Personas personas) {
+        modelMapper.getConfiguration().setSkipNullEnabled(true); // Configurar ModelMapper para saltar campos null
+        modelMapper.map(personaRequestDTO, personas); // Mapeo automático
     }
 
-    public PersonaDisplayDto toDisplayDTO(PersonaNatural natural) {
-        String nombreCompleto = natural.getNombres() + " " + natural.getApellidosPaterno() + " " + natural.getApellidosMaterno();
+    public PersonaDisplayDto toDisplayDTO(PersonaNatural personaNatural) {
+        String nombreCompleto = personaNatural.getNombres() + " " + personaNatural.getApellidosPaterno() + " " + personaNatural.getApellidosMaterno();
         return new PersonaDisplayDto(
-                natural.getId(),
+                personaNatural.getId(),
                 "NATURAL",
-                String.valueOf(natural.getDocumento()),
+                String.valueOf(personaNatural.getDocumento()),
                 nombreCompleto
         );
     }
 
-    public PersonaDisplayDto toDisplayDTO(PersonaJuridica juridica) {
+    public PersonaDisplayDto toDisplayDTO(PersonaJuridica personaJuridica) {
         return new PersonaDisplayDto(
-                juridica.getId(),
+                personaJuridica.getId(),
                 "JURIDICA",
-                String.valueOf(juridica.getRuc()),
-                juridica.getRazonSocial()
+                String.valueOf(personaJuridica.getRuc()),
+                personaJuridica.getRazonSocial()
         );
     }
 }

@@ -102,7 +102,7 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
         PersonaNatural existingPersonaNatural = personaNaturalRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Persona natural no encontrada con ID: " + id));
 
-        // Validar documento solo si se está intentando cambiar
+        // Validar que no exista otra persona con el mismo documento
         if (personaNaturalRequestDTO.getDocumento() != null && !personaNaturalRequestDTO.getDocumento().trim().isEmpty()) {
             Optional<PersonaNatural> personaConMismoDocumento = personaNaturalRepository.findByDocumentoIgnoreCase(personaNaturalRequestDTO.getDocumento());
             if (personaConMismoDocumento.isPresent() && !personaConMismoDocumento.get().getId().equals(id))
