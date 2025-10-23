@@ -23,4 +23,6 @@ public interface PersonaNaturalRepository extends JpaRepository<PersonaNatural, 
 
     @Query(value = "SELECT * FROM persona_natural WHERE UPPER(TRANSLATE(per_nat_apell_mat_vac, 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou')) LIKE UPPER(TRANSLATE(:apellidosMaterno, 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou'))", nativeQuery = true)
     List<PersonaNatural> findByApellidosMaternoIgnoreAccents(@Param("apellidosMaterno") String apellidosMaterno);
+
+    List<PersonaNatural> findByCategoriaPersonaId(Integer categoriaId);
 }
