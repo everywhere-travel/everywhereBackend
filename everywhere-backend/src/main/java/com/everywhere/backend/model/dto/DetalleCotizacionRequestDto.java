@@ -5,7 +5,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class DetalleCotizacionRequestDto {
+public class DetalleCotizacionRequestDTO {
 
     private Integer cantidad;
     private Integer unidad;

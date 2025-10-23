@@ -1,13 +1,13 @@
 package com.everywhere.backend.mapper;
 
-import com.everywhere.backend.model.dto.ProveedorRequestDto;
+import com.everywhere.backend.model.dto.ProveedorRequestDTO;
 import com.everywhere.backend.model.dto.ProveedorResponseDTO;
 import com.everywhere.backend.model.entity.Proveedor;
 
 public class ProveedorMapper {
 
 
-    public static Proveedor toEntity(ProveedorRequestDto dto) {
+    public static Proveedor toEntity(ProveedorRequestDTO dto) {
         if (dto == null) {
             return null;
         }

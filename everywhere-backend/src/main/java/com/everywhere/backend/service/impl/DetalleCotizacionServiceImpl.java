@@ -1,8 +1,8 @@
 package com.everywhere.backend.service.impl;
 
 import com.everywhere.backend.mapper.DetalleCotizacionMapper;
-import com.everywhere.backend.model.dto.DetalleCotizacionRequestDto;
-import com.everywhere.backend.model.dto.DetalleCotizacionResponseDto;
+import com.everywhere.backend.model.dto.DetalleCotizacionRequestDTO;
+import com.everywhere.backend.model.dto.DetalleCotizacionResponseDTO;
 import com.everywhere.backend.model.entity.*;
 import com.everywhere.backend.repository.*;
 import com.everywhere.backend.service.DetalleCotizacionService;
@@ -47,7 +47,7 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
     }
 
     @Override
-    public List<DetalleCotizacionResponseDto> findAll() {
+    public List<DetalleCotizacionResponseDTO> findAll() {
         return detalleCotizacionRepository.findAll()
                 .stream()
                 .map(DetalleCotizacionMapper::toResponse)
@@ -55,13 +55,13 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
     }
 
     @Override
-    public Optional<DetalleCotizacionResponseDto> findById(int id) {
+    public Optional<DetalleCotizacionResponseDTO> findById(int id) {
         return detalleCotizacionRepository.findById(id)
                 .map(DetalleCotizacionMapper::toResponse);
     }
 
     @Override
-    public List<DetalleCotizacionResponseDto> findByCotizacionId(int cotizacionId) {
+    public List<DetalleCotizacionResponseDTO> findByCotizacionId(int cotizacionId) {
         return detalleCotizacionRepository.findByCotizacionId(cotizacionId)
                 .stream()
                 .map(DetalleCotizacionMapper::toResponse)
@@ -69,7 +69,7 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
     }
 
     @Override
-    public DetalleCotizacionResponseDto create(DetalleCotizacionRequestDto dto, int cotizacionId) {
+    public DetalleCotizacionResponseDTO create(DetalleCotizacionRequestDTO dto, int cotizacionId) {
         DetalleCotizacion entity = new DetalleCotizacion();
 
         // Relación Cotización
@@ -96,7 +96,7 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
 
 
     @Override
-    public DetalleCotizacionResponseDto update(int id, DetalleCotizacionRequestDto dto) {
+    public DetalleCotizacionResponseDTO update(int id, DetalleCotizacionRequestDTO dto) {
         DetalleCotizacion entity = detalleCotizacionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Detalle de cotización no encontrado"));
 
@@ -116,7 +116,7 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
     }
 
     @Override
-    public DetalleCotizacionResponseDto setCotizacion(int detalleId, int cotizacionId) {
+    public DetalleCotizacionResponseDTO setCotizacion(int detalleId, int cotizacionId) {
         DetalleCotizacion detalle = detalleCotizacionRepository.findById(detalleId)
                 .orElseThrow(() -> new EntityNotFoundException("Detalle no encontrado"));
         Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId)
@@ -129,7 +129,7 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
     }
 
     @Override
-    public DetalleCotizacionResponseDto setProducto(int detalleId, int productoId) {
+    public DetalleCotizacionResponseDTO setProducto(int detalleId, int productoId) {
         DetalleCotizacion detalle = detalleCotizacionRepository.findById(detalleId)
                 .orElseThrow(() -> new EntityNotFoundException("Detalle no encontrado"));
         Producto producto = productoRepository.findById(productoId)
@@ -142,7 +142,7 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
     }
 
     @Override
-    public DetalleCotizacionResponseDto setProveedor(int detalleId, int proveedorId) {
+    public DetalleCotizacionResponseDTO setProveedor(int detalleId, int proveedorId) {
         DetalleCotizacion detalle = detalleCotizacionRepository.findById(detalleId)
                 .orElseThrow(() -> new EntityNotFoundException("Detalle no encontrado"));
         Proveedor proveedor = proveedorRepository.findById(proveedorId)
@@ -155,7 +155,7 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
     }
 
     @Override
-    public DetalleCotizacionResponseDto updateSeleccionado(int detalleId, Boolean seleccionado) {
+    public DetalleCotizacionResponseDTO updateSeleccionado(int detalleId, Boolean seleccionado) {
         if (detalleId <= 0) {
             throw new IllegalArgumentException("El ID del detalle debe ser un número válido mayor a 0");
         }

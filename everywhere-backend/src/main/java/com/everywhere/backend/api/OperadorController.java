@@ -1,7 +1,7 @@
 package com.everywhere.backend.api;
 
 import com.everywhere.backend.mapper.OperadorMapper;
-import com.everywhere.backend.model.dto.OperadorRequestDto;
+import com.everywhere.backend.model.dto.OperadorRequestDTO;
 import com.everywhere.backend.model.dto.OperadorResponseDTO;
 import com.everywhere.backend.model.entity.Operador; 
 import com.everywhere.backend.security.RequirePermission;
@@ -44,7 +44,7 @@ public class OperadorController {
 
     @PostMapping
     @RequirePermission(module = "OPERADOR", permission = "CREATE")
-    public ResponseEntity<OperadorResponseDTO> create(@RequestBody OperadorRequestDto dto) {
+    public ResponseEntity<OperadorResponseDTO> create(@RequestBody OperadorRequestDTO dto) {
         Operador operador = OperadorMapper.toEntity(dto);
         Operador nuevoOperador = operadorService.save(operador);
         return new ResponseEntity<>(OperadorMapper.toResponse(nuevoOperador), HttpStatus.CREATED);
@@ -54,7 +54,7 @@ public class OperadorController {
     @RequirePermission(module = "OPERADOR", permission = "UPDATE")
     public ResponseEntity<OperadorResponseDTO> update(
             @PathVariable Integer id,
-            @RequestBody OperadorRequestDto dto) {
+            @RequestBody OperadorRequestDTO dto) {
 
         return operadorService.findById(id)
                 .map(existing -> {

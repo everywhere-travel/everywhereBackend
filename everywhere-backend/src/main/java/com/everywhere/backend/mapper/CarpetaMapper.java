@@ -1,12 +1,12 @@
 package com.everywhere.backend.mapper;
 
-import com.everywhere.backend.model.dto.CarpetaRequestDto;
-import com.everywhere.backend.model.dto.CarpetaResponseDto;
+import com.everywhere.backend.model.dto.CarpetaRequestDTO;
+import com.everywhere.backend.model.dto.CarpetaResponseDTO;
 import com.everywhere.backend.model.entity.Carpeta;
 
 public class CarpetaMapper {
 
-    public static Carpeta toEntity(CarpetaRequestDto carpetaRequestDto) {
+    public static Carpeta toEntity(CarpetaRequestDTO carpetaRequestDto) {
         if (carpetaRequestDto == null) {
             return null;
         }
@@ -17,11 +17,11 @@ public class CarpetaMapper {
         return carpeta;
     }
 
-    public static CarpetaResponseDto toResponse(Carpeta carpeta) {
+    public static CarpetaResponseDTO toResponse(Carpeta carpeta) {
         if (carpeta == null) {
             return null;
         }
-        CarpetaResponseDto responseDto = new CarpetaResponseDto();
+        CarpetaResponseDTO responseDto = new CarpetaResponseDTO();
         responseDto.setId(carpeta.getId());
         responseDto.setNombre(carpeta.getNombre());
         responseDto.setDescripcion(carpeta.getDescripcion());

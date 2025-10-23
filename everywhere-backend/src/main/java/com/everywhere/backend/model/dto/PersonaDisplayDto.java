@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PersonaDisplayDto {
+public class PersonaDisplayDTO {
     private Integer id;
     private String tipo;
     private String identificador;
