@@ -4,6 +4,7 @@ package com.everywhere.backend.model.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -20,6 +21,13 @@ public class CategoriaPersona {
 
 	@Column(name = "cat_per_nom_vac")
 	private String nombre;
+
+	@Column(name = "cat_per_desc_vac")
+	private String descripcion;
+
+    // Relación One-to-Many con Personas
+    @OneToMany(mappedBy = "categoriaPersona", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Personas> personas;
 
     @CreationTimestamp
 	@Column(name = "cat_per_cre_tmp", updatable = false)

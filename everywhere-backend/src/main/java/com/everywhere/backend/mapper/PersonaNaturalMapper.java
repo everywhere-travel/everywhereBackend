@@ -26,7 +26,7 @@ public class PersonaNaturalMapper {
 
     public void updateEntityFromDTO(PersonaNaturalRequestDTO personaNaturalRequestDTO, PersonaNatural personaNatural) {
         modelMapper.getConfiguration().setSkipNullEnabled(true); // Configurar ModelMapper para saltar campos null 
-        modelMapper.map(personaNaturalRequestDTO, personaNatural); // Mapeo automático - solo actualiza campos no null
+        modelMapper.map(personaNaturalRequestDTO, personaNatural); // Mapeo automático
         
         if (personaNaturalRequestDTO.getPersona() != null && personaNatural.getPersonas() != null) // Actualizar persona base si existe
             personaMapper.updateEntityFromDTO(personaNaturalRequestDTO.getPersona(), personaNatural.getPersonas());
