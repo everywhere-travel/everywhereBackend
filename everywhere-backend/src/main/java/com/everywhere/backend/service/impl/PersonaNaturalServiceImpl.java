@@ -3,8 +3,10 @@ package com.everywhere.backend.service.impl;
 import com.everywhere.backend.model.dto.PersonaNaturalRequestDTO;
 import com.everywhere.backend.model.dto.PersonaNaturalResponseDTO;
 import com.everywhere.backend.model.entity.PersonaNatural;
+import com.everywhere.backend.model.entity.Viajero;
 import com.everywhere.backend.model.entity.Personas;
 import com.everywhere.backend.repository.PersonaNaturalRepository;
+import com.everywhere.backend.repository.ViajeroRepository;
 import com.everywhere.backend.repository.PersonaRepository;
 import com.everywhere.backend.service.PersonaNaturalService;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
@@ -12,6 +14,7 @@ import com.everywhere.backend.exceptions.BadRequestException;
 import com.everywhere.backend.mapper.PersonaNaturalMapper;
 import com.everywhere.backend.mapper.PersonaMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -24,6 +27,7 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
 
     private final PersonaNaturalRepository personaNaturalRepository;
     private final PersonaRepository personaRepository;
+    private final ViajeroRepository viajeroRepository;
     private final PersonaNaturalMapper personaNaturalMapper;
     private final PersonaMapper personaMapper;
 
@@ -92,6 +96,13 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
         // Crear la persona natural
         PersonaNatural personaNatural = personaNaturalMapper.toEntity(personaNaturalRequestDTO);
         personaNatural.setPersonas(persona); 
+
+        if (personaNaturalRequestDTO.getViajeroId() != null) {
+            Viajero viajero = viajeroRepository.findById(personaNaturalRequestDTO.getViajeroId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Viajero no encontrado con ID: " + personaNaturalRequestDTO.getViajeroId()));
+            personaNatural.setViajero(viajero);
+        }
+
         personaNatural = personaNaturalRepository.save(personaNatural);
 
         return personaNaturalMapper.toResponseDTO(personaNatural);
@@ -119,5 +130,32 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
         if (!personaNaturalRepository.existsById(id))
             throw new ResourceNotFoundException("Persona natural no encontrada con ID: " + id);
         personaNaturalRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public PersonaNaturalResponseDTO asociarViajero(Integer personaNaturalId, Integer viajeroId) {
+        PersonaNatural personaNatural = personaNaturalRepository.findById(personaNaturalId)
+                .orElseThrow(() -> new ResourceNotFoundException("Persona natural no encontrada con ID: " + personaNaturalId));
+
+        Viajero viajero = viajeroRepository.findById(viajeroId)
+                .orElseThrow(() -> new ResourceNotFoundException("Viajero no encontrado con ID: " + viajeroId));
+
+        personaNatural.setViajero(viajero);
+        personaNatural = personaNaturalRepository.save(personaNatural);
+        
+        return personaNaturalMapper.toResponseDTO(personaNatural);
+    }
+
+    @Override
+    @Transactional
+    public PersonaNaturalResponseDTO desasociarViajero(Integer personaNaturalId) {
+        PersonaNatural personaNatural = personaNaturalRepository.findById(personaNaturalId)
+                .orElseThrow(() -> new ResourceNotFoundException("Persona natural no encontrada con ID: " + personaNaturalId));
+
+        personaNatural.setViajero(null);
+        personaNatural = personaNaturalRepository.save(personaNatural);
+        
+        return personaNaturalMapper.toResponseDTO(personaNatural);
     }
 }

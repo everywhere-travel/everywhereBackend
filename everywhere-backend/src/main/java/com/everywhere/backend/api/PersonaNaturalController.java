@@ -1,7 +1,8 @@
 package com.everywhere.backend.api;
 
 import com.everywhere.backend.model.dto.PersonaNaturalRequestDTO;
-import com.everywhere.backend.model.dto.PersonaNaturalResponseDTO; 
+import com.everywhere.backend.model.dto.PersonaNaturalResponseDTO;
+import com.everywhere.backend.model.dto.PersonaNaturalViajeroDTO; 
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.PersonaNaturalService;
 import jakarta.validation.Valid;
@@ -72,6 +73,20 @@ public class PersonaNaturalController {
     @RequirePermission(module = "PERSONAS", permission = "UPDATE")
     public ResponseEntity<PersonaNaturalResponseDTO> patchPersonaNatural(@PathVariable Integer id, @RequestBody PersonaNaturalRequestDTO personaNaturalRequestDTO) {
         PersonaNaturalResponseDTO personaActualizada = personaNaturalService.patch(id, personaNaturalRequestDTO);
+        return ResponseEntity.ok(personaActualizada);
+    }
+
+    @PatchMapping("/{id}/viajero")
+    @RequirePermission(module = "PERSONAS", permission = "UPDATE")
+    public ResponseEntity<PersonaNaturalResponseDTO> asociarViajero(@PathVariable Integer id, @RequestBody PersonaNaturalViajeroDTO personaNaturalViajeroDTO) {
+        PersonaNaturalResponseDTO personaActualizada = personaNaturalService.asociarViajero(id, personaNaturalViajeroDTO.getViajeroId());
+        return ResponseEntity.ok(personaActualizada);
+    }
+
+    @DeleteMapping("/{id}/viajero")
+    @RequirePermission(module = "PERSONAS", permission = "UPDATE")
+    public ResponseEntity<PersonaNaturalResponseDTO> desasociarViajero(@PathVariable Integer id) {
+        PersonaNaturalResponseDTO personaActualizada = personaNaturalService.desasociarViajero(id);
         return ResponseEntity.ok(personaActualizada);
     }
 

@@ -7,8 +7,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Component
 @RequiredArgsConstructor
 public class PersonaJuridicaMapper {
