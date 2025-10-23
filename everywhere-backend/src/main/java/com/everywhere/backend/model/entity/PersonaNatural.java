@@ -3,6 +3,8 @@ package com.everywhere.backend.model.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.ArrayList;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -43,4 +45,7 @@ public class PersonaNatural {
     @OneToOne
     @JoinColumn(name = "per_id_int", nullable = false)
     private Personas personas;
+
+    @OneToMany(mappedBy = "personaNatural", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<NaturalJuridico> relacionesJuridicas = new ArrayList<>();
 }
