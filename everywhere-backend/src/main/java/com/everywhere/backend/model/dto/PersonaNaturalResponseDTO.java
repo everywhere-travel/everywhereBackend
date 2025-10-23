@@ -21,4 +21,5 @@ public class PersonaNaturalResponseDTO {
     private LocalDateTime creado;
     private LocalDateTime actualizado;
     private PersonaResponseDTO persona;
+    private ViajeroResponseDTO viajero;
 }

@@ -10,6 +10,7 @@ public class PersonaNaturalRequestDTO {
     private String apellidosPaterno;
     private String apellidosMaterno;
     private String sexo; 
+    private Integer viajeroId;
 
     @Valid
     private PersonaRequestDTO persona;
