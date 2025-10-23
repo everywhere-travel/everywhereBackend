@@ -26,13 +26,6 @@ public class ViajeroController {
         return ResponseEntity.ok(viajeros);
     }
 
-    @GetMapping("/nombres")
-    @RequirePermission(module = "VIAJEROS", permission = "READ")
-    public ResponseEntity<List<ViajeroResponseDTO>> getViajeroByNombres(@RequestParam String nombres) {
-        List<ViajeroResponseDTO> viajeros = viajeroService.findByNombres(nombres.trim());
-        return ResponseEntity.ok(viajeros);
-    }
-
     @GetMapping("/nacionalidad")
     @RequirePermission(module = "VIAJEROS", permission = "READ")
     public ResponseEntity<List<ViajeroResponseDTO>> getViajeroByNacionalidad(@RequestParam String nacionalidad) {
@@ -63,8 +56,8 @@ public class ViajeroController {
 
     @PutMapping("/{id}")
     @RequirePermission(module = "VIAJEROS", permission = "UPDATE")
-    public ResponseEntity<ViajeroResponseDTO> updateViajero(@PathVariable Integer id, @Valid @RequestBody ViajeroRequestDTO viajeroRequestDTO) {
-        ViajeroResponseDTO viajeroActualizado = viajeroService.update(id, viajeroRequestDTO);
+    public ResponseEntity<ViajeroResponseDTO> patch(@PathVariable Integer id, @Valid @RequestBody ViajeroRequestDTO viajeroRequestDTO) {
+        ViajeroResponseDTO viajeroActualizado = viajeroService.patch(id, viajeroRequestDTO);
         return ResponseEntity.ok(viajeroActualizado);
     }
 
