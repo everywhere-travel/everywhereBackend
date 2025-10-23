@@ -15,4 +15,6 @@ public interface PersonaNaturalService {
     PersonaNaturalResponseDTO save(PersonaNaturalRequestDTO personaNaturalRequestDTO); 
     PersonaNaturalResponseDTO patch(Integer id, PersonaNaturalRequestDTO personaNaturalRequestDTO);
     void deleteById(Integer id);
+    PersonaNaturalResponseDTO asociarViajero(Integer personaNaturalId, Integer viajeroId);
+    PersonaNaturalResponseDTO desasociarViajero(Integer personaNaturalId);
 }
