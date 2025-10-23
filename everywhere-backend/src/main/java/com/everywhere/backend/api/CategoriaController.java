@@ -1,7 +1,7 @@
 package com.everywhere.backend.api;
 
-import com.everywhere.backend.model.dto.CategoriaRequestDto;
-import com.everywhere.backend.model.dto.CategoriaResponseDto;
+import com.everywhere.backend.model.dto.CategoriaRequestDTO;
+import com.everywhere.backend.model.dto.CategoriaResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.CategoriaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,25 +18,25 @@ public class CategoriaController {
 
 	@GetMapping
     @RequirePermission(module = "CATEGORIA", permission = "READ")
-	public List<CategoriaResponseDto> getAll() {
+	public List<CategoriaResponseDTO> getAll() {
 		return categoriaService.findAll();
 	}
 
 	@GetMapping("/{id}")
     @RequirePermission(module = "CATEGORIA", permission = "READ")
-	public ResponseEntity<CategoriaResponseDto> getById(@PathVariable int id) {
+	public ResponseEntity<CategoriaResponseDTO> getById(@PathVariable int id) {
 		return ResponseEntity.ok(categoriaService.findById(id));
 	}
 
 	@PostMapping
     @RequirePermission(module = "CATEGORIA", permission = "CREATE")
-	public ResponseEntity<CategoriaResponseDto> create(@RequestBody CategoriaRequestDto dto) {
+	public ResponseEntity<CategoriaResponseDTO> create(@RequestBody CategoriaRequestDTO dto) {
 		return ResponseEntity.ok(categoriaService.create(dto));
 	}
 
 	@PutMapping("/{id}")
     @RequirePermission(module = "CATEGORIA", permission = "UPDATE")
-	public ResponseEntity<CategoriaResponseDto> update(@PathVariable int id, @RequestBody CategoriaRequestDto dto) {
+	public ResponseEntity<CategoriaResponseDTO> update(@PathVariable int id, @RequestBody CategoriaRequestDTO dto) {
 		return ResponseEntity.ok(categoriaService.update(id, dto));
 	}
 

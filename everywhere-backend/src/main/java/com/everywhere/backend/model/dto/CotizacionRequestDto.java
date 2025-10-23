@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
-public class CotizacionRequestDto {
+public class CotizacionRequestDTO {
     private int cantAdultos;
     private int cantNinos;
     private LocalDateTime fechaVencimiento;

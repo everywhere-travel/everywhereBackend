@@ -1,12 +1,12 @@
 package com.everywhere.backend.mapper;
 
-import com.everywhere.backend.model.dto.OperadorRequestDto;
+import com.everywhere.backend.model.dto.OperadorRequestDTO;
 import com.everywhere.backend.model.dto.OperadorResponseDTO;
 import com.everywhere.backend.model.entity.Operador;
 
 public class OperadorMapper {
 
-    public static Operador toEntity(OperadorRequestDto dto) {
+    public static Operador toEntity(OperadorRequestDTO dto) {
         if (dto == null) {
             return null;
         }
