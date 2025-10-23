@@ -1,0 +1,63 @@
+package com.everywhere.backend.api;
+
+import com.everywhere.backend.model.dto.CategoriaPersonaRequestDTO;
+import com.everywhere.backend.model.dto.CategoriaPersonaResponseDTO;
+import com.everywhere.backend.security.RequirePermission;
+import com.everywhere.backend.service.CategoriaPersonaService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/categorias-personas")
+@RequiredArgsConstructor
+public class CategoriaPersonaController {
+    
+    private final CategoriaPersonaService categoriaPersonaService;
+
+    @GetMapping
+    @RequirePermission(module = "CATEGORIA_PERSONAS", permission = "READ")
+    public ResponseEntity<List<CategoriaPersonaResponseDTO>> getAllCategorias() {
+        List<CategoriaPersonaResponseDTO> categorias = categoriaPersonaService.findAll();
+        return ResponseEntity.ok(categorias);
+    }
+
+    @GetMapping("/nombre")
+    @RequirePermission(module = "CATEGORIA_PERSONAS", permission = "READ")
+    public ResponseEntity<List<CategoriaPersonaResponseDTO>> getCategoriasByNombre(@RequestParam String nombre) {
+        List<CategoriaPersonaResponseDTO> categorias = categoriaPersonaService.findByNombre(nombre.trim());
+        return ResponseEntity.ok(categorias);
+    }
+
+    @GetMapping("/{id}")
+    @RequirePermission(module = "CATEGORIA_PERSONAS", permission = "READ")
+    public ResponseEntity<CategoriaPersonaResponseDTO> getCategoriaById(@PathVariable Integer id) {
+        CategoriaPersonaResponseDTO categoria = categoriaPersonaService.findById(id);
+        return ResponseEntity.ok(categoria);
+    }
+
+    @PostMapping
+    @RequirePermission(module = "CATEGORIA_PERSONAS", permission = "CREATE")
+    public ResponseEntity<CategoriaPersonaResponseDTO> createCategoria(@Valid @RequestBody CategoriaPersonaRequestDTO categoriaPersonaRequestDTO) {
+        CategoriaPersonaResponseDTO nuevaCategoria = categoriaPersonaService.save(categoriaPersonaRequestDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nuevaCategoria);
+    }
+
+    @PatchMapping("/{id}")
+    @RequirePermission(module = "CATEGORIA_PERSONAS", permission = "UPDATE")
+    public ResponseEntity<CategoriaPersonaResponseDTO> patchCategoria(@PathVariable Integer id, @RequestBody CategoriaPersonaRequestDTO categoriaPersonaRequestDTO) {
+        CategoriaPersonaResponseDTO categoriaActualizada = categoriaPersonaService.patch(id, categoriaPersonaRequestDTO);
+        return ResponseEntity.ok(categoriaActualizada);
+    }
+
+    @DeleteMapping("/{id}")
+    @RequirePermission(module = "CATEGORIA_PERSONAS", permission = "DELETE")
+    public ResponseEntity<Void> deleteCategoria(@PathVariable Integer id) {
+        categoriaPersonaService.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+}
