@@ -48,4 +48,8 @@ public class PersonaNatural {
 
     @OneToMany(mappedBy = "personaNatural", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<NaturalJuridico> relacionesJuridicas = new ArrayList<>();
+
+    @OneToOne
+    @JoinColumn(name = "via_id_int")
+    private Viajero viajero;
 }
