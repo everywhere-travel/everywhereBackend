@@ -52,4 +52,9 @@ public class PersonaNatural {
     @OneToOne
     @JoinColumn(name = "via_id_int")
     private Viajero viajero;
+
+    // Relación directa Many-to-One con CategoriaPersona
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cat_per_id_int")
+    private CategoriaPersona categoriaPersona;
 }

@@ -78,7 +78,7 @@ public class PersonaNaturalController {
 
     @PatchMapping("/{id}/viajero")
     @RequirePermission(module = "PERSONAS", permission = "UPDATE")
-    public ResponseEntity<PersonaNaturalResponseDTO> asociarViajero(@PathVariable Integer id, @RequestBody PersonaNaturalViajeroDTO personaNaturalViajeroDTO) {
+    public ResponseEntity<PersonaNaturalResponseDTO> patchAsociarViajero(@PathVariable Integer id, @RequestBody PersonaNaturalViajeroDTO personaNaturalViajeroDTO) {
         PersonaNaturalResponseDTO personaActualizada = personaNaturalService.asociarViajero(id, personaNaturalViajeroDTO.getViajeroId());
         return ResponseEntity.ok(personaActualizada);
     }

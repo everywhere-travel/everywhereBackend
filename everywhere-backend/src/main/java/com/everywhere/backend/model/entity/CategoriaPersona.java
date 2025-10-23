@@ -25,10 +25,6 @@ public class CategoriaPersona {
 	@Column(name = "cat_per_desc_vac")
 	private String descripcion;
 
-    // Relación One-to-Many con Personas
-    @OneToMany(mappedBy = "categoriaPersona", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Personas> personas;
-
     @CreationTimestamp
 	@Column(name = "cat_per_cre_tmp", updatable = false)
 	private LocalDateTime creado;
@@ -36,4 +32,7 @@ public class CategoriaPersona {
     @UpdateTimestamp
 	@Column(name = "cat_per_upd_tmp")
 	private LocalDateTime actualizado;
+
+	@OneToMany(mappedBy = "categoriaPersona", fetch = FetchType.LAZY)
+    private List<PersonaNatural> personasNaturales;
 }

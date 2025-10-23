@@ -11,6 +11,7 @@ public class PersonaNaturalRequestDTO {
     private String apellidosMaterno;
     private String sexo; 
     private Integer viajeroId;
+    private Integer categoriaPersonaId;
 
     @Valid
     private PersonaRequestDTO persona;
