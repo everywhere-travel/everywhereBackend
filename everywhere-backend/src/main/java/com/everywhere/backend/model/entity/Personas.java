@@ -32,6 +32,11 @@ public class Personas {
     @JdbcTypeCode(SqlTypes.LONGNVARCHAR)
     private String observacion;
 
+    // Relación Many-to-One con CategoriaPersona
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cat_per_id_int")
+    private CategoriaPersona categoriaPersona;
+
     @CreationTimestamp
     @Column(name = "per_cre_tmp", updatable = false)
     private LocalDateTime creado;

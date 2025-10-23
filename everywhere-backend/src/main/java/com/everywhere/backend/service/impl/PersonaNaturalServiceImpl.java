@@ -8,6 +8,7 @@ import com.everywhere.backend.model.entity.Personas;
 import com.everywhere.backend.repository.PersonaNaturalRepository;
 import com.everywhere.backend.repository.ViajeroRepository;
 import com.everywhere.backend.repository.PersonaRepository;
+import com.everywhere.backend.repository.CategoriaPersonaRepository;
 import com.everywhere.backend.service.PersonaNaturalService;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.exceptions.BadRequestException;
@@ -28,6 +29,7 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
     private final PersonaNaturalRepository personaNaturalRepository;
     private final PersonaRepository personaRepository;
     private final ViajeroRepository viajeroRepository;
+    private final CategoriaPersonaRepository categoriaPersonaRepository;
     private final PersonaNaturalMapper personaNaturalMapper;
     private final PersonaMapper personaMapper;
 
@@ -103,6 +105,13 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
             personaNatural.setViajero(viajero);
         }
 
+        if (personaNaturalRequestDTO.getCategoriaPersonaId() != null) {
+            com.everywhere.backend.model.entity.CategoriaPersona categoria = 
+                categoriaPersonaRepository.findById(personaNaturalRequestDTO.getCategoriaPersonaId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + personaNaturalRequestDTO.getCategoriaPersonaId()));
+            personaNatural.setCategoriaPersona(categoria);
+        }
+
         personaNatural = personaNaturalRepository.save(personaNatural);
 
         return personaNaturalMapper.toResponseDTO(personaNatural);
@@ -121,6 +130,15 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
         }
 
         personaNaturalMapper.updateEntityFromDTO(personaNaturalRequestDTO, existingPersonaNatural);
+        
+        // Manejar categoría explícitamente si se proporciona
+        if (personaNaturalRequestDTO.getCategoriaPersonaId() != null) {
+            com.everywhere.backend.model.entity.CategoriaPersona categoria = 
+                categoriaPersonaRepository.findById(personaNaturalRequestDTO.getCategoriaPersonaId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + personaNaturalRequestDTO.getCategoriaPersonaId()));
+            existingPersonaNatural.setCategoriaPersona(categoria);
+        }
+        
         existingPersonaNatural = personaNaturalRepository.save(existingPersonaNatural);
         return personaNaturalMapper.toResponseDTO(existingPersonaNatural);
     }
