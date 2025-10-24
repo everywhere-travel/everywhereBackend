@@ -1,17 +1,17 @@
 package com.everywhere.backend.mapper;
 
-import com.everywhere.backend.model.dto.CotizacionRequestDTO;
-import com.everywhere.backend.model.dto.CotizacionResponseDTO;
+import com.everywhere.backend.model.dto.CotizacionRequestDto;
+import com.everywhere.backend.model.dto.CotizacionResponseDto;
 import com.everywhere.backend.model.entity.Cotizacion;
 
 public class CotizacionMapper {
 
-    public static CotizacionResponseDTO toResponse(Cotizacion entity) {
+    public static CotizacionResponseDto toResponse(Cotizacion entity) {
         if (entity == null) {
             return null;
         }
 
-        CotizacionResponseDTO dto = new CotizacionResponseDTO();
+        CotizacionResponseDto dto = new CotizacionResponseDto();
         dto.setId(entity.getId());
         dto.setCodigoCotizacion(entity.getCodigoCotizacion());
         dto.setCantAdultos(entity.getCantAdultos());
@@ -36,7 +36,7 @@ public class CotizacionMapper {
         return dto;
     }
 
-    public static void updateEntityFromRequest(Cotizacion entity, CotizacionRequestDTO dto) {
+    public static void updateEntityFromRequest(Cotizacion entity, CotizacionRequestDto dto) {
         if (entity == null || dto == null) {
             return;
         }

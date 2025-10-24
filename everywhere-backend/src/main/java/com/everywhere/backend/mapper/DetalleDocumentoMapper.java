@@ -1,7 +1,7 @@
 package com.everywhere.backend.mapper;
 
-import com.everywhere.backend.model.dto.DetalleDocumentoRequestDTO;
-import com.everywhere.backend.model.dto.DetalleDocumentoResponseDTO;
+import com.everywhere.backend.model.dto.DetalleDocumentoRequestDto;
+import com.everywhere.backend.model.dto.DetalleDocumentoResponseDto;
 import com.everywhere.backend.model.entity.DetalleDocumento; 
 import com.everywhere.backend.repository.DocumentoRepository;
 import com.everywhere.backend.repository.ViajeroRepository;
@@ -20,14 +20,14 @@ public class DetalleDocumentoMapper {
     private final DocumentoRepository documentoRepository;
     private final ViajeroRepository viajeroRepository;
 
-    public DetalleDocumento toEntity(DetalleDocumentoRequestDTO dto) {
+    public DetalleDocumento toEntity(DetalleDocumentoRequestDto dto) {
         DetalleDocumento detalle = new DetalleDocumento();
         updateEntityFromDto(dto, detalle);
         return detalle;
     }
 
-    public DetalleDocumentoResponseDTO toDto(DetalleDocumento detalle) {
-        DetalleDocumentoResponseDTO dto = new DetalleDocumentoResponseDTO();
+    public DetalleDocumentoResponseDto toDto(DetalleDocumento detalle) {
+        DetalleDocumentoResponseDto dto = new DetalleDocumentoResponseDto();
         dto.setId(detalle.getId());
         dto.setNumero(detalle.getNumero());
         dto.setFechaEmision(detalle.getFechaEmision().toString());
@@ -45,7 +45,7 @@ public class DetalleDocumentoMapper {
         return dto;
     }
 
-    public void updateEntityFromDto(DetalleDocumentoRequestDTO dto, DetalleDocumento detalle) {
+    public void updateEntityFromDto(DetalleDocumentoRequestDto dto, DetalleDocumento detalle) {
         detalle.setNumero(dto.getNumero());
         detalle.setFechaEmision(LocalDate.parse(dto.getFechaEmision()));
         detalle.setFechaVencimiento(LocalDate.parse(dto.getFechaVencimiento()));

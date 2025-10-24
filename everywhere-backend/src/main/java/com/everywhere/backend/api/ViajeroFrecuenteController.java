@@ -1,7 +1,7 @@
 package com.everywhere.backend.api;
 
-import com.everywhere.backend.model.dto.ViajeroFrecuenteRequestDTO;
-import com.everywhere.backend.model.dto.ViajeroFrecuenteResponseDTO;
+import com.everywhere.backend.model.dto.ViajeroFrecuenteRequestDto;
+import com.everywhere.backend.model.dto.ViajeroFrecuenteResponseDto;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.ViajeroFrecuenteService;
 import org.springframework.http.ResponseEntity;
@@ -22,32 +22,32 @@ public class ViajeroFrecuenteController {
     // Crear viajero frecuente asociando a un viajero existente
     @PostMapping("/{viajeroId}")
     @RequirePermission(module = "VIAJEROS", permission = "CREATE")
-    public ResponseEntity<ViajeroFrecuenteResponseDTO> crear(
+    public ResponseEntity<ViajeroFrecuenteResponseDto> crear(
             @PathVariable Integer viajeroId,
-            @RequestBody ViajeroFrecuenteRequestDTO dto) {
+            @RequestBody ViajeroFrecuenteRequestDto dto) {
         return ResponseEntity.ok(viajeroFrecuenteService.crear(viajeroId, dto));
     }
 
     // Buscar por ID
     @GetMapping("/{id}")
     @RequirePermission(module = "VIAJEROS", permission = "READ")
-    public ResponseEntity<ViajeroFrecuenteResponseDTO> buscarPorId(@PathVariable Integer id) {
+    public ResponseEntity<ViajeroFrecuenteResponseDto> buscarPorId(@PathVariable Integer id) {
         return ResponseEntity.ok(viajeroFrecuenteService.buscarPorId(id));
     }
 
     // Listar todos los viajeros frecuentes de un viajero
     @GetMapping("/viajero/{viajeroId}")
     @RequirePermission(module = "VIAJEROS", permission = "READ")
-    public ResponseEntity<List<ViajeroFrecuenteResponseDTO>> listarPorViajero(@PathVariable Integer viajeroId) {
+    public ResponseEntity<List<ViajeroFrecuenteResponseDto>> listarPorViajero(@PathVariable Integer viajeroId) {
         return ResponseEntity.ok(viajeroFrecuenteService.listarPorViajero(viajeroId));
     }
 
     // Actualizar
     @PutMapping("/{id}")
     @RequirePermission(module = "VIAJEROS", permission = "UPDATE")
-    public ResponseEntity<ViajeroFrecuenteResponseDTO> actualizar(
+    public ResponseEntity<ViajeroFrecuenteResponseDto> actualizar(
             @PathVariable Integer id,
-            @RequestBody ViajeroFrecuenteRequestDTO dto) {
+            @RequestBody ViajeroFrecuenteRequestDto dto) {
         return ResponseEntity.ok(viajeroFrecuenteService.actualizar(id, dto));
     }
 
@@ -62,7 +62,7 @@ public class ViajeroFrecuenteController {
     // Buscar todos los viajeros frecuentes por ID de viajero
     @GetMapping("/search/{viajeroId}")
     @RequirePermission(module = "VIAJEROS", permission = "READ")
-    public ResponseEntity<List<ViajeroFrecuenteResponseDTO>> buscarPorViajeroId(
+    public ResponseEntity<List<ViajeroFrecuenteResponseDto>> buscarPorViajeroId(
             @PathVariable Integer viajeroId) {
         return ResponseEntity.ok(viajeroFrecuenteService.buscarPorViajeroId(viajeroId));
     }

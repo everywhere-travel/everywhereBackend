@@ -7,6 +7,6 @@ import java.io.Serializable;
  * DTO for {@link com.everywhere.backend.model.entity.Proveedor}
  */
 @Data
-public class ProveedorRequestDTO implements Serializable {
+public class ProveedorRequestDto implements Serializable {
     String nombre;
 }

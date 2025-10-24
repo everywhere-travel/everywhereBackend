@@ -1,19 +1,19 @@
 package com.everywhere.backend.mapper;
 
 import com.everywhere.backend.model.entity.Categoria;
-import com.everywhere.backend.model.dto.CategoriaRequestDTO;
-import com.everywhere.backend.model.dto.CategoriaResponseDTO;
+import com.everywhere.backend.model.dto.CategoriaRequestDto;
+import com.everywhere.backend.model.dto.CategoriaResponseDto;
 
 public class CategoriaMapper {
 
-	public static Categoria toEntity(CategoriaRequestDTO dto) {
+	public static Categoria toEntity(CategoriaRequestDto dto) {
 		Categoria categoria = new Categoria();
 		categoria.setNombre(dto.getNombre());
 		return categoria;
 	}
 
-	public static CategoriaResponseDTO toResponseDto(Categoria categoria) {
-		CategoriaResponseDTO dto = new CategoriaResponseDTO();
+	public static CategoriaResponseDto toResponseDto(Categoria categoria) {
+		CategoriaResponseDto dto = new CategoriaResponseDto();
 		dto.setId(categoria.getId());
 		dto.setNombre(categoria.getNombre());
 		dto.setCreado(categoria.getCreado());
