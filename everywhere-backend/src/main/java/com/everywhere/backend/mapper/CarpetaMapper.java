@@ -1,36 +1,25 @@
 package com.everywhere.backend.mapper;
 
+import org.springframework.stereotype.Component;
+
 import com.everywhere.backend.model.dto.CarpetaRequestDto;
 import com.everywhere.backend.model.dto.CarpetaResponseDto;
 import com.everywhere.backend.model.entity.Carpeta;
+import org.modelmapper.ModelMapper;
 
+import lombok.RequiredArgsConstructor;
+
+@Component
+@RequiredArgsConstructor
 public class CarpetaMapper {
 
-    public static Carpeta toEntity(CarpetaRequestDto carpetaRequestDto) {
-        if (carpetaRequestDto == null) {
-            return null;
-        }
+    private final ModelMapper modelMapper;
 
-        Carpeta carpeta = new Carpeta();
-        carpeta.setNombre(carpetaRequestDto.getNombre());
-        carpeta.setDescripcion(carpetaRequestDto.getDescripcion());
-        return carpeta;
+    public Carpeta toEntity(CarpetaRequestDto carpetaRequestDto) {
+        return modelMapper.map(carpetaRequestDto, Carpeta.class);
     }
 
-    public static CarpetaResponseDto toResponse(Carpeta carpeta) {
-        if (carpeta == null) {
-            return null;
-        }
-        CarpetaResponseDto responseDto = new CarpetaResponseDto();
-        responseDto.setId(carpeta.getId());
-        responseDto.setNombre(carpeta.getNombre());
-        responseDto.setDescripcion(carpeta.getDescripcion());
-        responseDto.setCreado(carpeta.getCreado());
-        responseDto.setActualizado(carpeta.getActualizado());
-        responseDto.setNivel(carpeta.getNivel());
-        responseDto.setCarpetaPadreId(
-                carpeta.getCarpetaPadre() != null ? carpeta.getCarpetaPadre().getId() : null
-        );
-        return responseDto;
+    public CarpetaResponseDto toResponse(Carpeta carpeta) {
+        return modelMapper.map(carpeta, CarpetaResponseDto.class);
     }
 }
