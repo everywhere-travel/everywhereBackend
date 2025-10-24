@@ -1,8 +1,8 @@
 package com.everywhere.backend.service.impl;
 
 import com.everywhere.backend.mapper.ProductoMapper;
-import com.everywhere.backend.model.dto.ProductoRequestDTO;
-import com.everywhere.backend.model.dto.ProductoResponseDTO;
+import com.everywhere.backend.model.dto.ProductoRequestDto;
+import com.everywhere.backend.model.dto.ProductoResponse;
 import com.everywhere.backend.model.entity.Producto;
 import com.everywhere.backend.repository.ProductoRepository;
 import com.everywhere.backend.service.ProductoService;
@@ -19,14 +19,14 @@ public class ProductoServiceImpl implements ProductoService {
     private final ProductoRepository productoRepository;
 
     @Override
-    public ProductoResponseDTO create(ProductoRequestDTO dto) {
+    public ProductoResponse create(ProductoRequestDto dto) {
         Producto entity = ProductoMapper.toEntity(dto);
         Producto saved = productoRepository.save(entity);
         return ProductoMapper.toResponse(saved);
     }
 
     @Override
-    public ProductoResponseDTO update(Integer id, ProductoRequestDTO dto) {
+    public ProductoResponse update(Integer id, ProductoRequestDto dto) {
         Producto entity = productoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
@@ -38,13 +38,13 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
-    public Optional<ProductoResponseDTO> getById(Integer id) {
+    public Optional<ProductoResponse> getById(Integer id) {
         return productoRepository.findById(id)
                 .map(ProductoMapper::toResponse);
     }
 
     @Override
-    public List<ProductoResponseDTO> getAll() {
+    public List<ProductoResponse> getAll() {
         return productoRepository.findAll()
                 .stream()
                 .map(ProductoMapper::toResponse)
@@ -60,7 +60,7 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
-    public Optional<ProductoResponseDTO> getByCodigo(String codigo) {
+    public Optional<ProductoResponse> getByCodigo(String codigo) {
         return productoRepository.findByCodigo(codigo)
                 .map(ProductoMapper::toResponse);
     }

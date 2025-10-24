@@ -1,7 +1,7 @@
 package com.everywhere.backend.api;
 
-import com.everywhere.backend.model.dto.DocumentoRequestDTO;
-import com.everywhere.backend.model.dto.DocumentoResponseDTO;
+import com.everywhere.backend.model.dto.DocumentoRequestDto;
+import com.everywhere.backend.model.dto.DocumentoResponseDto;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.DocumentoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,25 +19,25 @@ public class DocumentoController {
 
     @GetMapping
     @RequirePermission(module = "DOCUMENTOS", permission = "CREATE")
-    public ResponseEntity<List<DocumentoResponseDTO>> getAll() {
+    public ResponseEntity<List<DocumentoResponseDto>> getAll() {
         return ResponseEntity.ok(documentoService.findAll());
     }
 
     @GetMapping("/{id}")
     @RequirePermission(module = "DOCUMENTOS", permission = "READ")
-    public ResponseEntity<DocumentoResponseDTO> getById(@PathVariable int id) {
+    public ResponseEntity<DocumentoResponseDto> getById(@PathVariable int id) {
         return ResponseEntity.ok(documentoService.findById(id));
     }
 
     @PostMapping
     @RequirePermission(module = "DOCUMENTOS", permission = "CREATE")
-    public ResponseEntity<DocumentoResponseDTO> create(@RequestBody DocumentoRequestDTO dto) {
+    public ResponseEntity<DocumentoResponseDto> create(@RequestBody DocumentoRequestDto dto) {
         return ResponseEntity.ok(documentoService.create(dto));
     }
 
     @PutMapping("/{id}")
     @RequirePermission(module = "DOCUMENTOS", permission = "UPDATE")
-    public ResponseEntity<DocumentoResponseDTO> update(@PathVariable int id, @RequestBody DocumentoRequestDTO dto) {
+    public ResponseEntity<DocumentoResponseDto> update(@PathVariable int id, @RequestBody DocumentoRequestDto dto) {
         return ResponseEntity.ok(documentoService.update(id, dto));
     }
 
