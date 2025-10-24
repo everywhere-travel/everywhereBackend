@@ -1,7 +1,7 @@
 package com.everywhere.backend.api;
 
 import com.everywhere.backend.mapper.ProveedorMapper;
-import com.everywhere.backend.model.dto.ProveedorRequestDTO;
+import com.everywhere.backend.model.dto.ProveedorRequestDto;
 import com.everywhere.backend.model.dto.ProveedorResponseDTO;
 import com.everywhere.backend.model.entity.Proveedor;
 import com.everywhere.backend.security.RequirePermission;
@@ -44,7 +44,7 @@ public class ProveedorController {
 
     @PostMapping
     @RequirePermission(module = "PROVEEDORES", permission = "CREATE")
-    public ResponseEntity<ProveedorResponseDTO> create(@RequestBody ProveedorRequestDTO dto) {
+    public ResponseEntity<ProveedorResponseDTO> create(@RequestBody ProveedorRequestDto dto) {
         Proveedor proveedor = ProveedorMapper.toEntity(dto);
         Proveedor nuevoProveedor = proveedorService.save(proveedor);
         return new ResponseEntity<>(ProveedorMapper.toResponse(nuevoProveedor), HttpStatus.CREATED);
@@ -53,7 +53,7 @@ public class ProveedorController {
     @PutMapping("/{id}")
     @RequirePermission(module = "PROVEEDORES", permission = "UPDATE")
     public ResponseEntity<ProveedorResponseDTO> update(@PathVariable Integer id,
-                                                       @RequestBody ProveedorRequestDTO dto) {
+                                                       @RequestBody ProveedorRequestDto dto) {
         return proveedorService.findById(id)
                 .map(existing -> {
                     existing.setNombre(dto.getNombre());

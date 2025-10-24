@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class ViajeroFrecuenteResponseDTO {
+public class ViajeroFrecuenteResponseDto {
 
     private Integer id;
     private String areolinea;

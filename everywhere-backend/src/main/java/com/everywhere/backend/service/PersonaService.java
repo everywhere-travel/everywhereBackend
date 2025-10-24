@@ -2,7 +2,7 @@ package com.everywhere.backend.service;
 
 import com.everywhere.backend.model.dto.PersonaRequestDTO;
 import com.everywhere.backend.model.dto.PersonaResponseDTO;
-import com.everywhere.backend.model.dto.PersonaDisplayDTO;
+import com.everywhere.backend.model.dto.PersonaDisplayDto;
 
 import java.util.List;
 
@@ -14,5 +14,5 @@ public interface PersonaService {
     PersonaResponseDTO save(PersonaRequestDTO personaRequestDTO);
     PersonaResponseDTO patch(Integer id, PersonaRequestDTO personaRequestDTO);
     void deleteById(Integer id);
-    PersonaDisplayDTO findPersonaNaturalOrJuridicaById(Integer id);
+    PersonaDisplayDto findPersonaNaturalOrJuridicaById(Integer id);
 }

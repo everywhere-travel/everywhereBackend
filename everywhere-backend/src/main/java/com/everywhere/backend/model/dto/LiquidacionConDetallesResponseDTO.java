@@ -17,7 +17,7 @@ public class LiquidacionConDetallesResponseDTO {
     private LocalDateTime actualizado;
 
     // Relaciones de la liquidación
-    private ProductoResponseDTO producto;
+    private ProductoResponse producto;
     private FormaPagoResponseDTO formaPago;
 
     // Lista de detalles anidados (SIN la liquidación repetida)

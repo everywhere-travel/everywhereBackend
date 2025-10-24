@@ -3,7 +3,7 @@ package com.everywhere.backend.model.dto;
 import lombok.Data;
 
 @Data
-public class DetalleDocumentoRequestDTO {
+public class DetalleDocumentoRequestDto {
     private String numero;
     private String fechaEmision;  //yyyy-MM-dd
     private String fechaVencimiento;

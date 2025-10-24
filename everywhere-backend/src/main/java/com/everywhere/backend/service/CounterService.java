@@ -1,26 +1,26 @@
 package com.everywhere.backend.service;
 
-import com.everywhere.backend.model.dto.CounterRequestDTO;
-import com.everywhere.backend.model.dto.CounterResponseDTO;
+import com.everywhere.backend.model.dto.CounterRequestDto;
+import com.everywhere.backend.model.dto.CounterResponseDto;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface CounterService {
 
-    CounterResponseDTO create(CounterRequestDTO dto);
+    CounterResponseDto create(CounterRequestDto dto);
 
-    CounterResponseDTO update(CounterRequestDTO dto);
+    CounterResponseDto update(CounterRequestDto dto);
 
-    CounterResponseDTO activate(String codigo);
+    CounterResponseDto activate(String codigo);
 
-    CounterResponseDTO deactivate(String codigo);
+    CounterResponseDto deactivate(String codigo);
 
-    Optional<CounterResponseDTO> get(String codigo);
-    Optional<CounterResponseDTO> getByName(String nombre);
+    Optional<CounterResponseDto> get(String codigo);
+    Optional<CounterResponseDto> getByName(String nombre);
 
-    List<CounterResponseDTO> getAll();
-    List<CounterResponseDTO> listActive();
-    List<CounterResponseDTO> listInactive();
+    List<CounterResponseDto> getAll();
+    List<CounterResponseDto> listActive();
+    List<CounterResponseDto> listInactive();
 
 }

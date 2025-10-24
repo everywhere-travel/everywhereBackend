@@ -1,18 +1,18 @@
 package com.everywhere.backend.mapper;
 
-import com.everywhere.backend.model.dto.DetalleCotizacionRequestDTO;
-import com.everywhere.backend.model.dto.DetalleCotizacionResponseDTO;
+import com.everywhere.backend.model.dto.DetalleCotizacionRequestDto;
+import com.everywhere.backend.model.dto.DetalleCotizacionResponseDto;
 import com.everywhere.backend.model.entity.DetalleCotizacion;
 import com.everywhere.backend.repository.CategoriaRepository;
 
 public class DetalleCotizacionMapper {
 
-    public static DetalleCotizacionResponseDTO toResponse(DetalleCotizacion entity) {
+    public static DetalleCotizacionResponseDto toResponse(DetalleCotizacion entity) {
         if (entity == null) {
             return null;
         }
 
-    DetalleCotizacionResponseDTO dto = new DetalleCotizacionResponseDTO();
+    DetalleCotizacionResponseDto dto = new DetalleCotizacionResponseDto();
     dto.setId(entity.getId());
     dto.setCantidad(entity.getCantidad());
     dto.setUnidad(entity.getUnidad());
@@ -32,7 +32,7 @@ public class DetalleCotizacionMapper {
     return dto;
     }
 
-    public static DetalleCotizacion toEntity(DetalleCotizacionRequestDTO dto, com.everywhere.backend.repository.CategoriaRepository categoriaRepository) {
+    public static DetalleCotizacion toEntity(DetalleCotizacionRequestDto dto, com.everywhere.backend.repository.CategoriaRepository categoriaRepository) {
         if (dto == null) {
             return null;
         }
@@ -52,7 +52,7 @@ public class DetalleCotizacionMapper {
 
     public static void updateEntityFromRequest(
             DetalleCotizacion entity,
-            DetalleCotizacionRequestDTO dto,
+            DetalleCotizacionRequestDto dto,
             CategoriaRepository categoriaRepository
     ) {
         if (dto == null || entity == null) {

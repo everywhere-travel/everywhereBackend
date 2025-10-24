@@ -1,23 +1,23 @@
 package com.everywhere.backend.service;
 
-import com.everywhere.backend.model.dto.ProductoRequestDTO;
-import com.everywhere.backend.model.dto.ProductoResponseDTO;
+import com.everywhere.backend.model.dto.ProductoRequestDto;
+import com.everywhere.backend.model.dto.ProductoResponse;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface ProductoService {
 
-    ProductoResponseDTO create(ProductoRequestDTO dto);
+    ProductoResponse create(ProductoRequestDto dto);
 
-    ProductoResponseDTO update(Integer id, ProductoRequestDTO dto);
+    ProductoResponse update(Integer id, ProductoRequestDto dto);
 
-    Optional<ProductoResponseDTO> getById(Integer id);
+    Optional<ProductoResponse> getById(Integer id);
 
-    List<ProductoResponseDTO> getAll();
+    List<ProductoResponse> getAll();
 
     void delete(Integer id);
 
-    Optional<ProductoResponseDTO> getByCodigo(String codigo);
+    Optional<ProductoResponse> getByCodigo(String codigo);
 
 }

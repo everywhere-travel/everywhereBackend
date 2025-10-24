@@ -1,8 +1,8 @@
 package com.everywhere.backend.service.impl;
 
 import com.everywhere.backend.mapper.DocumentoMapper; 
-import com.everywhere.backend.model.dto.DocumentoRequestDTO;
-import com.everywhere.backend.model.dto.DocumentoResponseDTO;
+import com.everywhere.backend.model.dto.DocumentoRequestDto;
+import com.everywhere.backend.model.dto.DocumentoResponseDto;
 import com.everywhere.backend.model.entity.Documento; 
 import com.everywhere.backend.repository.DocumentoRepository;
 import com.everywhere.backend.service.DocumentoService;
@@ -19,7 +19,7 @@ public class DocumentoServiceImpl implements DocumentoService {
     private DocumentoRepository documentoRepository;
 
     @Override
-    public List<DocumentoResponseDTO> findAll() {
+    public List<DocumentoResponseDto> findAll() {
         return documentoRepository.findAll()
                 .stream()
                 .map(DocumentoMapper::toDto)
@@ -27,14 +27,14 @@ public class DocumentoServiceImpl implements DocumentoService {
     }
 
     @Override
-    public DocumentoResponseDTO findById(int id) {
+    public DocumentoResponseDto findById(int id) {
         Documento documento = documentoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Documento no encontrado con id: " + id));
         return DocumentoMapper.toDto(documento);
     }
 
     @Override
-    public DocumentoResponseDTO create(DocumentoRequestDTO dto) {
+    public DocumentoResponseDto create(DocumentoRequestDto dto) {
         Documento documento = DocumentoMapper.toEntity(dto);
         LocalDateTime now = LocalDateTime.now();
         documento.setCreado(now);
@@ -44,7 +44,7 @@ public class DocumentoServiceImpl implements DocumentoService {
     }
 
     @Override
-    public DocumentoResponseDTO update(int id, DocumentoRequestDTO dto) {
+    public DocumentoResponseDto update(int id, DocumentoRequestDto dto) {
         Documento documento = documentoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Documento no encontrado con id: " + id));
 

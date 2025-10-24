@@ -76,7 +76,7 @@ public class PersonaServiceImpl implements PersonaService {
     }
 
     @Override
-    public PersonaDisplayDTO findPersonaNaturalOrJuridicaById(Integer id) {
+    public PersonaDisplayDto findPersonaNaturalOrJuridicaById(Integer id) {
         Personas base = personaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Persona no encontrada con ID " + id));
 
@@ -87,6 +87,6 @@ public class PersonaServiceImpl implements PersonaService {
         if (juridicaOpt.isPresent()) return personaMapper.toDisplayDTO(juridicaOpt.get());
         
         // Si existe, pero no está ni en natural ni en jurídica
-        return new PersonaDisplayDTO(base.getId(), "GENERICA", null, "Persona sin tipo definido");
+        return new PersonaDisplayDto(base.getId(), "GENERICA", null, "Persona sin tipo definido");
     }
 }

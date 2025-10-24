@@ -32,7 +32,7 @@ public class DetalleLiquidacionMapper {
                 .ifPresent(viajero -> dto.setViajero(modelMapper.map(viajero, com.everywhere.backend.model.dto.ViajeroResponseDTO.class)));
 
         Optional.ofNullable(detalleLiquidacion.getProducto())
-                .ifPresent(producto -> dto.setProducto(modelMapper.map(producto, com.everywhere.backend.model.dto.ProductoResponseDTO.class)));
+                .ifPresent(producto -> dto.setProducto(modelMapper.map(producto, com.everywhere.backend.model.dto.ProductoResponse.class)));
 
         Optional.ofNullable(detalleLiquidacion.getProveedor())
                 .ifPresent(proveedor -> dto.setProveedor(modelMapper.map(proveedor, com.everywhere.backend.model.dto.ProveedorResponseDTO.class)));

@@ -1,7 +1,7 @@
 package com.everywhere.backend.mapper;
 
-import com.everywhere.backend.model.dto.DocumentoRequestDTO;
-import com.everywhere.backend.model.dto.DocumentoResponseDTO;
+import com.everywhere.backend.model.dto.DocumentoRequestDto;
+import com.everywhere.backend.model.dto.DocumentoResponseDto;
 import com.everywhere.backend.model.entity.Documento;
 import org.springframework.stereotype.Component;
 
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class DocumentoMapper {
 
     // DTO → Entity
-    public static Documento toEntity(DocumentoRequestDTO dto) {
+    public static Documento toEntity(DocumentoRequestDto dto) {
         Documento documento = new Documento();
         documento.setTipo(dto.getTipo());
         documento.setDescripcion(dto.getDescripcion());
@@ -18,8 +18,8 @@ public class DocumentoMapper {
     }
 
     // Entity → DTO
-    public static DocumentoResponseDTO toDto(Documento documento) {
-        DocumentoResponseDTO dto = new DocumentoResponseDTO();
+    public static DocumentoResponseDto toDto(Documento documento) {
+        DocumentoResponseDto dto = new DocumentoResponseDto();
         dto.setId(documento.getId());
         dto.setTipo(documento.getTipo());
         dto.setDescripcion(documento.getDescripcion());

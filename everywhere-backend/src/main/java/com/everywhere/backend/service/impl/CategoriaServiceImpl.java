@@ -1,7 +1,7 @@
 package com.everywhere.backend.service.impl;
 
-import com.everywhere.backend.model.dto.CategoriaRequestDTO;
-import com.everywhere.backend.model.dto.CategoriaResponseDTO;
+import com.everywhere.backend.model.dto.CategoriaRequestDto;
+import com.everywhere.backend.model.dto.CategoriaResponseDto;
 import com.everywhere.backend.model.entity.Categoria;
 import com.everywhere.backend.repository.CategoriaRepository;
 import com.everywhere.backend.mapper.CategoriaMapper;
@@ -19,7 +19,7 @@ public class CategoriaServiceImpl implements CategoriaService {
 	private CategoriaRepository categoriaRepository;
 
 	@Override
-	public List<CategoriaResponseDTO> findAll() {
+	public List<CategoriaResponseDto> findAll() {
 		return categoriaRepository.findAll()
 				.stream()
 				.map(CategoriaMapper::toResponseDto)
@@ -27,14 +27,14 @@ public class CategoriaServiceImpl implements CategoriaService {
 	}
 
 	@Override
-	public CategoriaResponseDTO findById(int id) {
+	public CategoriaResponseDto findById(int id) {
 		Categoria categoria = categoriaRepository.findById(id)
 				.orElseThrow(() -> new RuntimeException("Categoria no encontrada"));
 		return CategoriaMapper.toResponseDto(categoria);
 	}
 
 	@Override
-	public CategoriaResponseDTO create(CategoriaRequestDTO dto) {
+	public CategoriaResponseDto create(CategoriaRequestDto dto) {
 		Categoria categoria = CategoriaMapper.toEntity(dto);
 		categoria.setCreado(LocalDateTime.now());
 		categoria.setActualizado(LocalDateTime.now());
@@ -43,7 +43,7 @@ public class CategoriaServiceImpl implements CategoriaService {
 	}
 
 	@Override
-	public CategoriaResponseDTO update(int id, CategoriaRequestDTO dto) {
+	public CategoriaResponseDto update(int id, CategoriaRequestDto dto) {
 		Categoria categoria = categoriaRepository.findById(id)
 				.orElseThrow(() -> new RuntimeException("Categoria no encontrada"));
 		categoria.setNombre(dto.getNombre());
