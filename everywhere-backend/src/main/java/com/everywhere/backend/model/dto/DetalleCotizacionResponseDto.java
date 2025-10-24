@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-public class DetalleCotizacionResponseDto {
+public class DetalleCotizacionResponseDTO {
 
     private int id;
     private Integer cantidad;

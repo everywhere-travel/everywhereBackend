@@ -2,7 +2,7 @@ package com.everywhere.backend.api;
 
 import com.everywhere.backend.model.dto.PersonaRequestDTO;
 import com.everywhere.backend.model.dto.PersonaResponseDTO;
-import com.everywhere.backend.model.dto.PersonaDisplayDto;
+import com.everywhere.backend.model.dto.PersonaDisplayDTO;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.PersonaService;
 import jakarta.validation.Valid;
@@ -72,7 +72,7 @@ public class PersonaController {
 
     @GetMapping("/{personaId}/NaturalOrJuridica")
     @RequirePermission(module = "PERSONAS", permission = "READ")
-    public PersonaDisplayDto findPersonaNaturalOrJuridicaById(@PathVariable Integer personaId) {
+    public PersonaDisplayDTO findPersonaNaturalOrJuridicaById(@PathVariable Integer personaId) {
         return personaService.findPersonaNaturalOrJuridicaById(personaId);
     }
 }

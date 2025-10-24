@@ -47,7 +47,7 @@ public class CotizacionServiceImpl implements CotizacionService {
     }
 
     @Override
-    public CotizacionResponseDto create(CotizacionRequestDto dto, Integer personaId) {
+    public CotizacionResponseDTO create(CotizacionRequestDTO dto, Integer personaId) {
         Cotizacion entity = new Cotizacion();
 
         // Mapear datos desde el DTO
@@ -72,13 +72,13 @@ public class CotizacionServiceImpl implements CotizacionService {
     }
 
     @Override
-    public Optional<CotizacionResponseDto> findById(Integer id) {
+    public Optional<CotizacionResponseDTO> findById(Integer id) {
         return cotizacionRepository.findById(id).map(CotizacionMapper::toResponse);
     }
 
 
     @Override
-    public List<CotizacionResponseDto> findAll() {
+    public List<CotizacionResponseDTO> findAll() {
         return cotizacionRepository.findAll()
                 .stream()
                 .map(CotizacionMapper::toResponse)
@@ -86,7 +86,7 @@ public class CotizacionServiceImpl implements CotizacionService {
     }
 
     @Override
-    public CotizacionResponseDto update(Integer id, CotizacionRequestDto dto) {
+    public CotizacionResponseDTO update(Integer id, CotizacionRequestDTO dto) {
         Cotizacion entity = cotizacionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cotización no encontrada"));
 
@@ -112,7 +112,7 @@ public class CotizacionServiceImpl implements CotizacionService {
 
     // Métodos para asignar relaciones por ID
     @Override
-    public CotizacionResponseDto setFormaPagoById(Integer cotizacionId, Integer formaPagoId) {
+    public CotizacionResponseDTO setFormaPagoById(Integer cotizacionId, Integer formaPagoId) {
         Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId)
                 .orElseThrow(() -> new RuntimeException("Cotización no encontrada"));
 
@@ -130,7 +130,7 @@ public class CotizacionServiceImpl implements CotizacionService {
     }
 
     @Override
-    public CotizacionResponseDto setEstadoCotizacionById(Integer cotizacionId, Integer estadoId) {
+    public CotizacionResponseDTO setEstadoCotizacionById(Integer cotizacionId, Integer estadoId) {
         Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId)
                 .orElseThrow(() -> new RuntimeException("Cotización no encontrada"));
 
@@ -145,7 +145,7 @@ public class CotizacionServiceImpl implements CotizacionService {
     }
 
     @Override
-    public CotizacionResponseDto setCounterById(Integer cotizacionId, Integer counterId) {
+    public CotizacionResponseDTO setCounterById(Integer cotizacionId, Integer counterId) {
         Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId)
                 .orElseThrow(() -> new RuntimeException("Cotización no encontrada"));
 
@@ -162,7 +162,7 @@ public class CotizacionServiceImpl implements CotizacionService {
 
 
     @Override
-    public CotizacionResponseDto setSucursalById(Integer cotizacionId, Integer sucursalId) {
+    public CotizacionResponseDTO setSucursalById(Integer cotizacionId, Integer sucursalId) {
         Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId)
                 .orElseThrow(() -> new RuntimeException("Cotización no encontrada"));
 
@@ -177,7 +177,7 @@ public class CotizacionServiceImpl implements CotizacionService {
     }
 
     @Override
-    public CotizacionResponseDto setCarpetaById(Integer cotizacionId, Integer carpetaId) {
+    public CotizacionResponseDTO setCarpetaById(Integer cotizacionId, Integer carpetaId) {
         Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId)
                 .orElseThrow(() -> new RuntimeException("Cotización no encontrada"));
 
@@ -192,7 +192,7 @@ public class CotizacionServiceImpl implements CotizacionService {
     }
 
     @Override
-    public CotizacionResponseDto setPersonasById(Integer cotizacionId, Integer personaId) {
+    public CotizacionResponseDTO setPersonasById(Integer cotizacionId, Integer personaId) {
         Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId)
                 .orElseThrow(() -> new RuntimeException("Cotización no encontrada"));
 
@@ -213,10 +213,10 @@ public class CotizacionServiceImpl implements CotizacionService {
                 .orElseThrow(() -> new ResourceNotFoundException("Cotización no encontrada con ID: " + id));
 
         // Convertir a DTO base
-        CotizacionResponseDto cotizacionDTO = CotizacionMapper.toResponse(cotizacion);
+        CotizacionResponseDTO cotizacionDTO = CotizacionMapper.toResponse(cotizacion);
 
         // Obtener los detalles completos
-        List<DetalleCotizacionResponseDto> detallesCompletos = detalleCotizacionService.findByCotizacionId(id);
+        List<DetalleCotizacionResponseDTO> detallesCompletos = detalleCotizacionService.findByCotizacionId(id);
 
         // Convertir a detalles simples (sin cotización repetida)
         List<DetalleCotizacionSimpleDTO> detallesSimples = detallesCompletos.stream()
@@ -248,7 +248,7 @@ public class CotizacionServiceImpl implements CotizacionService {
         return resultado;
     }
 
-    private DetalleCotizacionSimpleDTO convertirADetalleSimple(DetalleCotizacionResponseDto detalleCompleto) {
+    private DetalleCotizacionSimpleDTO convertirADetalleSimple(DetalleCotizacionResponseDTO detalleCompleto) {
         DetalleCotizacionSimpleDTO detalleSimple = new DetalleCotizacionSimpleDTO();
         detalleSimple.setId(detalleCompleto.getId());
         detalleSimple.setCantidad(detalleCompleto.getCantidad());
@@ -267,7 +267,7 @@ public class CotizacionServiceImpl implements CotizacionService {
     }
 
     @Override
-    public List<CotizacionResponseDto> findCotizacionesSinLiquidacion() {
+    public List<CotizacionResponseDTO> findCotizacionesSinLiquidacion() {
         List<Cotizacion> cotizaciones = cotizacionRepository.findCotizacionesSinLiquidacion();
         return cotizaciones.stream()
                 .map(CotizacionMapper::toResponse)

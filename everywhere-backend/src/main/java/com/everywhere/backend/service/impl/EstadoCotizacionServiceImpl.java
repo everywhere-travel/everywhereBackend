@@ -1,8 +1,8 @@
 package com.everywhere.backend.service.impl;
 
 import com.everywhere.backend.mapper.EstadoCotizacionMapper;
-import com.everywhere.backend.model.dto.EstadoCotizacionRequestDto;
-import com.everywhere.backend.model.dto.EstadoCotizacionResponseDto;
+import com.everywhere.backend.model.dto.EstadoCotizacionRequestDTO;
+import com.everywhere.backend.model.dto.EstadoCotizacionResponseDTO;
 import com.everywhere.backend.model.entity.EstadoCotizacion;
 import com.everywhere.backend.repository.EstadoCotizacionRepository;
 import com.everywhere.backend.service.EstadoCotizacionService;
@@ -19,14 +19,14 @@ public class EstadoCotizacionServiceImpl implements EstadoCotizacionService {
     private final EstadoCotizacionRepository estadoCotizacionRepository;
 
     @Override
-    public EstadoCotizacionResponseDto create(EstadoCotizacionRequestDto dto) {
+    public EstadoCotizacionResponseDTO create(EstadoCotizacionRequestDTO dto) {
         EstadoCotizacion entity = EstadoCotizacionMapper.toEntity(dto);
         EstadoCotizacion saved = estadoCotizacionRepository.save(entity);
         return EstadoCotizacionMapper.toResponse(saved);
     }
 
     @Override
-    public EstadoCotizacionResponseDto update(Integer id, EstadoCotizacionRequestDto dto) {
+    public EstadoCotizacionResponseDTO update(Integer id, EstadoCotizacionRequestDTO dto) {
         EstadoCotizacion entity = estadoCotizacionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Estado de Cotización no encontrado"));
 
@@ -37,13 +37,13 @@ public class EstadoCotizacionServiceImpl implements EstadoCotizacionService {
     }
 
     @Override
-    public Optional<EstadoCotizacionResponseDto> getById(Integer id) {
+    public Optional<EstadoCotizacionResponseDTO> getById(Integer id) {
         return estadoCotizacionRepository.findById(id)
                 .map(EstadoCotizacionMapper::toResponse);
     }
 
     @Override
-    public List<EstadoCotizacionResponseDto> getAll() {
+    public List<EstadoCotizacionResponseDTO> getAll() {
         return estadoCotizacionRepository.findAll()
                 .stream()
                 .map(EstadoCotizacionMapper::toResponse)

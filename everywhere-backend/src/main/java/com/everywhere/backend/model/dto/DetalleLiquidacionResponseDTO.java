@@ -25,7 +25,7 @@ public class DetalleLiquidacionResponseDTO {
     private ViajeroResponseDTO viajero;
 
     // Relaciones comentadas temporalmente porque no existen sus DTOs
-    private ProductoResponse producto;
+    private ProductoResponseDTO producto;
     private ProveedorResponseDTO proveedor;
     private OperadorResponseDTO operador;
 }

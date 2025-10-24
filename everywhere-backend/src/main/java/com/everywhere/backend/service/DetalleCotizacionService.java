@@ -1,31 +1,31 @@
 package com.everywhere.backend.service;
 
-import com.everywhere.backend.model.dto.DetalleCotizacionRequestDto;
-import com.everywhere.backend.model.dto.DetalleCotizacionResponseDto;
+import com.everywhere.backend.model.dto.DetalleCotizacionRequestDTO;
+import com.everywhere.backend.model.dto.DetalleCotizacionResponseDTO;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface DetalleCotizacionService {
 
-    List<DetalleCotizacionResponseDto> findAll();
+    List<DetalleCotizacionResponseDTO> findAll();
 
-    Optional<DetalleCotizacionResponseDto> findById(int id);
+    Optional<DetalleCotizacionResponseDTO> findById(int id);
 
-    List<DetalleCotizacionResponseDto> findByCotizacionId(int cotizacionId);
+    List<DetalleCotizacionResponseDTO> findByCotizacionId(int cotizacionId);
 
-    DetalleCotizacionResponseDto create(DetalleCotizacionRequestDto dto, int cotizacionId);
+    DetalleCotizacionResponseDTO create(DetalleCotizacionRequestDTO dto, int cotizacionId);
 
-    DetalleCotizacionResponseDto update(int id, DetalleCotizacionRequestDto dto);
+    DetalleCotizacionResponseDTO update(int id, DetalleCotizacionRequestDTO dto);
 
     void delete(int id);
 
-    DetalleCotizacionResponseDto setCotizacion(int detalleId, int cotizacionId);
+    DetalleCotizacionResponseDTO setCotizacion(int detalleId, int cotizacionId);
 
-    DetalleCotizacionResponseDto setProducto(int detalleId, int productoId);
+    DetalleCotizacionResponseDTO setProducto(int detalleId, int productoId);
 
-    DetalleCotizacionResponseDto setProveedor(int detalleId, int proveedorId);
+    DetalleCotizacionResponseDTO setProveedor(int detalleId, int proveedorId);
 
     // Método específico para actualizar solo el campo seleccionado
-    DetalleCotizacionResponseDto updateSeleccionado(int detalleId, Boolean seleccionado);
+    DetalleCotizacionResponseDTO updateSeleccionado(int detalleId, Boolean seleccionado);
 }

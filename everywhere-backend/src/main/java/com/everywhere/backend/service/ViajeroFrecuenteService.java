@@ -1,22 +1,22 @@
 package com.everywhere.backend.service;
 
-import com.everywhere.backend.model.dto.ViajeroFrecuenteRequestDto;
-import com.everywhere.backend.model.dto.ViajeroFrecuenteResponseDto;
+import com.everywhere.backend.model.dto.ViajeroFrecuenteRequestDTO;
+import com.everywhere.backend.model.dto.ViajeroFrecuenteResponseDTO;
 
 import java.util.List;
 
 public interface ViajeroFrecuenteService {
 
-    ViajeroFrecuenteResponseDto crear(Integer viajeroId, ViajeroFrecuenteRequestDto dto);
+    ViajeroFrecuenteResponseDTO crear(Integer viajeroId, ViajeroFrecuenteRequestDTO dto);
 
-    ViajeroFrecuenteResponseDto buscarPorId(Integer id);
+    ViajeroFrecuenteResponseDTO buscarPorId(Integer id);
 
-    List<ViajeroFrecuenteResponseDto> listarPorViajero(Integer viajeroId);
+    List<ViajeroFrecuenteResponseDTO> listarPorViajero(Integer viajeroId);
 
     void eliminar(Integer id);
 
-    ViajeroFrecuenteResponseDto actualizar(Integer id, ViajeroFrecuenteRequestDto dto);
+    ViajeroFrecuenteResponseDTO actualizar(Integer id, ViajeroFrecuenteRequestDTO dto);
 
-    List<ViajeroFrecuenteResponseDto> buscarPorViajeroId(Integer viajeroId);
+    List<ViajeroFrecuenteResponseDTO> buscarPorViajeroId(Integer viajeroId);
 
 }

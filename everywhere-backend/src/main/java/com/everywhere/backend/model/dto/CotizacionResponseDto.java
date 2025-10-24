@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
-public class CotizacionResponseDto {
+public class CotizacionResponseDTO {
 
     private int id;
     private String codigoCotizacion;

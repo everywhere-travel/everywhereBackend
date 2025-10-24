@@ -3,6 +3,6 @@ package com.everywhere.backend.model.dto;
 import lombok.Data;
 
 @Data
-public class CategoriaRequestDto {
+public class CategoriaRequestDTO {
 	private String nombre;
 }

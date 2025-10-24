@@ -1,7 +1,7 @@
 package com.everywhere.backend.api;
 
-import com.everywhere.backend.model.dto.ProductoRequestDto;
-import com.everywhere.backend.model.dto.ProductoResponse;
+import com.everywhere.backend.model.dto.ProductoRequestDTO;
+import com.everywhere.backend.model.dto.ProductoResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.ProductoService;
 import lombok.RequiredArgsConstructor;
@@ -20,23 +20,23 @@ public class ProductoController {
     // Crear un producto
     @PostMapping
     @RequirePermission(module = "PRODUCTOS", permission = "CREATE")
-    public ResponseEntity<ProductoResponse> create(@RequestBody ProductoRequestDto request) {
+    public ResponseEntity<ProductoResponseDTO> create(@RequestBody ProductoRequestDTO request) {
         return ResponseEntity.ok(productoService.create(request));
     }
 
     // Actualizar un producto por id
     @PutMapping("/{id}")
     @RequirePermission(module = "PRODUCTOS", permission = "UPDATE")
-    public ResponseEntity<ProductoResponse> update(
+    public ResponseEntity<ProductoResponseDTO> update(
             @PathVariable Integer id,
-            @RequestBody ProductoRequestDto request) {
+            @RequestBody ProductoRequestDTO request) {
         return ResponseEntity.ok(productoService.update(id, request));
     }
 
     // Obtener un producto por id
     @GetMapping("/{id}")
     @RequirePermission(module = "PRODUCTOS", permission = "READ")
-    public ResponseEntity<ProductoResponse> getById(@PathVariable Integer id) {
+    public ResponseEntity<ProductoResponseDTO> getById(@PathVariable Integer id) {
         return productoService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -45,7 +45,7 @@ public class ProductoController {
     // Listar todos los productos
     @GetMapping
     @RequirePermission(module = "PRODUCTOS", permission = "READ")
-    public ResponseEntity<List<ProductoResponse>> getAll() {
+    public ResponseEntity<List<ProductoResponseDTO>> getAll() {
         return ResponseEntity.ok(productoService.getAll());
     }
 
@@ -60,7 +60,7 @@ public class ProductoController {
     // Obtener producto por código
     @GetMapping("/codigo/{codigo}")
     @RequirePermission(module = "PRODUCTOS", permission = "READ")
-    public ResponseEntity<ProductoResponse> getByCodigo(@PathVariable String codigo) {
+    public ResponseEntity<ProductoResponseDTO> getByCodigo(@PathVariable String codigo) {
         return productoService.getByCodigo(codigo)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
