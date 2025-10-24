@@ -4,7 +4,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class CategoriaResponseDTO {
+public class CategoriaResponseDto {
 	private int id;
 	private String nombre;
 	private LocalDateTime creado;

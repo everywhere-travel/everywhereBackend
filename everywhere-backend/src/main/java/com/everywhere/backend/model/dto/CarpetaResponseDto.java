@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class CarpetaResponseDTO {
+public class CarpetaResponseDto {
 
     private int id;
     private String nombre;

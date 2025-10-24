@@ -2,8 +2,8 @@ package com.everywhere.backend.service.impl;
 
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.ViajeroFrecuenteMapper;
-import com.everywhere.backend.model.dto.ViajeroFrecuenteRequestDTO;
-import com.everywhere.backend.model.dto.ViajeroFrecuenteResponseDTO;
+import com.everywhere.backend.model.dto.ViajeroFrecuenteRequestDto;
+import com.everywhere.backend.model.dto.ViajeroFrecuenteResponseDto;
 import com.everywhere.backend.model.entity.Viajero;
 import com.everywhere.backend.model.entity.ViajeroFrecuente;
 import com.everywhere.backend.repository.ViajeroFrecuenteRepository;
@@ -28,7 +28,7 @@ public class ViajeroFrecuenteServiceImpl implements ViajeroFrecuenteService {
     }
 
     @Override
-    public ViajeroFrecuenteResponseDTO crear(Integer viajeroId, ViajeroFrecuenteRequestDTO dto) {
+    public ViajeroFrecuenteResponseDto crear(Integer viajeroId, ViajeroFrecuenteRequestDto dto) {
         Viajero viajero = viajeroRepository.findById(viajeroId)
                 .orElseThrow(() -> new ResourceNotFoundException("Viajero no encontrado con id: " + viajeroId));
 
@@ -39,7 +39,7 @@ public class ViajeroFrecuenteServiceImpl implements ViajeroFrecuenteService {
     }
 
     @Override
-    public ViajeroFrecuenteResponseDTO buscarPorId(Integer id) {
+    public ViajeroFrecuenteResponseDto buscarPorId(Integer id) {
         ViajeroFrecuente entity = viajeroFrecuenteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("ViajeroFrecuente no encontrado con id: " + id));
 
@@ -47,7 +47,7 @@ public class ViajeroFrecuenteServiceImpl implements ViajeroFrecuenteService {
     }
 
     @Override
-    public List<ViajeroFrecuenteResponseDTO> listarPorViajero(Integer viajeroId) {
+    public List<ViajeroFrecuenteResponseDto> listarPorViajero(Integer viajeroId) {
         return viajeroFrecuenteRepository.findByViajero_Id(viajeroId)
                 .stream()
                 .map(ViajeroFrecuenteMapper::toResponse)
@@ -63,7 +63,7 @@ public class ViajeroFrecuenteServiceImpl implements ViajeroFrecuenteService {
     }
 
     @Override
-    public ViajeroFrecuenteResponseDTO actualizar(Integer id, ViajeroFrecuenteRequestDTO dto) {
+    public ViajeroFrecuenteResponseDto actualizar(Integer id, ViajeroFrecuenteRequestDto dto) {
         ViajeroFrecuente entity = viajeroFrecuenteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("ViajeroFrecuente no encontrado con id: " + id));
 
@@ -76,7 +76,7 @@ public class ViajeroFrecuenteServiceImpl implements ViajeroFrecuenteService {
     }
 
     @Override
-    public List<ViajeroFrecuenteResponseDTO> buscarPorViajeroId(Integer viajeroId) {
+    public List<ViajeroFrecuenteResponseDto> buscarPorViajeroId(Integer viajeroId) {
         return viajeroFrecuenteRepository.findByViajero_Id(viajeroId)
                 .stream()
                 .map(ViajeroFrecuenteMapper::toResponse)

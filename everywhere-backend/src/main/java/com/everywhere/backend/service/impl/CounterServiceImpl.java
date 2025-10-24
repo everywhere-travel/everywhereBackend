@@ -1,8 +1,8 @@
 package com.everywhere.backend.service.impl;
 
 import com.everywhere.backend.mapper.CounterMapper;
-import com.everywhere.backend.model.dto.CounterRequestDTO;
-import com.everywhere.backend.model.dto.CounterResponseDTO;
+import com.everywhere.backend.model.dto.CounterRequestDto;
+import com.everywhere.backend.model.dto.CounterResponseDto;
 import com.everywhere.backend.model.entity.Counter;
 import com.everywhere.backend.repository.CounterRepository;
 import com.everywhere.backend.service.CounterService;
@@ -24,7 +24,7 @@ public class CounterServiceImpl implements CounterService {
     }
 
     @Override
-    public CounterResponseDTO create(CounterRequestDTO dto) {
+    public CounterResponseDto create(CounterRequestDto dto) {
         Counter entity = CounterMapper.toEntity(dto);
         entity.setCodigo(UUID.randomUUID().toString());
         entity.setFechaCreacion(LocalDateTime.now());
@@ -33,7 +33,7 @@ public class CounterServiceImpl implements CounterService {
     }
 
     @Override
-    public CounterResponseDTO update(CounterRequestDTO dto) {
+    public CounterResponseDto update(CounterRequestDto dto) {
         Counter entity = counterRepository.findByCodigo(dto.getCodigo())
                 .orElseThrow(() -> new RuntimeException("Counter no encontrado"));
 
@@ -43,7 +43,7 @@ public class CounterServiceImpl implements CounterService {
     }
 
     @Override
-    public CounterResponseDTO activate(String codigo) {
+    public CounterResponseDto activate(String codigo) {
         Counter entity = counterRepository.findByCodigo(codigo)
                 .orElseThrow(() -> new RuntimeException("Counter no encontrado"));
         entity.setEstado(true);
@@ -51,7 +51,7 @@ public class CounterServiceImpl implements CounterService {
     }
 
     @Override
-    public CounterResponseDTO deactivate(String codigo) {
+    public CounterResponseDto deactivate(String codigo) {
         Counter entity = counterRepository.findByCodigo(codigo)
                 .orElseThrow(() -> new RuntimeException("Counter no encontrado"));
         entity.setEstado(false);
@@ -59,19 +59,19 @@ public class CounterServiceImpl implements CounterService {
     }
 
     @Override
-    public Optional<CounterResponseDTO> get(String codigo) {
+    public Optional<CounterResponseDto> get(String codigo) {
         return counterRepository.findByCodigo(codigo)
                 .map(CounterMapper::toResponse);
     }
 
     @Override
-    public Optional<CounterResponseDTO> getByName(String nombre) {
+    public Optional<CounterResponseDto> getByName(String nombre) {
         return counterRepository.findByNombreIgnoreCase(nombre)
                 .map(CounterMapper::toResponse);
     }
 
     @Override
-    public List<CounterResponseDTO> getAll() {
+    public List<CounterResponseDto> getAll() {
         return counterRepository.findAll()
                 .stream()
                 .map(CounterMapper::toResponse)
@@ -79,7 +79,7 @@ public class CounterServiceImpl implements CounterService {
     }
 
     @Override
-    public List<CounterResponseDTO> listActive() {
+    public List<CounterResponseDto> listActive() {
         return counterRepository.findAll()
                 .stream()
                 .filter(Counter::getEstado)
@@ -88,7 +88,7 @@ public class CounterServiceImpl implements CounterService {
     }
 
     @Override
-    public List<CounterResponseDTO> listInactive() {
+    public List<CounterResponseDto> listInactive() {
         return counterRepository.findAll()
                 .stream()
                 .filter(c -> !c.getEstado())
