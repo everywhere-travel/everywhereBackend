@@ -24,7 +24,7 @@ public class LiquidacionMapper {
 
         // Mapear relaciones manualmente para asegurar que se carguen correctamente
         if (liquidacion.getProducto() != null) {
-            dto.setProducto(modelMapper.map(liquidacion.getProducto(), com.everywhere.backend.model.dto.ProductoResponse.class));
+            dto.setProducto(modelMapper.map(liquidacion.getProducto(), com.everywhere.backend.model.dto.ProductoResponseDTO.class));
         }
 
         if (liquidacion.getFormaPago() != null) {

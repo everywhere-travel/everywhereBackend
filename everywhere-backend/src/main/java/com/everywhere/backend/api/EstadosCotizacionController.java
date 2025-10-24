@@ -1,7 +1,7 @@
 package com.everywhere.backend.api;
 
-import com.everywhere.backend.model.dto.EstadoCotizacionRequestDto;
-import com.everywhere.backend.model.dto.EstadoCotizacionResponseDto;
+import com.everywhere.backend.model.dto.EstadoCotizacionRequestDTO;
+import com.everywhere.backend.model.dto.EstadoCotizacionResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.EstadoCotizacionService;
 import lombok.RequiredArgsConstructor;
@@ -20,23 +20,23 @@ public class EstadosCotizacionController {
     // Crear un estado
     @PostMapping
     @RequirePermission(module = "COTIZACIONES", permission = "CREATE")
-    public ResponseEntity<EstadoCotizacionResponseDto> create(@RequestBody EstadoCotizacionRequestDto request) {
+    public ResponseEntity<EstadoCotizacionResponseDTO> create(@RequestBody EstadoCotizacionRequestDTO request) {
         return ResponseEntity.ok(estadoCotizacionService.create(request));
     }
 
     // Actualizar un estado (id por path, descripcion en body)
     @PutMapping("/{id}")
     @RequirePermission(module = "COTIZACIONES", permission = "UPDATE")
-    public ResponseEntity<EstadoCotizacionResponseDto> update(
+    public ResponseEntity<EstadoCotizacionResponseDTO> update(
             @PathVariable Integer id,
-            @RequestBody EstadoCotizacionRequestDto request) {
+            @RequestBody EstadoCotizacionRequestDTO request) {
         return ResponseEntity.ok(estadoCotizacionService.update(id, request));
     }
 
     // Obtener por id
     @GetMapping("/{id}")
     @RequirePermission(module = "COTIZACIONES", permission = "READ")
-    public ResponseEntity<EstadoCotizacionResponseDto> getById(@PathVariable Integer id) {
+    public ResponseEntity<EstadoCotizacionResponseDTO> getById(@PathVariable Integer id) {
         return estadoCotizacionService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -45,7 +45,7 @@ public class EstadosCotizacionController {
     // Listar todos
     @GetMapping
     @RequirePermission(module = "COTIZACIONES", permission = "READ")
-    public ResponseEntity<List<EstadoCotizacionResponseDto>> getAll() {
+    public ResponseEntity<List<EstadoCotizacionResponseDTO>> getAll() {
         return ResponseEntity.ok(estadoCotizacionService.getAll());
     }
 

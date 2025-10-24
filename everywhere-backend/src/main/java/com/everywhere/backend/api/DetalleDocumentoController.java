@@ -1,7 +1,7 @@
 package com.everywhere.backend.api;
 
-import com.everywhere.backend.model.dto.DetalleDocumentoResponseDto;
-import com.everywhere.backend.model.dto.DetalleDocumentoRequestDto;
+import com.everywhere.backend.model.dto.DetalleDocumentoResponseDTO;
+import com.everywhere.backend.model.dto.DetalleDocumentoRequestDTO;
 import com.everywhere.backend.service.DetalleDocumentoService;
 import com.everywhere.backend.security.RequirePermission;
 import lombok.RequiredArgsConstructor;
@@ -18,45 +18,45 @@ public class DetalleDocumentoController {
 
     @GetMapping
     @RequirePermission(module = "DOCUMENTOS", permission = "READ")
-    public List<DetalleDocumentoResponseDto> findAll() {
+    public List<DetalleDocumentoResponseDTO> findAll() {
         return detalleDocumentoService.findAll();
     }
 
     @GetMapping("/{id}")
     @RequirePermission(module = "DOCUMENTOS", permission = "READ")
-    public DetalleDocumentoResponseDto findById(@PathVariable Integer id) {
+    public DetalleDocumentoResponseDTO findById(@PathVariable Integer id) {
         return detalleDocumentoService.findById(id);
     }
 
     @GetMapping("/viajero/{viajeroId}")
     @RequirePermission(module = "DOCUMENTOS", permission = "READ")
-    public List<DetalleDocumentoResponseDto> findByViajero(@PathVariable Integer viajeroId) {
+    public List<DetalleDocumentoResponseDTO> findByViajero(@PathVariable Integer viajeroId) {
         return detalleDocumentoService.findByViajeroId(viajeroId);
     }
 
     @GetMapping("/documento/{documentoId}")
     @RequirePermission(module = "DOCUMENTOS", permission = "READ")
-    public List<DetalleDocumentoResponseDto> findByDocumentoId(@PathVariable Integer documentoId) {
+    public List<DetalleDocumentoResponseDTO> findByDocumentoId(@PathVariable Integer documentoId) {
         return detalleDocumentoService.findByDocumentoId(documentoId);
     }
 
     @GetMapping("/numero/{numero}")
     @RequirePermission(module = "DOCUMENTOS", permission = "READ")
-    public List<DetalleDocumentoResponseDto> findByNumero(@PathVariable String numero) {
+    public List<DetalleDocumentoResponseDTO> findByNumero(@PathVariable String numero) {
         return detalleDocumentoService.findByNumero(numero);
     }
 
     @PostMapping
     @RequirePermission(module = "DOCUMENTOS", permission = "CREATE")
-    public DetalleDocumentoResponseDto save(@RequestBody DetalleDocumentoRequestDto dto) {
+    public DetalleDocumentoResponseDTO save(@RequestBody DetalleDocumentoRequestDTO dto) {
         return detalleDocumentoService.save(dto);
     }
 
     @PutMapping("/{id}")
     @RequirePermission(module = "DOCUMENTOS", permission = "UPDATE")
-    public DetalleDocumentoResponseDto update(
+    public DetalleDocumentoResponseDTO update(
             @PathVariable Integer id,
-            @RequestBody DetalleDocumentoRequestDto dto
+            @RequestBody DetalleDocumentoRequestDTO dto
     ) {
         return detalleDocumentoService.update(id, dto);
     }

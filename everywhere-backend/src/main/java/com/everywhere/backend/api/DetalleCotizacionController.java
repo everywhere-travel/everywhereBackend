@@ -1,7 +1,7 @@
 package com.everywhere.backend.api;
 
-import com.everywhere.backend.model.dto.DetalleCotizacionRequestDto;
-import com.everywhere.backend.model.dto.DetalleCotizacionResponseDto;
+import com.everywhere.backend.model.dto.DetalleCotizacionRequestDTO;
+import com.everywhere.backend.model.dto.DetalleCotizacionResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.DetalleCotizacionService;
 import org.springframework.http.ResponseEntity;
@@ -22,14 +22,14 @@ public class DetalleCotizacionController {
     //  Obtener todos
     @GetMapping
     @RequirePermission(module = "COTIZACIONES", permission = "READ")
-    public ResponseEntity<List<DetalleCotizacionResponseDto>> getAll() {
+    public ResponseEntity<List<DetalleCotizacionResponseDTO>> getAll() {
         return ResponseEntity.ok(detalleCotizacionService.findAll());
     }
 
     //  Obtener por ID
     @GetMapping("/{id}")
     @RequirePermission(module = "COTIZACIONES", permission = "READ")
-    public ResponseEntity<DetalleCotizacionResponseDto> getById(@PathVariable int id) {
+    public ResponseEntity<DetalleCotizacionResponseDTO> getById(@PathVariable int id) {
         return detalleCotizacionService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -38,16 +38,16 @@ public class DetalleCotizacionController {
     //  Obtener detalles por cotización
     @GetMapping("/cotizacion/{cotizacionId}")
     @RequirePermission(module = "COTIZACIONES", permission = "READ")
-    public ResponseEntity<List<DetalleCotizacionResponseDto>> getByCotizacionId(@PathVariable int cotizacionId) {
+    public ResponseEntity<List<DetalleCotizacionResponseDTO>> getByCotizacionId(@PathVariable int cotizacionId) {
         return ResponseEntity.ok(detalleCotizacionService.findByCotizacionId(cotizacionId));
     }
 
     //  Crear detalle en una cotización
     @PostMapping("/cotizacion/{cotizacionId}")
     @RequirePermission(module = "COTIZACIONES", permission = "CREATE")
-    public ResponseEntity<DetalleCotizacionResponseDto> create(
+    public ResponseEntity<DetalleCotizacionResponseDTO> create(
             @PathVariable int cotizacionId,
-            @RequestBody DetalleCotizacionRequestDto dto
+            @RequestBody DetalleCotizacionRequestDTO dto
     ) {
         return ResponseEntity.ok(detalleCotizacionService.create(dto, cotizacionId));
     }
@@ -55,9 +55,9 @@ public class DetalleCotizacionController {
     //  Actualizar detalle
     @PutMapping("/{id}")
     @RequirePermission(module = "COTIZACIONES", permission = "UPDATE")
-    public ResponseEntity<DetalleCotizacionResponseDto> update(
+    public ResponseEntity<DetalleCotizacionResponseDTO> update(
             @PathVariable int id,
-            @RequestBody DetalleCotizacionRequestDto dto
+            @RequestBody DetalleCotizacionRequestDTO dto
     ) {
         return ResponseEntity.ok(detalleCotizacionService.update(id, dto));
     }
@@ -73,7 +73,7 @@ public class DetalleCotizacionController {
     //  Setear cotización en un detalle
     @PutMapping("/{detalleId}/cotizacion/{cotizacionId}")
     @RequirePermission(module = "COTIZACIONES", permission = "UPDATE")
-    public ResponseEntity<DetalleCotizacionResponseDto> setCotizacion(
+    public ResponseEntity<DetalleCotizacionResponseDTO> setCotizacion(
             @PathVariable int detalleId,
             @PathVariable int cotizacionId
     ) {
@@ -83,7 +83,7 @@ public class DetalleCotizacionController {
     //  Setear producto en un detalle
     @PutMapping("/{detalleId}/producto/{productoId}")
     @RequirePermission(module = "COTIZACIONES", permission = "UPDATE")
-    public ResponseEntity<DetalleCotizacionResponseDto> setProducto(
+    public ResponseEntity<DetalleCotizacionResponseDTO> setProducto(
             @PathVariable int detalleId,
             @PathVariable int productoId
     ) {
@@ -93,7 +93,7 @@ public class DetalleCotizacionController {
     //  Setear proveedor en un detalle
     @PutMapping("/{detalleId}/proveedor/{proveedorId}")
     @RequirePermission(module = "COTIZACIONES", permission = "UPDATE")
-    public ResponseEntity<DetalleCotizacionResponseDto> setProveedor(
+    public ResponseEntity<DetalleCotizacionResponseDTO> setProveedor(
             @PathVariable int detalleId,
             @PathVariable int proveedorId
     ) {
@@ -103,7 +103,7 @@ public class DetalleCotizacionController {
     //  Actualizar solo el campo seleccionado de un detalle
     @PutMapping("/{detalleId}/seleccionado")
     @RequirePermission(module = "COTIZACIONES", permission = "UPDATE")
-    public ResponseEntity<DetalleCotizacionResponseDto> updateSeleccionado(
+    public ResponseEntity<DetalleCotizacionResponseDTO> updateSeleccionado(
             @PathVariable int detalleId,
             @RequestParam Boolean seleccionado
     ) {

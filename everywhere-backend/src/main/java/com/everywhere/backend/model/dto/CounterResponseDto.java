@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class CounterResponseDto {
+public class CounterResponseDTO {
     private int id;
 
     private String nombre;

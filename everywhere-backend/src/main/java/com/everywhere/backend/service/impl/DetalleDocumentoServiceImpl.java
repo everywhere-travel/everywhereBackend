@@ -1,8 +1,8 @@
 package com.everywhere.backend.service.impl;
 
 import com.everywhere.backend.mapper.DetalleDocumentoMapper;
-import com.everywhere.backend.model.dto.DetalleDocumentoRequestDto;
-import com.everywhere.backend.model.dto.DetalleDocumentoResponseDto;
+import com.everywhere.backend.model.dto.DetalleDocumentoRequestDTO;
+import com.everywhere.backend.model.dto.DetalleDocumentoResponseDTO;
 import com.everywhere.backend.model.entity.DetalleDocumento;
 import com.everywhere.backend.repository.DetalleDocumentoRepository;
 import com.everywhere.backend.service.DetalleDocumentoService;
@@ -19,7 +19,7 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
     private final DetalleDocumentoMapper detalleDocumentoMapper;
 
     @Override
-    public List<DetalleDocumentoResponseDto> findByViajeroId(Integer viajeroId) {
+    public List<DetalleDocumentoResponseDTO> findByViajeroId(Integer viajeroId) {
         List<DetalleDocumento> detalles = detalleDocumentoRepository.findByViajeroId(viajeroId);
         return detalles.stream()
                 .map(detalleDocumentoMapper::toDto)
@@ -27,21 +27,21 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
     }
 
     @Override
-    public DetalleDocumentoResponseDto findById(Integer id) {
+    public DetalleDocumentoResponseDTO findById(Integer id) {
         DetalleDocumento detalle = detalleDocumentoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("DetalleDocumento no encontrado con id: " + id));
         return detalleDocumentoMapper.toDto(detalle);
     }
 
     @Override
-    public DetalleDocumentoResponseDto save(DetalleDocumentoRequestDto dto) {
+    public DetalleDocumentoResponseDTO save(DetalleDocumentoRequestDTO dto) {
         DetalleDocumento detalle = detalleDocumentoMapper.toEntity(dto);
         DetalleDocumento guardado = detalleDocumentoRepository.save(detalle);
         return detalleDocumentoMapper.toDto(guardado);
     }
 
     @Override
-    public DetalleDocumentoResponseDto update(Integer id, DetalleDocumentoRequestDto dto) {
+    public DetalleDocumentoResponseDTO update(Integer id, DetalleDocumentoRequestDTO dto) {
         DetalleDocumento existente = detalleDocumentoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("DetalleDocumento no encontrado con id: " + id));
 
@@ -61,7 +61,7 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
     }
 
     @Override
-    public List<DetalleDocumentoResponseDto> findAll() {
+    public List<DetalleDocumentoResponseDTO> findAll() {
         return detalleDocumentoRepository.findAll()
                 .stream()
                 .map(detalleDocumentoMapper::toDto)
@@ -69,7 +69,7 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
     }
 
     @Override
-    public List<DetalleDocumentoResponseDto> findByDocumentoId(Integer documentoId) {
+    public List<DetalleDocumentoResponseDTO> findByDocumentoId(Integer documentoId) {
         List<DetalleDocumento> detalles = detalleDocumentoRepository.findByDocumentoId(documentoId);
         return detalles.stream()
                 .map(detalleDocumentoMapper::toDto)
@@ -77,7 +77,7 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
     }
 
     @Override
-    public List<DetalleDocumentoResponseDto> findByNumero(String numero) {
+    public List<DetalleDocumentoResponseDTO> findByNumero(String numero) {
         List<DetalleDocumento> detalles = detalleDocumentoRepository.findByNumeroContainingIgnoreCase(numero);
         return detalles.stream()
                 .map(detalleDocumentoMapper::toDto)
