@@ -1,53 +1,54 @@
 package com.everywhere.backend.mapper;
 
-import com.everywhere.backend.model.dto.CotizacionRequestDto;
-import com.everywhere.backend.model.dto.CotizacionResponseDto;
-import com.everywhere.backend.model.entity.Cotizacion;
+import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Component;
 
+import com.everywhere.backend.model.dto.*;
+import com.everywhere.backend.model.entity.Cotizacion;
+import lombok.RequiredArgsConstructor;
+
+import jakarta.annotation.PostConstruct;
+import java.util.List;
+
+@Component
+@RequiredArgsConstructor
 public class CotizacionMapper {
 
-    public static CotizacionResponseDto toResponse(Cotizacion entity) {
-        if (entity == null) {
-            return null;
-        }
+    private final ModelMapper modelMapper;
 
-        CotizacionResponseDto dto = new CotizacionResponseDto();
-        dto.setId(entity.getId());
-        dto.setCodigoCotizacion(entity.getCodigoCotizacion());
-        dto.setCantAdultos(entity.getCantAdultos());
-        dto.setCantNinos(entity.getCantNinos());
-        dto.setFechaEmision(entity.getFechaEmision());
-        dto.setFechaVencimiento(entity.getFechaVencimiento());
-        dto.setActualizado(entity.getActualizado());
-        dto.setOrigenDestino(entity.getOrigenDestino());
-        dto.setFechaSalida(entity.getFechaSalida());
-        dto.setFechaRegreso(entity.getFechaRegreso());
-        dto.setMoneda(entity.getMoneda());
-        dto.setObservacion(entity.getObservacion());
-
-        // Relaciones
-        dto.setCounter(entity.getCounter());
-        dto.setFormaPago(entity.getFormaPago());
-        dto.setEstadoCotizacion(entity.getEstadoCotizacion());
-        dto.setSucursal(entity.getSucursal());
-        dto.setCarpeta(entity.getCarpeta());
-        dto.setPersonas(entity.getPersonas());
-
-        return dto;
+    @PostConstruct
+    public void configureMapping() {
+        modelMapper.typeMap(CotizacionRequestDto.class, Cotizacion.class).addMappings(mapper -> {
+            mapper.skip(Cotizacion::setCounter);
+            mapper.skip(Cotizacion::setFormaPago);
+            mapper.skip(Cotizacion::setEstadoCotizacion);
+            mapper.skip(Cotizacion::setSucursal);
+            mapper.skip(Cotizacion::setCarpeta);
+        });
     }
 
-    public static void updateEntityFromRequest(Cotizacion entity, CotizacionRequestDto dto) {
-        if (entity == null || dto == null) {
-            return;
-        }
+    public CotizacionResponseDto toResponse(Cotizacion cotizacion) {
+        CotizacionResponseDto cotizacionResponseDto = modelMapper.map(cotizacion, CotizacionResponseDto.class);
+        return cotizacionResponseDto;
+    }
 
-        entity.setCantAdultos(dto.getCantAdultos());
-        entity.setCantNinos(dto.getCantNinos());
-        entity.setFechaVencimiento(dto.getFechaVencimiento());
-        entity.setOrigenDestino(dto.getOrigenDestino());
-        entity.setFechaSalida(dto.getFechaSalida());
-        entity.setFechaRegreso(dto.getFechaRegreso());
-        entity.setMoneda(dto.getMoneda());
-        entity.setObservacion(dto.getObservacion());
+    public Cotizacion toEntity(CotizacionRequestDto cotizacionRequestDto) {
+        Cotizacion cotizacion = modelMapper.map(cotizacionRequestDto, Cotizacion.class);
+        return cotizacion;
+    }
+    
+    public void updateEntityFromRequest(Cotizacion cotizacion, CotizacionRequestDto cotizacionRequestDto) {
+        modelMapper.map(cotizacionRequestDto, cotizacion);
+    }
+
+    public CotizacionConDetallesResponseDTO toResponseWithDetalles(CotizacionResponseDto cotizacionResponseDto, 
+                                                                   List<DetalleCotizacionSimpleDTO> detalleCotizacionSimpleDTOs) {
+        CotizacionConDetallesResponseDTO resultado = modelMapper.map(cotizacionResponseDto, CotizacionConDetallesResponseDTO.class);
+        resultado.setDetalles(detalleCotizacionSimpleDTOs);
+        return resultado;
+    }
+
+    public DetalleCotizacionSimpleDTO toDetalleSimple(DetalleCotizacionResponseDto detalleCotizacionResponseDto) {
+        return modelMapper.map(detalleCotizacionResponseDto, DetalleCotizacionSimpleDTO.class);
     }
 }

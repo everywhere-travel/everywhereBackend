@@ -15,4 +15,10 @@ public class CotizacionRequestDto {
     private LocalDate fechaRegreso;
     private String moneda;
     private String observacion;
+
+    private Integer counterId;
+    private Integer formaPagoId;
+    private Integer estadoCotizacionId;
+    private Integer sucursalId;
+    private Integer carpetaId;
 }
