@@ -5,6 +5,10 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 @Data
 @Entity
@@ -22,8 +26,12 @@ public class DetalleCotizacion {
     @Column(name = "dcot_und_int")
     private Integer unidad;
 
-    @Column(name = "dcot_desc_vac", length = 250)
+    @Column(name = "dcot_desc_vac")
+    @JdbcTypeCode(SqlTypes.LONGNVARCHAR)
     private String descripcion;
+
+    @Column(name = "dcot_comision_dc")
+    private BigDecimal comision;
 
     @Column(name = "dcot_prec_hist_dc")
     private BigDecimal precioHistorico;
@@ -31,15 +39,13 @@ public class DetalleCotizacion {
     @Column(name = "dcot_select_bol")
     private Boolean seleccionado;
 
+    @CreationTimestamp
     @Column(name = "dcot_cre_tmp", updatable = false)
     private LocalDateTime creado;
 
-    @Column(name = "dcot_upd_tmp", updatable = true)
+    @UpdateTimestamp
+    @Column(name = "dcot_upd_tmp")
     private LocalDateTime actualizado;
-
-    @Column(name = "dcot_comision_dc")
-    private BigDecimal comision;
-
 
     @ManyToOne
     @JoinColumn(name = "cat_id_int")
