@@ -22,7 +22,6 @@ public class CotizacionResponseDto {
     private String moneda;
     private String observacion;
 
-    // Relaciones
     private Counter counter;
     private FormaPago formaPago;
     private EstadoCotizacion estadoCotizacion;

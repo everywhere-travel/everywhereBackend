@@ -32,7 +32,6 @@ public class Personas {
     @JdbcTypeCode(SqlTypes.LONGNVARCHAR)
     private String observacion;
 
-    // Relación Many-to-One con CategoriaPersona
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cat_per_id_int")
     private CategoriaPersona categoriaPersona;
