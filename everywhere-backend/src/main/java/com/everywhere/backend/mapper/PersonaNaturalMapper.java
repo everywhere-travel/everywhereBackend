@@ -5,6 +5,7 @@ import com.everywhere.backend.model.dto.PersonaNaturalResponseDTO;
 import com.everywhere.backend.model.entity.PersonaNatural;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
+
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -27,8 +28,7 @@ public class PersonaNaturalMapper {
     }
 
     public void updateEntityFromDTO(PersonaNaturalRequestDTO personaNaturalRequestDTO, PersonaNatural personaNatural) {
-        modelMapper.getConfiguration().setSkipNullEnabled(true); // Configurar ModelMapper para saltar campos null 
-        modelMapper.map(personaNaturalRequestDTO, personaNatural); // Mapeo automático
+        modelMapper.map(personaNaturalRequestDTO, personaNatural); 
         
         if (personaNaturalRequestDTO.getPersona() != null && personaNatural.getPersonas() != null) // Actualizar persona base si existe
             personaMapper.updateEntityFromDTO(personaNaturalRequestDTO.getPersona(), personaNatural.getPersonas());
