@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 
 @Data
 public class DetalleCotizacionResponseDto {
-
     private int id;
     private Integer cantidad;
     private Integer unidad;
