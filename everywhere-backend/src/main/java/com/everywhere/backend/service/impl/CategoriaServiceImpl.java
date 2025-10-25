@@ -6,50 +6,46 @@ import com.everywhere.backend.model.entity.Categoria;
 import com.everywhere.backend.repository.CategoriaRepository;
 import com.everywhere.backend.mapper.CategoriaMapper;
 import com.everywhere.backend.service.CategoriaService;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class CategoriaServiceImpl implements CategoriaService {
 
-	@Autowired
-	private CategoriaRepository categoriaRepository;
+	private final CategoriaRepository categoriaRepository;
+	private final CategoriaMapper categoriaMapper;
 
 	@Override
 	public List<CategoriaResponseDto> findAll() {
 		return categoriaRepository.findAll()
-				.stream()
-				.map(CategoriaMapper::toResponseDto)
-				.collect(Collectors.toList());
+				.stream().map(categoriaMapper::toResponseDto).collect(Collectors.toList());
 	}
 
 	@Override
 	public CategoriaResponseDto findById(int id) {
 		Categoria categoria = categoriaRepository.findById(id)
 				.orElseThrow(() -> new RuntimeException("Categoria no encontrada"));
-		return CategoriaMapper.toResponseDto(categoria);
+		return categoriaMapper.toResponseDto(categoria);
 	}
 
 	@Override
-	public CategoriaResponseDto create(CategoriaRequestDto dto) {
-		Categoria categoria = CategoriaMapper.toEntity(dto);
-		categoria.setCreado(LocalDateTime.now());
-		categoria.setActualizado(LocalDateTime.now());
+	public CategoriaResponseDto create(CategoriaRequestDto categoriaRequestDto) {
+		Categoria categoria = categoriaMapper.toEntity(categoriaRequestDto);
 		Categoria saved = categoriaRepository.save(categoria);
-		return CategoriaMapper.toResponseDto(saved);
+		return categoriaMapper.toResponseDto(saved);
 	}
 
 	@Override
-	public CategoriaResponseDto update(int id, CategoriaRequestDto dto) {
+	public CategoriaResponseDto patch(int id, CategoriaRequestDto categoriaRequestDto) {
 		Categoria categoria = categoriaRepository.findById(id)
 				.orElseThrow(() -> new RuntimeException("Categoria no encontrada"));
-		categoria.setNombre(dto.getNombre());
-		categoria.setActualizado(LocalDateTime.now());
-		Categoria updated = categoriaRepository.save(categoria);
-		return CategoriaMapper.toResponseDto(updated);
+		categoriaMapper.updateEntityFromDTO(categoriaRequestDto, categoria);
+		return categoriaMapper.toResponseDto(categoriaRepository.save(categoria));
 	}
 
 	@Override

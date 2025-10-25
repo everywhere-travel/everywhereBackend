@@ -4,17 +4,19 @@ import com.everywhere.backend.model.dto.CategoriaRequestDto;
 import com.everywhere.backend.model.dto.CategoriaResponseDto;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.CategoriaService;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/categorias")
 public class CategoriaController {
 
-	@Autowired
-	private CategoriaService categoriaService;
+	private final CategoriaService categoriaService;
 
 	@GetMapping
     @RequirePermission(module = "CATEGORIA", permission = "READ")
@@ -30,14 +32,14 @@ public class CategoriaController {
 
 	@PostMapping
     @RequirePermission(module = "CATEGORIA", permission = "CREATE")
-	public ResponseEntity<CategoriaResponseDto> create(@RequestBody CategoriaRequestDto dto) {
-		return ResponseEntity.ok(categoriaService.create(dto));
+	public ResponseEntity<CategoriaResponseDto> create(@RequestBody CategoriaRequestDto categoriaRequestDto) {
+		return ResponseEntity.ok(categoriaService.create(categoriaRequestDto));
 	}
 
-	@PutMapping("/{id}")
+	@PatchMapping("/{id}")
     @RequirePermission(module = "CATEGORIA", permission = "UPDATE")
-	public ResponseEntity<CategoriaResponseDto> update(@PathVariable int id, @RequestBody CategoriaRequestDto dto) {
-		return ResponseEntity.ok(categoriaService.update(id, dto));
+	public ResponseEntity<CategoriaResponseDto> patch(@PathVariable int id, @RequestBody CategoriaRequestDto categoriaRequestDto) {
+		return ResponseEntity.ok(categoriaService.patch(id, categoriaRequestDto));
 	}
 
 	@DeleteMapping("/{id}")
