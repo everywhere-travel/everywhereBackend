@@ -30,11 +30,7 @@ public class Personas {
 
     @Column(name = "per_obs_vac")
     @JdbcTypeCode(SqlTypes.LONGNVARCHAR)
-    private String observacion;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cat_per_id_int")
-    private CategoriaPersona categoriaPersona;
+    private String observacion; 
 
     @CreationTimestamp
     @Column(name = "per_cre_tmp", updatable = false)
