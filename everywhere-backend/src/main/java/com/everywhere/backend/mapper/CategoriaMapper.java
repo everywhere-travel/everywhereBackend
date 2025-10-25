@@ -25,7 +25,6 @@ public class CategoriaMapper {
 	}
 
 	public void updateEntityFromDTO(CategoriaRequestDto categoriaRequestDto, Categoria categoria) {
-		modelMapper.getConfiguration().setSkipNullEnabled(true); // Configurar ModelMapper para saltar campos null
-		modelMapper.map(categoriaRequestDto, categoria); // Mapeo automático
+		modelMapper.map(categoriaRequestDto, categoria);
 	}
 }

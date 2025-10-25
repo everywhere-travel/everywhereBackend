@@ -7,6 +7,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
+
 @Data
 @Entity
 @Table(name = "cotizaciones")
@@ -17,7 +22,7 @@ public class Cotizacion {
     @Column(name = "cot_id_int")
     private int id;
 
-    @Column(name = "cot_num_vac", length = 100)
+    @Column(name = "cot_num_vac")
     private String codigoCotizacion;
 
     @Column(name = "cot_cant_adlt_int")
@@ -26,16 +31,18 @@ public class Cotizacion {
     @Column(name = "cot_cant_dchd_int")
     private Integer cantNinos;
 
-    @Column(name = "cot_fec_emi_tmp")
+    @CreationTimestamp
+    @Column(name = "cot_fec_emi_tmp", updatable = false)
     private LocalDateTime fechaEmision;
 
     @Column(name = "cot_fec_venc_tmp")
     private LocalDateTime fechaVencimiento;
 
-    @Column(name = "cot_fec_upd_tmp", updatable = true)
+    @UpdateTimestamp
+    @Column(name = "cot_fec_upd_tmp")
     private LocalDateTime actualizado;
 
-    @Column(name = "cot_dest_vac", length = 200)
+    @Column(name = "cot_dest_vac")
     private String origenDestino;
 
     @Column(name = "cot_fec_sal_tmp")
@@ -44,10 +51,11 @@ public class Cotizacion {
     @Column(name = "cot_fec_reg_tmp")
     private LocalDate fechaRegreso;
 
-    @Column(name = "cot_mon_vac", length = 20)
+    @Column(name = "cot_mon_vac")
     private String moneda;
 
-    @Column(name = "cot_obs_vac", length = 300)
+    @Column(name = "cot_obs_vac")
+    @JdbcTypeCode(SqlTypes.LONGNVARCHAR)
     private String observacion;
 
     @ManyToOne
@@ -77,6 +85,4 @@ public class Cotizacion {
     @OneToMany(mappedBy = "cotizacion", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<DetalleCotizacion> detalles;
-
-
 }
