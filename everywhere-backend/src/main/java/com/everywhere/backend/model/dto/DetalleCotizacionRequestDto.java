@@ -6,13 +6,14 @@ import java.math.BigDecimal;
 
 @Data
 public class DetalleCotizacionRequestDto {
-
     private Integer cantidad;
     private Integer unidad;
-    private String descripcion;
-    private Integer categoria;
+    private String descripcion; 
     private BigDecimal comision;
     private BigDecimal precioHistorico;
     private Boolean seleccionado;
 
+    private Integer categoriaId;
+    private Integer productoId;
+    private Integer proveedorId;
 }
