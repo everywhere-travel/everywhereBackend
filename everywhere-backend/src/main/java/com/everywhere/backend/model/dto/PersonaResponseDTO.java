@@ -11,6 +11,5 @@ public class PersonaResponseDTO {
     private String direccion;
     private String observacion;
     private LocalDateTime creado;
-    private LocalDateTime actualizado;
-    private CategoriaPersonaResponseDTO categoriaPersona;
+    private LocalDateTime actualizado; 
 }
