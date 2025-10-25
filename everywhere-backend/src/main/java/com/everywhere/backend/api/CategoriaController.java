@@ -36,10 +36,10 @@ public class CategoriaController {
 		return ResponseEntity.ok(categoriaService.create(categoriaRequestDto));
 	}
 
-	@PutMapping("/{id}")
+	@PatchMapping("/{id}")
     @RequirePermission(module = "CATEGORIA", permission = "UPDATE")
-	public ResponseEntity<CategoriaResponseDto> update(@PathVariable int id, @RequestBody CategoriaRequestDto categoriaRequestDto) {
-		return ResponseEntity.ok(categoriaService.update(id, categoriaRequestDto));
+	public ResponseEntity<CategoriaResponseDto> patch(@PathVariable int id, @RequestBody CategoriaRequestDto categoriaRequestDto) {
+		return ResponseEntity.ok(categoriaService.patch(id, categoriaRequestDto));
 	}
 
 	@DeleteMapping("/{id}")
