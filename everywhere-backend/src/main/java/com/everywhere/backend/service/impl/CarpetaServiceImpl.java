@@ -6,6 +6,10 @@ import com.everywhere.backend.model.dto.CarpetaResponseDto;
 import com.everywhere.backend.model.entity.Carpeta;
 import com.everywhere.backend.repository.CarpetaRepository;
 import com.everywhere.backend.service.CarpetaService;
+import com.everywhere.backend.exceptions.ResourceNotFoundException;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -19,159 +23,116 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class CarpetaServiceImpl implements CarpetaService {
 
     private final CarpetaRepository carpetaRepository;
-
-    public CarpetaServiceImpl(CarpetaRepository carpetaRepository) {
-        this.carpetaRepository = carpetaRepository;
-    }
+    private final CarpetaMapper carpetaMapper;
 
     @Override
-    public CarpetaResponseDto create(CarpetaRequestDto dto, Integer carpetaPadreId) {
-        Carpeta carpeta = CarpetaMapper.toEntity(dto);
+    public CarpetaResponseDto create(CarpetaRequestDto carpetaRequestDto, Integer carpetaPadreId) {
+        Carpeta carpeta = carpetaMapper.toEntity(carpetaRequestDto);
 
         if (carpetaPadreId != null) {
             Carpeta carpetaPadre = carpetaRepository.findById(carpetaPadreId)
-                    .orElseThrow(() -> new RuntimeException("Carpeta padre no encontrada"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Carpeta padre no encontrada con ID: " + carpetaPadreId));
             carpeta.setCarpetaPadre(carpetaPadre);
             carpeta.setNivel(carpetaPadre.getNivel() + 1);
         } else {
             carpeta.setNivel(0); // raíz
         }
 
-        carpeta.setCreado(LocalDateTime.now());
-        carpeta.setActualizado(LocalDateTime.now());
-
-        Carpeta saved = carpetaRepository.save(carpeta);
-        return CarpetaMapper.toResponse(saved);
+        Carpeta carpetaSaved = carpetaRepository.save(carpeta);
+        return carpetaMapper.toResponse(carpetaSaved);
     }
 
     @Override
     public Optional<CarpetaResponseDto> findById(Integer id) {
-        return carpetaRepository.findById(id).map(CarpetaMapper::toResponse);
+        return carpetaRepository.findById(id).map(carpetaMapper::toResponse);
     }
 
     @Override
     public List<CarpetaResponseDto> findAll() {
-        return carpetaRepository.findAll()
-                .stream()
-                .map(CarpetaMapper::toResponse)
-                .collect(Collectors.toList());
+        return mapToResponseList(carpetaRepository.findAll());
     }
 
     @Override
-    public CarpetaResponseDto update(Integer id, CarpetaRequestDto dto) {
+    public CarpetaResponseDto update(Integer id, CarpetaRequestDto carpetaRequestDto) {
         Carpeta carpeta = carpetaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Carpeta no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Carpeta no encontrada con ID: " + id));
 
-        carpeta.setNombre(dto.getNombre());
-        carpeta.setDescripcion(dto.getDescripcion());
-        carpeta.setActualizado(LocalDateTime.now());
+        carpeta.setNombre(carpetaRequestDto.getNombre());
+        carpeta.setDescripcion(carpetaRequestDto.getDescripcion());
 
         Carpeta updated = carpetaRepository.save(carpeta);
-        return CarpetaMapper.toResponse(updated);
+        return carpetaMapper.toResponse(updated);
     }
 
     @Override
     public void delete(Integer id) {
-        if (!carpetaRepository.existsById(id)) {
-            throw new RuntimeException("Carpeta no encontrada");
-        }
+        if (!carpetaRepository.existsById(id)) throw new ResourceNotFoundException("Carpeta no encontrada con ID: " + id);
         carpetaRepository.deleteById(id);
     }
 
-
     @Override
     public List<CarpetaResponseDto> findByCarpetaPadreId(Integer carpetaPadreId) {
-        return carpetaRepository.findByCarpetaPadreId(carpetaPadreId)
-                .stream()
-                .map(CarpetaMapper::toResponse)
-                .collect(Collectors.toList());
+        return mapToResponseList(carpetaRepository.findByCarpetaPadreId(carpetaPadreId));
     }
-
 
     @Override
     public List<CarpetaResponseDto> findByNivel(Integer nivel) {
-        return carpetaRepository.findByNivel(nivel)
-                .stream()
-                .map(CarpetaMapper::toResponse)
-                .collect(Collectors.toList());
+        return mapToResponseList(carpetaRepository.findByNivel(nivel));
     }
 
     @Override
     public List<CarpetaResponseDto> findByNombre(String nombre) {
-        return carpetaRepository.findByNombreContainingIgnoreCase(nombre)
-                .stream()
-                .map(CarpetaMapper::toResponse)
-                .collect(Collectors.toList());
+        return mapToResponseList(carpetaRepository.findByNombreContainingIgnoreCase(nombre));
     }
 
     @Override
     public List<CarpetaResponseDto> findByMes(int mes) {
         int anioActual = LocalDate.now().getYear();
-        LocalDateTime inicio = LocalDate.of(anioActual, mes, 1).atStartOfDay();
-        LocalDateTime fin = inicio.plusMonths(1).minusSeconds(1);
-
-        return carpetaRepository.findByCreadoBetween(inicio, fin)
-                .stream()
-                .map(CarpetaMapper::toResponse)
-                .collect(Collectors.toList());
+        return mapToResponseList(carpetaRepository.findByAnioAndMes(anioActual, mes));
     }
-
 
     @Override
     public List<CarpetaResponseDto> findByFechaCreacionBetween(LocalDate inicio, LocalDate fin) {
         LocalDateTime start = inicio.atStartOfDay();
         LocalDateTime end = fin.plusDays(1).atStartOfDay().minusSeconds(1);
-        return carpetaRepository.findByCreadoBetweenOrderByCreadoAsc(start, end)
-                .stream()
-                .map(CarpetaMapper::toResponse)
-                .collect(Collectors.toList());
+        return mapToResponseList(carpetaRepository.findByCreadoBetweenOrderByCreadoAsc(start, end));
     }
 
     @Override
     public List<CarpetaResponseDto> findRecent(int limit) {
-        return carpetaRepository.findAll(PageRequest.of(0, limit, Sort.by("creado").descending()))
-                .stream()
-                .map(CarpetaMapper::toResponse)
-                .collect(Collectors.toList());
+        return mapToResponseList(carpetaRepository.findAll(PageRequest.of(0, limit, Sort.by("creado").descending())).getContent());
     }
 
     @Override
     public List<CarpetaResponseDto> findRaices() {
-        return carpetaRepository.findByCarpetaPadreIsNull()
-                .stream()
-                .map(CarpetaMapper::toResponse)
-                .collect(Collectors.toList());
+        return mapToResponseList(carpetaRepository.findByCarpetaPadreIsNull());
     }
 
     @Override
     public List<CarpetaResponseDto> findCamino(Integer carpetaId) {
         Carpeta carpeta = carpetaRepository.findById(carpetaId)
-                .orElseThrow(() -> new RuntimeException("Carpeta no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Carpeta no encontrada con ID: " + carpetaId));
 
         List<Carpeta> camino = new ArrayList<>();
 
-        // Recorremos hacia arriba hasta la raíz
-        while (carpeta != null) {
+        while (carpeta != null) { // Recorremos hacia arriba hasta la raíz
             camino.add(carpeta);
             carpeta = carpeta.getCarpetaPadre();
         }
-
-        // Invertimos para que quede desde la raíz hasta la carpeta actual
-        Collections.reverse(camino);
-
-        return camino.stream()
-                .map(CarpetaMapper::toResponse)
-                .collect(Collectors.toList());
+        Collections.reverse(camino); // Invertimos para que quede desde la raíz hasta la carpeta actual
+        return mapToResponseList(camino);
     }
+
     @Override
     public List<CarpetaResponseDto> findHijosByPadreId(Integer carpetaPadreId) {
-        return carpetaRepository.findByCarpetaPadreId(carpetaPadreId)
-                .stream()
-                .map(CarpetaMapper::toResponse)
-                .collect(Collectors.toList());
+        return mapToResponseList(carpetaRepository.findByCarpetaPadreId(carpetaPadreId));
     }
 
+    private List<CarpetaResponseDto> mapToResponseList(List<Carpeta> carpetas) {
+        return carpetas.stream().map(carpetaMapper::toResponse).collect(Collectors.toList());
+    }
 }
