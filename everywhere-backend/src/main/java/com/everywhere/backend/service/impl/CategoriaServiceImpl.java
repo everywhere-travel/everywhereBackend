@@ -41,12 +41,11 @@ public class CategoriaServiceImpl implements CategoriaService {
 	}
 
 	@Override
-	public CategoriaResponseDto update(int id, CategoriaRequestDto categoriaRequestDto) {
+	public CategoriaResponseDto patch(int id, CategoriaRequestDto categoriaRequestDto) {
 		Categoria categoria = categoriaRepository.findById(id)
 				.orElseThrow(() -> new RuntimeException("Categoria no encontrada"));
-		categoria.setNombre(categoriaRequestDto.getNombre());
-		Categoria updated = categoriaRepository.save(categoria);
-		return categoriaMapper.toResponseDto(updated);
+		categoriaMapper.updateEntityFromDTO(categoriaRequestDto, categoria);
+		return categoriaMapper.toResponseDto(categoriaRepository.save(categoria));
 	}
 
 	@Override
