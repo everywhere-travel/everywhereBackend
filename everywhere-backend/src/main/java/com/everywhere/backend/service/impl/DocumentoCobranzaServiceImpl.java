@@ -13,325 +13,115 @@ import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 import com.itextpdf.io.image.ImageDataFactory;
 import com.everywhere.backend.model.dto.CotizacionConDetallesResponseDTO;
-import com.everywhere.backend.model.dto.DetalleCotizacionSimpleDTO;
-import com.everywhere.backend.model.dto.DocumentoCobranzaDTO;
+import com.everywhere.backend.model.dto.DetalleDocumentoCobranzaResponseDTO;
 import com.everywhere.backend.model.dto.DocumentoCobranzaResponseDTO;
 import com.everywhere.backend.model.dto.DocumentoCobranzaUpdateDTO;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
+import com.everywhere.backend.mapper.DetalleDocumentoCobranzaMapper;
+import com.everywhere.backend.mapper.DocumentoCobranzaMapper;
 import com.everywhere.backend.model.entity.DocumentoCobranza;
 import com.everywhere.backend.model.entity.DetalleDocumentoCobranza;
-import com.everywhere.backend.model.entity.FormaPago;
-import com.everywhere.backend.model.entity.Personas;
-import com.everywhere.backend.model.entity.PersonaNatural;
-import com.everywhere.backend.model.entity.PersonaJuridica;
-import com.everywhere.backend.model.entity.Producto;
-import com.everywhere.backend.model.entity.Sucursal;
 import com.everywhere.backend.repository.DetalleDocumentoCobranzaRepository;
 import com.everywhere.backend.repository.DocumentoCobranzaRepository;
-import com.everywhere.backend.repository.PersonaNaturalRepository;
-import com.everywhere.backend.repository.PersonaJuridicaRepository;
 import com.everywhere.backend.service.CotizacionService;
 import com.everywhere.backend.service.DocumentoCobranzaService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
-    @Autowired
-    private CotizacionService cotizacionService;
-
-    @Autowired
-    private DocumentoCobranzaRepository documentoCobranzaRepository;
-
-    @Autowired
-    private DetalleDocumentoCobranzaRepository detalleDocumentoCobranzaRepository;
-
-    @Autowired
-    private PersonaNaturalRepository personaNaturalRepository;
-
-    @Autowired
-    private PersonaJuridicaRepository personaJuridicaRepository;
-
-    // ========== MÉTODOS PÚBLICOS DE LA INTERFAZ ==========
+    private final CotizacionService cotizacionService;
+    private final DocumentoCobranzaRepository documentoCobranzaRepository;
+    private final DetalleDocumentoCobranzaRepository detalleDocumentoCobranzaRepository;
+    private final DocumentoCobranzaMapper documentoCobranzaMapper;
+    private final DetalleDocumentoCobranzaMapper detalleDocumentoCobranzaMapper;
 
     @Override
-    public DocumentoCobranzaResponseDTO createDocumentoCobranza(Integer cotizacionId, String fileVenta,
-            Double costoEnvio) {
-        DocumentoCobranza existente = documentoCobranzaRepository.findByCotizacionId(cotizacionId).orElse(null);
-        if (existente != null) {
+    @Transactional
+    public DocumentoCobranzaResponseDTO createDocumentoCobranza(Integer cotizacionId) {
+        if (documentoCobranzaRepository.findByCotizacionId(cotizacionId).isPresent())
             throw new RuntimeException("Ya existe un documento de cobranza para la cotización ID: " + cotizacionId);
-        }
-
+        
         CotizacionConDetallesResponseDTO cotizacion = cotizacionService.findByIdWithDetalles(cotizacionId);
-        if (cotizacion == null) {
-            throw new RuntimeException("Cotización no encontrada con ID: " + cotizacionId);
+        if (cotizacion == null) throw new RuntimeException("Cotización no encontrada con ID: " + cotizacionId);
+        
+        String numeroDocumento = generateNextDocumentNumber();
+        DocumentoCobranza documentoCobranza = documentoCobranzaMapper.fromCotizacion(cotizacion, numeroDocumento);
+        documentoCobranza = documentoCobranzaRepository.save(documentoCobranza);
+
+        List<DetalleDocumentoCobranza> detalleDocumentoCobranzas = detalleDocumentoCobranzaMapper
+                .fromCotizacionDetalles(cotizacion.getDetalles(), documentoCobranza);
+
+        if (!detalleDocumentoCobranzas.isEmpty()) {
+            detalleDocumentoCobranzaRepository.saveAll(detalleDocumentoCobranzas);
+            documentoCobranza.setDetalles(detalleDocumentoCobranzas);
         }
 
-        DocumentoCobranza documento = new DocumentoCobranza();
-        documento.setNumero(generateNextDocumentNumber());
-        documento.setFechaEmision(LocalDateTime.now());
-        documento.setObservaciones(cotizacion.getObservacion());
-
-        com.everywhere.backend.model.entity.Cotizacion cotizacionEntity = new com.everywhere.backend.model.entity.Cotizacion();
-        cotizacionEntity.setId(cotizacionId);
-        documento.setCotizacion(cotizacionEntity);
-
-        if (cotizacion.getPersonas() != null) {
-            Personas persona = new Personas();
-            persona.setId(cotizacion.getPersonas().getId());
-            documento.setPersona(persona);
-        }
-
-        if (cotizacion.getSucursal() != null) {
-            Sucursal sucursal = new Sucursal();
-            sucursal.setId(cotizacion.getSucursal().getId());
-            documento.setSucursal(sucursal);
-        }
-
-        if (cotizacion.getFormaPago() != null) {
-            FormaPago formaPago = new FormaPago();
-            formaPago.setId(cotizacion.getFormaPago().getId());
-            documento.setFormaPago(formaPago);
-        }
-
-        documento.setFileVenta(fileVenta);
-        documento.setCostoEnvio(costoEnvio);
-        documento.setMoneda(cotizacion.getMoneda());
-
-        documento = documentoCobranzaRepository.save(documento);
-
-        List<DetalleDocumentoCobranza> detalles = new ArrayList<>();
-
-        if (cotizacion.getDetalles() != null) {
-            for (DetalleCotizacionSimpleDTO detalleCot : cotizacion.getDetalles()) {
-                if (detalleCot.getSeleccionado() != null && detalleCot.getSeleccionado()) {
-                    DetalleDocumentoCobranza detalle = new DetalleDocumentoCobranza();
-                    detalle.setDocumentoCobranza(documento);
-                    detalle.setCantidad(detalleCot.getCantidad() != null ? detalleCot.getCantidad() : 0);
-                    detalle.setDescripcion(detalleCot.getDescripcion());
-                    detalle.setFechaCreacion(LocalDateTime.now());
-
-                    BigDecimal precioUnitario = detalleCot.getPrecioHistorico() != null
-                            ? detalleCot.getPrecioHistorico()
-                            : BigDecimal.ZERO;
-                    detalle.setPrecio(precioUnitario);
-
-                    if (detalleCot.getProducto() != null) {
-                        Producto producto = new Producto();
-                        producto.setId(detalleCot.getProducto().getId());
-                        detalle.setProducto(producto);
-                    }
-
-                    detalles.add(detalle);
-                }
-            }
-        }
-
-        if (!detalles.isEmpty()) {
-            detalleDocumentoCobranzaRepository.saveAll(detalles);
-            documento.setDetalles(detalles);
-        }
-
-        return convertToResponseDTO(documento);
+        return documentoCobranzaMapper.toResponseDTO(documentoCobranza);
     }
 
     @Override
     public ByteArrayInputStream generatePdf(Long documentoId) {
-        DocumentoCobranza documento = findDocumentoById(documentoId);
-        if (documento == null) {
-            throw new RuntimeException("Documento de cobranza no encontrado con ID: " + documentoId);
-        }
+        DocumentoCobranza documentoCobranza = documentoCobranzaRepository.findByIdWithRelations(documentoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Documento de cobranza no encontrado con ID: " + documentoId));
 
-        DocumentoCobranzaDTO documentoDTO = convertToDTO(documento);
-        return generatePdfFromDTO(documentoDTO);
-    }
-
-    @Override
-    public DocumentoCobranzaDTO convertToDTO(DocumentoCobranza entity) {
-        DocumentoCobranzaDTO dto = new DocumentoCobranzaDTO();
-
-        // Campos básicos
-        dto.setFileVenta(entity.getFileVenta());
-        dto.setCostoEnvio(
-                entity.getCostoEnvio() != null ? BigDecimal.valueOf(entity.getCostoEnvio()) : BigDecimal.ZERO);
-        dto.setFechaEmision(entity.getFechaEmision());
-        dto.setMoneda(entity.getMoneda());
-        dto.setObservaciones(entity.getObservaciones());
-
-        // Información de cotización
-        if (entity.getCotizacion() != null) {
-            dto.setCodigoCotizacion(entity.getCotizacion().getCodigoCotizacion());
-        }
-
-        if (entity.getPersona() != null) {
-            dto.setClienteTelefono(entity.getPersona().getTelefono());
-            dto.setClienteDireccion(entity.getPersona().getDireccion());
-            
-            // Buscar información adicional del cliente (nombre y documento)
-            String nombreCompleto;
-            String documento;
-            
-            // Buscar en PersonaNatural primero
-            Optional<PersonaNatural> personaNatural = personaNaturalRepository.findByPersonasId(entity.getPersona().getId());
-            if (personaNatural.isPresent()) {
-                PersonaNatural pn = personaNatural.get();
-                nombreCompleto = (pn.getNombres() + " " + pn.getApellidosPaterno() + " " + pn.getApellidosMaterno()).trim();
-                documento = pn.getDocumento() != null ? pn.getDocumento() : "00000000";
-            } else {
-                // Si no es persona natural, buscar en PersonaJuridica
-                Optional<PersonaJuridica> personaJuridica = personaJuridicaRepository.findByPersonasId(entity.getPersona().getId());
-                if (personaJuridica.isPresent()) {
-                    PersonaJuridica pj = personaJuridica.get();
-                    nombreCompleto = pj.getRazonSocial() != null ? pj.getRazonSocial() : "EMPRESA";
-                    documento = pj.getRuc() != null ? pj.getRuc() : "00000000000";
-                } else {
-                    // Valores por defecto si no se encuentra en ninguna tabla
-                    nombreCompleto = "CLIENTE";
-                    documento = "00000000";
-                }
-            }
-            
-            dto.setClienteNombre(nombreCompleto);
-            dto.setClienteDocumento(documento);
-        }
-
-        if (entity.getSucursal() != null) {
-            dto.setSucursalDescripcion(entity.getSucursal().getDescripcion());
-            dto.setPuntoCompra(entity.getSucursal().getDescripcion());
-        }
-
-        if (entity.getFormaPago() != null) {
-            dto.setFormaPago(entity.getFormaPago().getDescripcion());
-        }
-
-        List<DocumentoCobranzaDTO.DetalleDocumentoCobranza> detallesDto = new ArrayList<>();
-        BigDecimal subtotalGeneral = BigDecimal.ZERO;
-
-        if (entity.getDetalles() != null) {
-            for (DetalleDocumentoCobranza detalleEntity : entity.getDetalles()) {
-                DocumentoCobranzaDTO.DetalleDocumentoCobranza detalleDto = new DocumentoCobranzaDTO.DetalleDocumentoCobranza();
-
-                detalleDto.setCantidad(detalleEntity.getCantidad());
-                detalleDto.setDescripcion(detalleEntity.getDescripcion());
-                detalleDto.setPrecioUnitario(detalleEntity.getPrecio());
-
-                if (detalleEntity.getProducto() != null) {
-                    detalleDto.setCodigoProducto(detalleEntity.getProducto().getCodigo());
-                }
-
-                // Calcular subtotal del detalle: cantidad * precio
-                BigDecimal cantidad = detalleEntity.getCantidad() != null ? new BigDecimal(detalleEntity.getCantidad())
-                        : BigDecimal.ONE;
-                BigDecimal precio = detalleEntity.getPrecio() != null ? detalleEntity.getPrecio() : BigDecimal.ZERO;
-                BigDecimal subtotalDetalle = cantidad.multiply(precio);
-
-                subtotalGeneral = subtotalGeneral.add(subtotalDetalle);
-                detallesDto.add(detalleDto);
-            }
-        }
-
-        dto.setDetalles(detallesDto);
-        dto.setSubtotal(subtotalGeneral);
-
-        BigDecimal total = subtotalGeneral.add(dto.getCostoEnvio());
-        dto.setTotal(total);
-
-        dto.setImporteEnLetras(convertirNumeroALetras(total.doubleValue(), entity.getMoneda()));
-
-        return dto;
-    }
-
-    @Override
-    public DocumentoCobranzaResponseDTO convertToResponseDTO(DocumentoCobranza entity) {
-        DocumentoCobranzaResponseDTO dto = new DocumentoCobranzaResponseDTO();
-
-        dto.setId(entity.getId());
-        dto.setNumero(entity.getNumero());
-        dto.setFechaEmision(entity.getFechaEmision());
-        dto.setObservaciones(entity.getObservaciones());
-        dto.setFileVenta(entity.getFileVenta());
-        dto.setCostoEnvio(entity.getCostoEnvio());
-        dto.setMoneda(entity.getMoneda());
-
-        if (entity.getCotizacion() != null) {
-            dto.setCotizacionId(entity.getCotizacion().getId());
-            dto.setCodigoCotizacion(entity.getCotizacion().getCodigoCotizacion());
-        }
-
-        if (entity.getPersona() != null) {
-            dto.setPersonaId(entity.getPersona().getId());
-            
-            // Buscar nombre completo del cliente
-            Optional<PersonaNatural> personaNatural = personaNaturalRepository.findByPersonasId(entity.getPersona().getId());
-            if (personaNatural.isPresent()) {
-                PersonaNatural pn = personaNatural.get();
-                String nombreCompleto = (pn.getNombres() + " " + pn.getApellidosPaterno() + " " + pn.getApellidosMaterno()).trim();
-                dto.setClienteNombre(nombreCompleto);
-            } else {
-                Optional<PersonaJuridica> personaJuridica = personaJuridicaRepository.findByPersonasId(entity.getPersona().getId());
-                if (personaJuridica.isPresent()) {
-                    PersonaJuridica pj = personaJuridica.get();
-                    dto.setClienteNombre(pj.getRazonSocial() != null ? pj.getRazonSocial() : "EMPRESA");
-                } else {
-                    dto.setClienteNombre("CLIENTE");
-                }
-            }
-        }
-
-        if (entity.getSucursal() != null) {
-            dto.setSucursalId(entity.getSucursal().getId());
-            dto.setSucursalDescripcion(entity.getSucursal().getDescripcion());
-        }
-
-        if (entity.getFormaPago() != null) {
-            dto.setFormaPagoId(entity.getFormaPago().getId());
-            dto.setFormaPagoDescripcion(entity.getFormaPago().getDescripcion());
-        }
-
-        return dto;
+        DocumentoCobranzaResponseDTO documentoCobranzaResponseDTO = documentoCobranzaMapper.toResponseDTO(documentoCobranza);
+        return generatePdfFromDTO(documentoCobranzaResponseDTO);
     }
 
     @Override
     public DocumentoCobranzaResponseDTO findById(Long id) {
-        DocumentoCobranza entity = documentoCobranzaRepository.findById(id).orElse(null);
-        return entity != null ? convertToResponseDTO(entity) : null;
+        DocumentoCobranza documentoCobranza = documentoCobranzaRepository.findByIdWithRelations(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Documento de cobranza no encontrado con ID: " + id));
+        return documentoCobranzaMapper.toResponseDTO(documentoCobranza);
     }
 
     @Override
     public DocumentoCobranzaResponseDTO findByNumero(String numero) {
-        DocumentoCobranza entity = documentoCobranzaRepository.findByNumero(numero).orElse(null);
-        return entity != null ? convertToResponseDTO(entity) : null;
+        DocumentoCobranza documentoCobranza = documentoCobranzaRepository.findByNumero(numero)
+                .orElseThrow(() -> new ResourceNotFoundException("Documento de cobranza no encontrado con número: " + numero));
+        return documentoCobranzaMapper.toResponseDTO(documentoCobranza);
     }
 
     @Override
     public List<DocumentoCobranzaResponseDTO> findAll() {
-        return documentoCobranzaRepository.findAll().stream()
-                .map(this::convertToResponseDTO)
-                .collect(java.util.stream.Collectors.toList());
+        return documentoCobranzaRepository.findAllWithRelations().stream()
+                .map(documentoCobranzaMapper::toResponseDTO).collect(Collectors.toList());
     }
 
     @Override
     public DocumentoCobranzaResponseDTO findByCotizacionId(Integer cotizacionId) {
-        DocumentoCobranza entity = documentoCobranzaRepository.findByCotizacionId(cotizacionId).orElse(null);
-        return entity != null ? convertToResponseDTO(entity) : null;
+        DocumentoCobranza documentoCobranza = documentoCobranzaRepository.findByCotizacionId(cotizacionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Documento de cobranza no encontrado para cotización ID: " + cotizacionId));
+        return documentoCobranzaMapper.toResponseDTO(documentoCobranza);
+    }
+
+    @Override
+    @Transactional
+    public DocumentoCobranzaResponseDTO patchDocumento(Long id, DocumentoCobranzaUpdateDTO documentoCobranzaUpdateDTO) {
+        DocumentoCobranza documentoCobranza = documentoCobranzaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Documento de cobranza no encontrado con ID: " + id));
+
+        documentoCobranzaMapper.updateEntityFromUpdateDTO(documentoCobranza, documentoCobranzaUpdateDTO);
+        
+        documentoCobranza = documentoCobranzaRepository.save(documentoCobranza);
+        return documentoCobranzaMapper.toResponseDTO(documentoCobranza);
     }
 
     // ========== MÉTODOS PRIVADOS ==========
-
-    private DocumentoCobranza findDocumentoById(Long id) {
-        return documentoCobranzaRepository.findById(id).orElse(null);
-    }
 
     private String generateNextDocumentNumber() {
         Optional<String> lastNumberOpt = documentoCobranzaRepository.findLastDocumentNumber();
@@ -487,11 +277,9 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         return resultado.trim();
     }
 
-    private ByteArrayInputStream generatePdfFromDTO(DocumentoCobranzaDTO documento) {
-        if (documento == null) {
-            return null;
-        }
-
+    private ByteArrayInputStream generatePdfFromDTO(DocumentoCobranzaResponseDTO documento) {
+        if (documento == null) return null;
+        
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         boolean hasValidData = false;
 
@@ -503,44 +291,30 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
             // 1. ENCABEZADO DE LA EMPRESA
             addCompanyHeader(pdfDoc, documento);
             hasValidData = true;
-
             // 2. TABLA DE RESUMEN (MONEDA, FILE, FORMA DE PAGO)
             addSummaryTable(pdfDoc, documento);
-
             // 3. TABLA DE DETALLES DE SERVICIOS
-            if (documento.getDetalles() != null && !documento.getDetalles().isEmpty()) {
-                addServicesTable(pdfDoc, documento);
-            }
-
+            if (documento.getDetalles() != null && !documento.getDetalles().isEmpty()) addServicesTable(pdfDoc, documento);
             // 4. CUADRO DE OBSERVACIONES (separado)
             addObservationsBox(pdfDoc, documento);
-
             // 5. PIE DE PÁGINA EN CADA HOJA
             addPageFooter(pdfDocument);
-
             pdfDoc.close();
-
-            if (!hasValidData) {
-                return null;
-            }
-
+            if (!hasValidData) return null;
         } catch (Exception e) {
             throw new RuntimeException("Error al generar el PDF del documento de cobranza", e);
         }
-
         return new ByteArrayInputStream(out.toByteArray());
     }
 
     // 1. ENCABEZADO DE LA EMPRESA
-    private void addCompanyHeader(Document document, DocumentoCobranzaDTO documento) {
+    private void addCompanyHeader(Document document, DocumentoCobranzaResponseDTO documento) {
         // Crear tabla principal para el encabezado
         Table headerTable = new Table(2).setWidth(UnitValue.createPercentValue(100));
-
         // Columna izquierda - Logo y datos de empresa en celdas separadas
         Cell leftCell = new Cell()
                 .setBorder(Border.NO_BORDER)
                 .setWidth(UnitValue.createPercentValue(60));
-
         // 1. Celda del Logo/Imagen
         Table logoTable = new Table(1).setWidth(UnitValue.createPercentValue(100));
         Cell logoCell = new Cell()
@@ -551,7 +325,6 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
         // Cargar y agregar la imagen del logo
         try {
-            // Intentar cargar desde el classpath primero
             String logoPath = "/logo/everyLogo.png";
             java.io.InputStream logoStream = getClass().getResourceAsStream(logoPath);
 
@@ -559,8 +332,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                 byte[] logoBytes = logoStream.readAllBytes();
                 Image logoImage = new Image(ImageDataFactory.create(logoBytes));
 
-                // Poner un tamaño fijo para que no interfiera con el layout, alineada a la
-                // izquierda
+                // Poner un tamaño fijo para que no interfiera con el layout, alineada a la izquierda
                 logoImage.setWidth(150); // Ancho fijo en puntos
                 logoImage.setHeight(50); // Alto fijo en puntos
 
@@ -701,7 +473,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                 .setBorder(Border.NO_BORDER).setPadding(1));
 
         // Fila 3 - Solo Documento
-        innerTable.addCell(new Cell().add(new Paragraph("Documento - DNI:").setBold().setFontSize(9))
+        innerTable.addCell(new Cell().add(new Paragraph("Documento: - " + documento.getTipoDocumentoCliente()).setBold().setFontSize(9))
                 .setBorder(Border.NO_BORDER).setPadding(1));
         innerTable.addCell(new Cell().add(new Paragraph(numeroDocumento).setFontSize(9))
                 .setBorder(Border.NO_BORDER).setPadding(1));
@@ -724,7 +496,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     }
 
     // 2. TABLA DE RESUMEN (MONEDA, FILE, FORMA DE PAGO)
-    private void addSummaryTable(Document document, DocumentoCobranzaDTO documento) {
+    private void addSummaryTable(Document document, DocumentoCobranzaResponseDTO documento) {
         // Tabla de resumen con 3 columnas en una sola fila sin líneas divisorias
         Table resumenTable = new Table(3).setWidth(UnitValue.createPercentValue(100));
         resumenTable.setBorder(new com.itextpdf.layout.borders.SolidBorder(1));
@@ -765,7 +537,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                 .setTextAlignment(TextAlignment.CENTER)
                 .setPadding(8);
 
-        String formaPago = documento.getFormaPago() != null ? documento.getFormaPago().toUpperCase() : "DEPOSITO";
+        String formaPago = documento.getFormaPagoDescripcion() != null ? documento.getFormaPagoDescripcion().toUpperCase() : "DEPOSITO";
 
         formaPagoCell.add(new Paragraph("Forma de Pago: " + formaPago).setFontSize(10));
 
@@ -779,7 +551,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     }
 
     // 3. TABLA DE DETALLES DE SERVICIOS
-    private void addServicesTable(Document document, DocumentoCobranzaDTO documento) {
+    private void addServicesTable(Document document, DocumentoCobranzaResponseDTO documento) {
         // CONFIGURAR ANCHOS DE COLUMNAS DE PRODUCTOS (en puntos absolutos sobre 523
         // disponibles)
         // Cant, Código, Descripción, P.U., Total
@@ -816,8 +588,9 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                 .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
                 .setTextAlignment(TextAlignment.CENTER));
 
+        BigDecimal subTotalAmount = BigDecimal.ZERO;
         // Agregar filas de detalles
-        for (DocumentoCobranzaDTO.DetalleDocumentoCobranza detalle : documento.getDetalles()) {
+        for (DetalleDocumentoCobranzaResponseDTO detalle : documento.getDetalles()) {
             String cantidad = String.valueOf(detalle.getCantidad() != null ? detalle.getCantidad() : 1);
             servicesTable.addCell(new Cell().add(new Paragraph(cantidad).setFontSize(9))
                     .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
@@ -833,22 +606,23 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                     .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)));
 
             String precioUnitario = String.format("$ %.2f",
-                    detalle.getPrecioUnitario() != null ? detalle.getPrecioUnitario() : BigDecimal.ZERO);
+                    detalle.getPrecio() != null ? detalle.getPrecio() : BigDecimal.ZERO);
             servicesTable.addCell(new Cell().add(new Paragraph(precioUnitario).setFontSize(8))
                     .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
                     .setTextAlignment(TextAlignment.RIGHT)
                     .setKeepTogether(true));
 
             // Calcular total del detalle: cantidad * precio
-            BigDecimal cantidadBD = detalle.getCantidad() != null ? new BigDecimal(detalle.getCantidad())
-                    : BigDecimal.ONE;
-            BigDecimal precioBD = detalle.getPrecioUnitario() != null ? detalle.getPrecioUnitario() : BigDecimal.ZERO;
+            BigDecimal cantidadBD = detalle.getCantidad() != null ? new BigDecimal(detalle.getCantidad()) : BigDecimal.ONE;
+            BigDecimal precioBD = detalle.getPrecio() != null ? detalle.getPrecio() : BigDecimal.ZERO;
             BigDecimal totalDetalle = cantidadBD.multiply(precioBD);
 
             String total = String.format("%.2f", totalDetalle);
             servicesTable.addCell(new Cell().add(new Paragraph("$ " + total).setFontSize(9))
                     .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
                     .setTextAlignment(TextAlignment.RIGHT));
+
+            subTotalAmount = subTotalAmount.add(totalDetalle);
         }
         document.add(servicesTable);
 
@@ -861,7 +635,8 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
         totalsTable.setBorder(new com.itextpdf.layout.borders.SolidBorder(1));
 
-        BigDecimal totalAmount = documento.getTotal() != null ? documento.getTotal() : BigDecimal.ZERO;
+        BigDecimal CostoEnvio = documento.getCostoEnvio() != null ? documento.getCostoEnvio() : BigDecimal.ZERO;
+        BigDecimal totalAmount = subTotalAmount.add(CostoEnvio);
         String totalEnLetras = convertirNumeroALetras(totalAmount.doubleValue(), documento.getMoneda());
 
         totalsTable.addCell(new Cell(3, 1));
@@ -875,8 +650,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                 .setTextAlignment(TextAlignment.CENTER);
         totalsTable.addCell(subtotalLabelCell);
 
-        String subtotal = String.format("%.2f",
-                documento.getSubtotal() != null ? documento.getSubtotal() : BigDecimal.ZERO);
+        String subtotal = String.format("%.2f", subTotalAmount);
 
         totalsTable.addCell(new Cell().add(new Paragraph("$ " + subtotal).setFontSize(9))
                 .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
@@ -899,7 +673,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                 .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
                 .setTextAlignment(TextAlignment.CENTER));
 
-        String total = String.format("%.2f", documento.getTotal() != null ? documento.getTotal() : BigDecimal.ZERO);
+        String total = String.format("%.2f", totalAmount);
 
         totalsTable.addCell(new Cell().add(new Paragraph("$ " + total).setFontSize(9))
                 .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
@@ -910,7 +684,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     }
 
     // 4. CUADRO DE OBSERVACIONES
-    private void addObservationsBox(Document document, DocumentoCobranzaDTO documento) {
+    private void addObservationsBox(Document document, DocumentoCobranzaResponseDTO documento) {
         if (documento.getObservaciones() != null && !documento.getObservaciones().trim().isEmpty()) {
             // Espacio antes del cuadro
             document.add(new Paragraph("\n"));
@@ -965,27 +739,5 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                         }
                     }
                 });
-    }
-
-    @Override
-    public DocumentoCobranzaResponseDTO updateDocumento(Long id, DocumentoCobranzaUpdateDTO updateDTO) {
-        DocumentoCobranza documento = documentoCobranzaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Documento de cobranza no encontrado con ID: " + id));
-
-        // Actualizar solo los campos que vienen en el DTO (no nulos)
-        if (updateDTO.getFileVenta() != null) {
-            documento.setFileVenta(updateDTO.getFileVenta());
-        }
-        
-        if (updateDTO.getCostoEnvio() != null) {
-            documento.setCostoEnvio(updateDTO.getCostoEnvio());
-        }
-        
-        if (updateDTO.getObservaciones() != null) {
-            documento.setObservaciones(updateDTO.getObservaciones());
-        }
-
-        DocumentoCobranza updated = documentoCobranzaRepository.save(documento);
-        return convertToResponseDTO(updated);
     }
 }
