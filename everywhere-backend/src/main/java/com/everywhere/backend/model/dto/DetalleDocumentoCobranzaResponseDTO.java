@@ -14,7 +14,6 @@ public class DetalleDocumentoCobranzaResponseDTO {
     private BigDecimal precio;
     private LocalDateTime fechaCreacion;
     
-    // IDs de relaciones para evitar lazy loading
     private Long documentoCobranzaId;
     private String documentoCobranzaNumero;
     
