@@ -47,12 +47,11 @@ public class DetalleDocumentoCobranzaController {
         return new ResponseEntity<>(detalle, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "UPDATE")
     public ResponseEntity<DetalleDocumentoCobranzaResponseDTO> updateDetalle(
-            @PathVariable Long id, 
-            @Valid @RequestBody DetalleDocumentoCobranzaRequestDTO dto) {
-        DetalleDocumentoCobranzaResponseDTO detalle = detalleService.update(id, dto);
+            @PathVariable Long id, @Valid @RequestBody DetalleDocumentoCobranzaRequestDTO detalleDocumentoCobranzaRequestDTO) {
+        DetalleDocumentoCobranzaResponseDTO detalle = detalleService.patch(id, detalleDocumentoCobranzaRequestDTO);
         return ResponseEntity.ok(detalle);
     }
 
