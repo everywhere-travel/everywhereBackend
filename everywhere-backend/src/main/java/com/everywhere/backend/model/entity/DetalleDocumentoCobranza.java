@@ -2,9 +2,7 @@ package com.everywhere.backend.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,8 +14,6 @@ import org.hibernate.type.SqlTypes;
 @Entity
 @Table(name = "detalle_documento_cobranza")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class DetalleDocumentoCobranza {
 
     @Id

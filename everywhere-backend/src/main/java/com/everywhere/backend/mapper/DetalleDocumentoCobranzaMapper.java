@@ -33,10 +33,7 @@ public class DetalleDocumentoCobranzaMapper {
     }
 
     //Convierte los detalles seleccionados de una cotización a detalles de documento de cobranza
-    public List<DetalleDocumentoCobranza> fromCotizacionDetalles(
-            List<DetalleCotizacionSimpleDTO> detallesCotizacion,
-            DocumentoCobranza documentoCobranza) {
-
+    public List<DetalleDocumentoCobranza> fromCotizacionDetalles(List<DetalleCotizacionSimpleDTO> detallesCotizacion, DocumentoCobranza documentoCobranza) {
         List<DetalleDocumentoCobranza> detalles = new ArrayList<>();
 
         if (detallesCotizacion != null) {

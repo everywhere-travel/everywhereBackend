@@ -17,14 +17,12 @@ public class DocumentoCobranzaResponseDTO {
     private BigDecimal costoEnvio;
     private String moneda;
     
-    // Información de relaciones
     private Integer cotizacionId;
     private String codigoCotizacion; 
     private Integer personaId;
     private Integer sucursalId;
     private Integer formaPagoId;
     
-    // Información básica para mostrar
     private String clienteNombre;
     private String clienteDocumento;
     private String tipoDocumentoCliente;

@@ -7,7 +7,6 @@ import com.everywhere.backend.model.dto.DocumentoCobranzaResponseDTO;
 import com.everywhere.backend.model.dto.DocumentoCobranzaUpdateDTO;
 
 public interface DocumentoCobranzaService {
-    
     DocumentoCobranzaResponseDTO createDocumentoCobranza(Integer cotizacionId);
     ByteArrayInputStream generatePdf(Long documentoId);
     DocumentoCobranzaResponseDTO findById(Long id);

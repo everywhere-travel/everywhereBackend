@@ -2,7 +2,7 @@ package com.everywhere.backend.mapper;
 
 import com.everywhere.backend.model.dto.CotizacionConDetallesResponseDTO;
 import com.everywhere.backend.model.dto.DocumentoCobranzaRequestDTO;
-import com.everywhere.backend.model.dto.DocumentoCobranzaResponseDTO;
+import com.everywhere.backend.model.dto.DocumentoCobranzaResponseDTO; 
 import com.everywhere.backend.model.dto.DocumentoCobranzaUpdateDTO;
 import com.everywhere.backend.model.entity.Cotizacion;
 import com.everywhere.backend.model.entity.DocumentoCobranza;
@@ -58,7 +58,6 @@ public class DocumentoCobranzaMapper {
             formaPago.setId(cotizacionConDetallesResponseDTO.getFormaPago().getId());
             documentoCobranza.setFormaPago(formaPago);
         }
-
         return documentoCobranza;
     }
 
@@ -70,18 +69,16 @@ public class DocumentoCobranzaMapper {
         modelMapper.map(documentoCobranzaRequestDTO, documentoCobranza);
     }
 
-    public void updateEntityFromUpdateDTO(DocumentoCobranza documentoCobranza, DocumentoCobranzaUpdateDTO updateDTO) {
-        modelMapper.map(updateDTO, documentoCobranza);
+    public void updateEntityFromUpdateDTO(DocumentoCobranza documentoCobranza, DocumentoCobranzaUpdateDTO documentoCobranzaUpdateDTO) {
+        modelMapper.map(documentoCobranzaUpdateDTO, documentoCobranza);
     }
 
     public DocumentoCobranzaResponseDTO toResponseDTO(DocumentoCobranza documentoCobranza) {
         DocumentoCobranzaResponseDTO documentoCobranzaResponseDTO = modelMapper.map(documentoCobranza, DocumentoCobranzaResponseDTO.class);
         
-        // Establecer el nombre completo del cliente
         if (documentoCobranza.getPersona() != null) {
             Integer personaId = documentoCobranza.getPersona().getId();
             
-            // Primero intentar buscar como PersonaNatural
             PersonaNatural personaNatural = personaNaturalRepository.findByPersonasId(personaId).orElse(null);
             if (personaNatural != null) {
                 String nombreCompleto = personaNatural.getNombres() + " " + 
@@ -90,7 +87,6 @@ public class DocumentoCobranzaMapper {
                 documentoCobranzaResponseDTO.setClienteDocumento(personaNatural.getDocumento());
                 documentoCobranzaResponseDTO.setTipoDocumentoCliente("DNI");
             } else {
-                // Si no es natural, buscar como PersonaJuridica
                 PersonaJuridica personaJuridica = personaJuridicaRepository.findByPersonasId(personaId).orElse(null);
                 if (personaJuridica != null) {
                     documentoCobranzaResponseDTO.setClienteNombre(personaJuridica.getRazonSocial());
@@ -99,12 +95,10 @@ public class DocumentoCobranzaMapper {
                 }
             }
         }
-        if (documentoCobranza.getSucursal() != null) {
+        if (documentoCobranza.getSucursal() != null)
             documentoCobranzaResponseDTO.setSucursalDescripcion(documentoCobranza.getSucursal().getDescripcion());
-        }
-        if (documentoCobranza.getFormaPago() != null) {
+        if (documentoCobranza.getFormaPago() != null)
             documentoCobranzaResponseDTO.setFormaPagoDescripcion(documentoCobranza.getFormaPago().getDescripcion());
-        }
         return documentoCobranzaResponseDTO;
     }
 }
