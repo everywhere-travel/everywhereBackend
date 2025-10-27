@@ -18,4 +18,10 @@ public class SucursalMapper {
     public SucursalResponseDTO toResponseDTO(Sucursal sucursal) {
         return modelMapper.map(sucursal, SucursalResponseDTO.class);
     }
+
+    public void updateEntityFromDTO(SucursalRequestDTO sucursalRequestDTO, Sucursal sucursal) {
+        modelMapper.map(sucursalRequestDTO, sucursal);
+    }
+
+
 }
