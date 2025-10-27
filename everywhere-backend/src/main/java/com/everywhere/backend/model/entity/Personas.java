@@ -1,8 +1,11 @@
 package com.everywhere.backend.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -22,9 +25,6 @@ public class Personas {
     @Column(name = "per_email_vac")
     private String email;
 
-    @Column(name = "per_telf_vac")
-    private String telefono;
-
     @Column(name = "per_direc_vac")
     private String direccion;
 
@@ -39,4 +39,10 @@ public class Personas {
     @UpdateTimestamp
     @Column(name = "per_upd_tmp")
     private LocalDateTime actualizado;
+
+    @OneToMany(mappedBy = "persona", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<TelefonoPersona> telefonos;
+
+
 }
