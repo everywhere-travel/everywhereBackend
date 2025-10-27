@@ -2,6 +2,8 @@ package com.everywhere.backend.model.dto;
 
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 public class TelefonoPersonaResponseDTO {
 
@@ -10,5 +12,7 @@ public class TelefonoPersonaResponseDTO {
     private String codigoPais;
     private String tipo;
     private String descripcion;
+    private LocalDateTime creado;
+    private LocalDateTime actualizado;
     private Integer personaId;
 }

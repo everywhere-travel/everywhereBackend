@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 @Table(name="telefonos_personas")
@@ -24,6 +26,12 @@ public class TelefonoPersona {
 
     @Column(name = "tel_desc_vac", length = 100)
     private String descripcion;
+
+    @Column(name = "tel_per_cre_tmp", updatable = false)
+    private LocalDateTime creado;
+
+    @Column(name = "tel_per_upd_tmp")
+    private LocalDateTime actualizado;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "per_id_int")

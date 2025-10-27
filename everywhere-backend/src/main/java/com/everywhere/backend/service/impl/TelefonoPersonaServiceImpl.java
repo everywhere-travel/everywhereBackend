@@ -1,5 +1,6 @@
 package com.everywhere.backend.service.impl;
 
+import com.everywhere.backend.exceptions.BadRequestException;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.TelefonoPersonaMapper;
 import com.everywhere.backend.model.dto.TelefonoPersonaRequestDTO;
@@ -12,6 +13,7 @@ import com.everywhere.backend.service.TelefonoPersonaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,47 +49,37 @@ public class TelefonoPersonaServiceImpl implements TelefonoPersonaService {
 
     @Override
     public TelefonoPersonaResponseDTO save(TelefonoPersonaRequestDTO dto, Integer personaId) {
-        if (personaId == null) {
-            throw new IllegalArgumentException("El personaId no puede ser null");
-        }
+        if (dto.getNumero() == null || dto.getNumero().isBlank())
+            throw new BadRequestException("El número de teléfono es obligatorio");
+        if (dto.getCodigoPais() == null || dto.getCodigoPais().isBlank())
+            throw new BadRequestException("El código de país es obligatorio");
+        if (dto.getTipo() == null || dto.getTipo().isBlank())
+            throw new BadRequestException("El tipo de teléfono es obligatorio");
 
         Personas persona = personaRepository.findById(personaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Persona no encontrada con ID: " + personaId));
 
-        if (dto.getNumero() == null || dto.getNumero().trim().isEmpty()) {
-            throw new IllegalArgumentException("El número de teléfono es obligatorio");
-        }
-        if (dto.getCodigoPais() == null || dto.getCodigoPais().trim().isEmpty()) {
-            throw new IllegalArgumentException("El código del país es obligatorio");
-        }
-        if (dto.getTipo() == null || dto.getTipo().trim().isEmpty()) {
-            throw new IllegalArgumentException("El tipo es obligatorio");
-        }
-
         TelefonoPersona telefono = telefonoPersonaMapper.toEntity(dto);
         telefono.setPersona(persona);
+        telefono.setCreado(LocalDateTime.now());
+        telefono.setActualizado(LocalDateTime.now());
 
-        TelefonoPersona saved = telefonoPersonaRepository.save(telefono);
-        return telefonoPersonaMapper.toResponseDTO(saved);
+        return telefonoPersonaMapper.toResponseDTO(telefonoPersonaRepository.save(telefono));
     }
+
 
 
     @Override
     public TelefonoPersonaResponseDTO update(Integer personaId, TelefonoPersonaRequestDTO dto, Integer telefonoId) {
-        TelefonoPersona existing = telefonoPersonaRepository.findById(telefonoId)
+        TelefonoPersona telefono = telefonoPersonaRepository.findById(telefonoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Teléfono no encontrado con ID: " + telefonoId));
 
-        telefonoPersonaMapper.updateEntityFromDTO(dto, existing);
+        telefonoPersonaMapper.updateEntityFromDTO(dto, telefono);
+        telefono.setActualizado(LocalDateTime.now());
 
-        if (personaId != null) {
-            Personas persona = personaRepository.findById(personaId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Persona no encontrada con ID: " + personaId));
-            existing.setPersona(persona);
-        }
-
-        TelefonoPersona updated = telefonoPersonaRepository.save(existing);
-        return telefonoPersonaMapper.toResponseDTO(updated);
+        return telefonoPersonaMapper.toResponseDTO(telefonoPersonaRepository.save(telefono));
     }
+
 
     @Override
     public void deleteById(Integer id) {
