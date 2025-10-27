@@ -33,10 +33,11 @@ public class PersonaServiceImpl implements PersonaService {
 
     @Override
     public PersonaResponseDTO findById(Integer id) {
-        Personas persona = personaRepository.findById(id)
+        Personas persona = personaRepository.findByIdWithTelefonos(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Persona no encontrada con ID: " + id));
         return personaMapper.toResponseDTO(persona);
     }
+
 
     @Override
     public List<PersonaResponseDTO> findByEmail(String email) {
@@ -83,7 +84,6 @@ public class PersonaServiceImpl implements PersonaService {
         Optional<PersonaJuridica> juridicaOpt = personaJuridicaRepository.findByPersonasId(id); // Verificamos si existe como juridica
         if (juridicaOpt.isPresent()) return personaMapper.toDisplayDTO(juridicaOpt.get());
         
-        // Si existe, pero no está ni en natural ni en jurídica
         return new PersonaDisplayDto(base.getId(), "GENERICA", null, "Persona sin tipo definido");
     }
 }
