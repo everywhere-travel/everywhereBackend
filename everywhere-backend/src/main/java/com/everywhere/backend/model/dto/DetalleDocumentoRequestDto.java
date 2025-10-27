@@ -11,5 +11,5 @@ public class DetalleDocumentoRequestDto {
     private LocalDate fechaVencimiento;
     private String origen;
     private Integer documentoId;
-    private Integer viajeroId;
+    private Integer personaNaturalId;
 }

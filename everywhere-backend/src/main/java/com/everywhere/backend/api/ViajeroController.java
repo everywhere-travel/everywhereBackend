@@ -4,7 +4,6 @@ import com.everywhere.backend.model.dto.ViajeroRequestDTO;
 import com.everywhere.backend.model.dto.ViajeroResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.ViajeroService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,14 +48,14 @@ public class ViajeroController {
 
     @PostMapping
     @RequirePermission(module = "VIAJEROS", permission = "CREATE")
-    public ResponseEntity<ViajeroResponseDTO> createViajero(@Valid @RequestBody ViajeroRequestDTO viajeroRequestDTO) {
+    public ResponseEntity<ViajeroResponseDTO> createViajero(@RequestBody ViajeroRequestDTO viajeroRequestDTO) {
         ViajeroResponseDTO nuevoViajero = viajeroService.save(viajeroRequestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoViajero);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @RequirePermission(module = "VIAJEROS", permission = "UPDATE")
-    public ResponseEntity<ViajeroResponseDTO> patch(@PathVariable Integer id, @Valid @RequestBody ViajeroRequestDTO viajeroRequestDTO) {
+    public ResponseEntity<ViajeroResponseDTO> patch(@PathVariable Integer id, @RequestBody ViajeroRequestDTO viajeroRequestDTO) {
         ViajeroResponseDTO viajeroActualizado = viajeroService.patch(id, viajeroRequestDTO);
         return ResponseEntity.ok(viajeroActualizado);
     }

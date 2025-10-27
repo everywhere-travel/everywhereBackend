@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
  
 import java.util.List; 
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +21,7 @@ public class ViajeroServiceImpl implements ViajeroService {
 
     @Override
     public List<ViajeroResponseDTO> findAll() {
-        return viajeroRepository.findAll().stream().map(viajeroMapper::toResponseDTO).collect(Collectors.toList());
+        return viajeroRepository.findAll().stream().map(viajeroMapper::toResponseDTO).toList();
     }
 
     @Override
@@ -36,21 +35,20 @@ public class ViajeroServiceImpl implements ViajeroService {
     public List<ViajeroResponseDTO> findByNacionalidad(String nacionalidad) {
         List<Viajero> viajeros = viajeroRepository.findByNacionalidadIgnoreAccents(nacionalidad);
         if (viajeros.isEmpty()) throw new ResourceNotFoundException("No se encontraron viajeros con nacionalidad: " + nacionalidad);
-        return viajeros.stream().map(viajeroMapper::toResponseDTO).collect(Collectors.toList());
+        return viajeros.stream().map(viajeroMapper::toResponseDTO).toList();
     }
 
     @Override
     public List<ViajeroResponseDTO> findByResidencia(String residencia) {
         List<Viajero> viajeros = viajeroRepository.findByResidenciaIgnoreAccents(residencia);
         if (viajeros.isEmpty()) throw new ResourceNotFoundException("No se encontraron viajeros con residencia: " + residencia);
-        return viajeros.stream().map(viajeroMapper::toResponseDTO).collect(Collectors.toList());
+        return viajeros.stream().map(viajeroMapper::toResponseDTO).toList();
     }
 
     @Override
     public ViajeroResponseDTO save(ViajeroRequestDTO viajeroRequestDTO) {
-        Viajero viajero = viajeroMapper.toEntity(viajeroRequestDTO);
-        viajero = viajeroRepository.save(viajero);
-        return viajeroMapper.toResponseDTO(viajero);
+        Viajero viajero = viajeroMapper.toEntity(viajeroRequestDTO); 
+        return viajeroMapper.toResponseDTO(viajeroRepository.save(viajero));
     }
 
     @Override

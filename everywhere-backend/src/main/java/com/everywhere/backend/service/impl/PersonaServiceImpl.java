@@ -62,9 +62,8 @@ public class PersonaServiceImpl implements PersonaService {
         Personas existingPersona = personaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Persona no encontrada con ID: " + id));
 
-        personaMapper.updateEntityFromDTO(personaRequestDTO, existingPersona);
-        existingPersona = personaRepository.save(existingPersona);
-        return personaMapper.toResponseDTO(existingPersona);
+        personaMapper.updateEntityFromDTO(personaRequestDTO, existingPersona); 
+        return personaMapper.toResponseDTO(personaRepository.save(existingPersona));
     }
 
     @Override
