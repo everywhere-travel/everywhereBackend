@@ -56,7 +56,7 @@ public class FormaPagoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaFormaPago);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @RequirePermission(module = "FORMA-PAGO", permission = "UPDATE")
     public ResponseEntity<FormaPagoResponseDTO> updateFormaPago(@PathVariable Integer id, @Valid @RequestBody FormaPagoRequestDTO formaPagoRequestDTO) {
         FormaPagoResponseDTO formaPagoActualizada = formaPagoService.update(id, formaPagoRequestDTO);
