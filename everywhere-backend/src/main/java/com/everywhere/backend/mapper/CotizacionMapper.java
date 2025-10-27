@@ -27,14 +27,12 @@ public class CotizacionMapper {
         });
     }
 
-    public CotizacionResponseDto toResponse(Cotizacion cotizacion) {
-        CotizacionResponseDto cotizacionResponseDto = modelMapper.map(cotizacion, CotizacionResponseDto.class);
-        return cotizacionResponseDto;
+    public CotizacionResponseDto toResponse(Cotizacion cotizacion) { 
+        return modelMapper.map(cotizacion, CotizacionResponseDto.class);
     }
 
-    public Cotizacion toEntity(CotizacionRequestDto cotizacionRequestDto) {
-        Cotizacion cotizacion = modelMapper.map(cotizacionRequestDto, Cotizacion.class);
-        return cotizacion;
+    public Cotizacion toEntity(CotizacionRequestDto cotizacionRequestDto) { 
+        return modelMapper.map(cotizacionRequestDto, Cotizacion.class);
     }
     
     public void updateEntityFromRequest(Cotizacion cotizacion, CotizacionRequestDto cotizacionRequestDto) {
@@ -42,10 +40,10 @@ public class CotizacionMapper {
     }
 
     public CotizacionConDetallesResponseDTO toResponseWithDetalles(CotizacionResponseDto cotizacionResponseDto, 
-                                                                   List<DetalleCotizacionSimpleDTO> detalleCotizacionSimpleDTOs) {
-        CotizacionConDetallesResponseDTO resultado = modelMapper.map(cotizacionResponseDto, CotizacionConDetallesResponseDTO.class);
-        resultado.setDetalles(detalleCotizacionSimpleDTOs);
-        return resultado;
+        List<DetalleCotizacionSimpleDTO> detalleCotizacionSimpleDTOs) {
+        CotizacionConDetallesResponseDTO cotizacionConDetallesResponseDTO = modelMapper.map(cotizacionResponseDto, CotizacionConDetallesResponseDTO.class);
+        cotizacionConDetallesResponseDTO.setDetalles(detalleCotizacionSimpleDTOs);
+        return cotizacionConDetallesResponseDTO;
     }
 
     public DetalleCotizacionSimpleDTO toDetalleSimple(DetalleCotizacionResponseDto detalleCotizacionResponseDto) {
