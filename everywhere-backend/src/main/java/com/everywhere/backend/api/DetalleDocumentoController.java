@@ -48,17 +48,14 @@ public class DetalleDocumentoController {
 
     @PostMapping
     @RequirePermission(module = "DOCUMENTOS", permission = "CREATE")
-    public DetalleDocumentoResponseDto save(@RequestBody DetalleDocumentoRequestDto dto) {
-        return detalleDocumentoService.save(dto);
+    public DetalleDocumentoResponseDto save(@RequestBody DetalleDocumentoRequestDto detalleDocumentoRequestDto) {
+        return detalleDocumentoService.save(detalleDocumentoRequestDto);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @RequirePermission(module = "DOCUMENTOS", permission = "UPDATE")
-    public DetalleDocumentoResponseDto update(
-            @PathVariable Integer id,
-            @RequestBody DetalleDocumentoRequestDto dto
-    ) {
-        return detalleDocumentoService.update(id, dto);
+    public DetalleDocumentoResponseDto update( @PathVariable Integer id, @RequestBody DetalleDocumentoRequestDto detalleDocumentoRequestDto) {
+        return detalleDocumentoService.update(id, detalleDocumentoRequestDto);
     }
 
     @DeleteMapping("/{id}")
