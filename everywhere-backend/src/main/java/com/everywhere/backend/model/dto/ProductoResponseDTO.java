@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 public class ProductoResponseDTO {
 
     private int id;
-    private String codigo;
     private String descripcion;
     private String tipo;
     private LocalDateTime creado;

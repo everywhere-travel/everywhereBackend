@@ -19,8 +19,8 @@ public class ProductoController {
 
     @PostMapping
     @RequirePermission(module = "PRODUCTOS", permission = "CREATE")
-    public ResponseEntity<ProductoResponseDTO> create(@RequestBody ProductoRequestDTO request) {
-        return ResponseEntity.ok(productoService.create(request));
+    public ResponseEntity<ProductoResponseDTO> create(@RequestBody ProductoRequestDTO productoResponseDTO) {
+        return ResponseEntity.ok(productoService.create(productoResponseDTO));
     }
 
     @PatchMapping("/{id}")
@@ -52,11 +52,4 @@ public class ProductoController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/codigo/{codigo}")
-    @RequirePermission(module = "PRODUCTOS", permission = "READ")
-    public ResponseEntity<ProductoResponseDTO> getByCodigo(@PathVariable String codigo) {
-        return productoService.getByCodigo(codigo)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
 }
