@@ -1,7 +1,7 @@
 package com.everywhere.backend.api;
 
 import com.everywhere.backend.model.dto.ObservacionLiquidacionRequestDTO;
-import com.everywhere.backend.model.dto.ObeservacionLiquidacionResponseDTO;
+import com.everywhere.backend.model.dto.ObservacionLiquidacionResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.ObservacionLiquidacionService;
 import lombok.RequiredArgsConstructor;
@@ -20,25 +20,25 @@ public class ObservacionLiquidacionController {
 
     @GetMapping
     @RequirePermission(module = "LIQUIDACIONES", permission = "READ")
-    public ResponseEntity<List<ObeservacionLiquidacionResponseDTO>> findAll() {
-        List<ObeservacionLiquidacionResponseDTO> observaciones =
+    public ResponseEntity<List<ObservacionLiquidacionResponseDTO>> findAll() {
+        List<ObservacionLiquidacionResponseDTO> observaciones =
                 observacionLiquidacionService.findAll();
         return ResponseEntity.ok(observaciones);
     }
 
     @GetMapping("/{id}")
     @RequirePermission(module = "LIQUIDACIONES", permission = "READ")
-    public ResponseEntity<ObeservacionLiquidacionResponseDTO> findById(@PathVariable Long id) {
-        ObeservacionLiquidacionResponseDTO observacion =
+    public ResponseEntity<ObservacionLiquidacionResponseDTO> findById(@PathVariable Long id) {
+        ObservacionLiquidacionResponseDTO observacion =
                 observacionLiquidacionService.findById(id);
         return ResponseEntity.ok(observacion);
     }
 
     @PostMapping
     @RequirePermission(module = "LIQUIDACIONES", permission = "CREATE")
-    public ResponseEntity<ObeservacionLiquidacionResponseDTO> create(
+    public ResponseEntity<ObservacionLiquidacionResponseDTO> create(
             @RequestBody ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO) {
-        ObeservacionLiquidacionResponseDTO observacion =
+        ObservacionLiquidacionResponseDTO observacion =
                 observacionLiquidacionService.save(observacionLiquidacionRequestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(observacion);
     }
@@ -46,10 +46,10 @@ public class ObservacionLiquidacionController {
 
     @PatchMapping("/{id}")
     @RequirePermission(module = "LIQUIDACIONES", permission = "UPDATE")
-    public ResponseEntity<ObeservacionLiquidacionResponseDTO> partialUpdate(
+    public ResponseEntity<ObservacionLiquidacionResponseDTO> partialUpdate(
             @PathVariable Long id,
             @RequestBody ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO) {
-        ObeservacionLiquidacionResponseDTO observacion =
+        ObservacionLiquidacionResponseDTO observacion =
                 observacionLiquidacionService.update(id, observacionLiquidacionRequestDTO);
         return ResponseEntity.ok(observacion);
     }
@@ -63,9 +63,9 @@ public class ObservacionLiquidacionController {
 
     @GetMapping("/liquidacion/{liquidacionId}")
     @RequirePermission(module = "LIQUIDACIONES", permission = "READ")
-    public ResponseEntity<List<ObeservacionLiquidacionResponseDTO>> findByLiquidacionId(
+    public ResponseEntity<List<ObservacionLiquidacionResponseDTO>> findByLiquidacionId(
             @PathVariable Integer liquidacionId) {
-        List<ObeservacionLiquidacionResponseDTO> observaciones =
+        List<ObservacionLiquidacionResponseDTO> observaciones =
                 observacionLiquidacionService.findByLiquidacionId(liquidacionId);
         return ResponseEntity.ok(observaciones);
     }
