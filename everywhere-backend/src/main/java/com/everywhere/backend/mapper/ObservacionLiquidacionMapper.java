@@ -23,50 +23,24 @@ public class ObservacionLiquidacionMapper {
     }
 
     public ObservacionLiquidacion toEntity(ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO) {
-        if (observacionLiquidacionRequestDTO == null) {
-            return null;
-        }
 
         ObservacionLiquidacion observacionLiquidacion =
                 modelMapper.map(observacionLiquidacionRequestDTO, ObservacionLiquidacion.class);
-
-        if (observacionLiquidacionRequestDTO.getLiquidacionId() != null) {
-            Liquidacion liquidacion = new Liquidacion();
-            liquidacion.setId(observacionLiquidacionRequestDTO.getLiquidacionId());
-            observacionLiquidacion.setLiquidacion(liquidacion);
-        }
 
         return observacionLiquidacion;
     }
 
     public ObservacionLiquidacionResponseDTO toResponseDTO(ObservacionLiquidacion observacionLiquidacion) {
-        if (observacionLiquidacion == null) {
-            return null;
-        }
 
         ObservacionLiquidacionResponseDTO observacionLiquidacionResponseDTO =
                 modelMapper.map(observacionLiquidacion, ObservacionLiquidacionResponseDTO.class);
 
-        if (observacionLiquidacion.getLiquidacion() != null) {
-            observacionLiquidacionResponseDTO.setLiquidacion(
-                    liquidacionMapper.toResponseDTO(observacionLiquidacion.getLiquidacion()));
-        }
 
         return observacionLiquidacionResponseDTO;
     }
 
     public void updateEntityFromDTO(ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO,
                                     ObservacionLiquidacion observacionLiquidacion) {
-        if (observacionLiquidacionRequestDTO == null || observacionLiquidacion == null) {
-            return;
-        }
-
-        modelMapper.map(observacionLiquidacionRequestDTO, observacionLiquidacion);
-
-        if (observacionLiquidacionRequestDTO.getLiquidacionId() != null) {
-            Liquidacion liquidacion = new Liquidacion();
-            liquidacion.setId(observacionLiquidacionRequestDTO.getLiquidacionId());
-            observacionLiquidacion.setLiquidacion(liquidacion);
-        }
-    }
+               modelMapper.map(observacionLiquidacionRequestDTO, observacionLiquidacion);
+   }
 }
