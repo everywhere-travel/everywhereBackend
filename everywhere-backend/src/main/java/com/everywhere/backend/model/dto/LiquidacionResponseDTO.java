@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 
 @Data
 public class LiquidacionResponseDTO {
-
     private Integer id;
     private String numero;
     private LocalDate fechaCompra; 
@@ -19,5 +18,4 @@ public class LiquidacionResponseDTO {
     private ProductoResponse producto;
     private FormaPagoResponseDTO formaPago; 
     private CarpetaResponseDto carpeta;
-    
 }

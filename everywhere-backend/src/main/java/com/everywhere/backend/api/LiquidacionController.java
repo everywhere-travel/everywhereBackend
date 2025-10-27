@@ -34,18 +34,10 @@ public class LiquidacionController {
         return ResponseEntity.ok(liquidacion);
     }
 
-    @PostMapping
-    @RequirePermission(module = "LIQUIDACIONES", permission = "CREATE")
-    public ResponseEntity<LiquidacionResponseDTO> createLiquidacion(@Valid @RequestBody LiquidacionRequestDTO liquidacionRequestDTO) {
-        LiquidacionResponseDTO nuevaLiquidacion = liquidacionService.save(liquidacionRequestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(nuevaLiquidacion);
-    }
-
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @RequirePermission(module = "LIQUIDACIONES", permission = "UPDATE")
-    public ResponseEntity<LiquidacionResponseDTO> updateLiquidacion(@PathVariable Integer id, @Valid @RequestBody LiquidacionRequestDTO liquidacionRequestDTO) {
-        LiquidacionResponseDTO liquidacionActualizada = liquidacionService.update(id, liquidacionRequestDTO);
-        return ResponseEntity.ok(liquidacionActualizada);
+    public ResponseEntity<LiquidacionResponseDTO> updateLiquidacion(@PathVariable Integer id, @RequestBody LiquidacionRequestDTO liquidacionRequestDTO) {
+        return ResponseEntity.ok(liquidacionService.update(id, liquidacionRequestDTO));
     }
 
     @GetMapping("/{id}/con-detalles")
@@ -70,15 +62,5 @@ public class LiquidacionController {
     ) {
         LiquidacionResponseDTO nuevaLiquidacion = liquidacionService.create(liquidacionRequestDTO, cotizacionId);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaLiquidacion);
-    }
-
-    @PutMapping("/{liquidacionId}/carpeta/{carpetaId}")
-    @RequirePermission(module = "LIQUIDACIONES", permission = "UPDATE")
-    public ResponseEntity<LiquidacionResponseDTO> setCarpeta(
-            @PathVariable Integer liquidacionId,
-            @PathVariable Integer carpetaId
-    ) {
-        LiquidacionResponseDTO liquidacionActualizada = liquidacionService.setCarpeta(liquidacionId, carpetaId);
-        return ResponseEntity.ok(liquidacionActualizada);
     }
 }
