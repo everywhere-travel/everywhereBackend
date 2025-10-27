@@ -8,7 +8,7 @@ import com.everywhere.backend.model.dto.DetalleLiquidacionSimpleDTO;
 import com.everywhere.backend.model.entity.Carpeta;
 import com.everywhere.backend.model.entity.Cotizacion;
 import com.everywhere.backend.model.entity.FormaPago;
-import com.everywhere.backend.model.dto.ObeservacionLiquidacionResponseDTO;
+import com.everywhere.backend.model.dto.ObservacionLiquidacionResponseDTO;
 import com.everywhere.backend.model.dto.ObservacionLiquidacionSimpleDTO;
 import com.everywhere.backend.model.entity.Liquidacion;
 import com.everywhere.backend.model.entity.Producto;
@@ -108,9 +108,9 @@ public class LiquidacionServiceImpl implements LiquidacionService {
                 .map(this::convertirADetalleSimple).collect(Collectors.toList());
 
         // Obtener las observaciones simplificadas (sin liquidación repetida)
-        List<ObeservacionLiquidacionResponseDTO> obeservacionLiquidacionResponseDTOs = observacionLiquidacionService.findByLiquidacionId(id);
+        List<ObservacionLiquidacionResponseDTO> observacionLiquidacionResponseDTOS = observacionLiquidacionService.findByLiquidacionId(id);
         // Convertir a observaciones simples (sin liquidación)
-        List<ObservacionLiquidacionSimpleDTO> observacionLiquidacionSimpleDTOs = obeservacionLiquidacionResponseDTOs.stream()
+        List<ObservacionLiquidacionSimpleDTO> observacionLiquidacionSimpleDTOs = observacionLiquidacionResponseDTOS.stream()
                 .map(this::convertirAObservacionSimple).collect(Collectors.toList());
 
         // Crear el DTO con detalles y observaciones
@@ -183,15 +183,15 @@ public class LiquidacionServiceImpl implements LiquidacionService {
         return liquidacionMapper.toResponseDTO(liquidacionRepository.save(liquidacion));
     }
 
-    private ObservacionLiquidacionSimpleDTO convertirAObservacionSimple(ObeservacionLiquidacionResponseDTO obeservacionLiquidacionResponseDTO) {
+    private ObservacionLiquidacionSimpleDTO convertirAObservacionSimple(ObservacionLiquidacionResponseDTO observacionLiquidacionResponseDTO) {
         ObservacionLiquidacionSimpleDTO observacionLiquidacionSimpleDTO = new ObservacionLiquidacionSimpleDTO();
-        observacionLiquidacionSimpleDTO.setId(obeservacionLiquidacionResponseDTO.getId());
-        observacionLiquidacionSimpleDTO.setDescripcion(obeservacionLiquidacionResponseDTO.getDescripcion());
-        observacionLiquidacionSimpleDTO.setValor(obeservacionLiquidacionResponseDTO.getValor());
-        observacionLiquidacionSimpleDTO.setDocumento(obeservacionLiquidacionResponseDTO.getDocumento());
-        observacionLiquidacionSimpleDTO.setNumeroDocumento(obeservacionLiquidacionResponseDTO.getNumeroDocumento());
-        observacionLiquidacionSimpleDTO.setCreado(obeservacionLiquidacionResponseDTO.getCreado());
-        observacionLiquidacionSimpleDTO.setActualizado(obeservacionLiquidacionResponseDTO.getActualizado());
+        observacionLiquidacionSimpleDTO.setId(observacionLiquidacionResponseDTO.getId());
+        observacionLiquidacionSimpleDTO.setDescripcion(observacionLiquidacionResponseDTO.getDescripcion());
+        observacionLiquidacionSimpleDTO.setValor(observacionLiquidacionResponseDTO.getValor());
+        observacionLiquidacionSimpleDTO.setDocumento(observacionLiquidacionResponseDTO.getDocumento());
+        observacionLiquidacionSimpleDTO.setNumeroDocumento(observacionLiquidacionResponseDTO.getNumeroDocumento());
+        observacionLiquidacionSimpleDTO.setCreado(observacionLiquidacionResponseDTO.getCreado());
+        observacionLiquidacionSimpleDTO.setActualizado(observacionLiquidacionResponseDTO.getActualizado());
         // NO incluimos la liquidación para evitar referencia circular
         return observacionLiquidacionSimpleDTO;
     }
