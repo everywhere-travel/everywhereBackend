@@ -1,7 +1,7 @@
 package com.everywhere.backend.mapper;
 
 import com.everywhere.backend.model.dto.ObservacionLiquidacionRequestDTO;
-import com.everywhere.backend.model.dto.ObeservacionLiquidacionResponseDTO;
+import com.everywhere.backend.model.dto.ObservacionLiquidacionResponseDTO;
 import com.everywhere.backend.model.entity.ObservacionLiquidacion;
 import com.everywhere.backend.model.entity.Liquidacion;
 import jakarta.annotation.PostConstruct;
@@ -19,50 +19,48 @@ public class ObservacionLiquidacionMapper {
     @PostConstruct
     public void configureMapping() {
         modelMapper.typeMap(ObservacionLiquidacionRequestDTO.class, ObservacionLiquidacion.class)
-                .addMappings(mapper -> {
-                    mapper.skip(ObservacionLiquidacion::setId);
-                    mapper.skip(ObservacionLiquidacion::setLiquidacion);
-                    mapper.skip(ObservacionLiquidacion::setCreado);
-                    mapper.skip(ObservacionLiquidacion::setActualizado);
-                });
+                .addMappings(mapper -> mapper.skip(ObservacionLiquidacion::setLiquidacion));
     }
 
-    public ObservacionLiquidacion toEntity(ObservacionLiquidacionRequestDTO requestDTO) {
-        if (requestDTO == null) {
+    public ObservacionLiquidacion toEntity(ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO) {
+        if (observacionLiquidacionRequestDTO == null) {
             return null;
         }
 
-        ObservacionLiquidacion entity = modelMapper.map(requestDTO, ObservacionLiquidacion.class);
+        ObservacionLiquidacion entity = modelMapper.map(observacionLiquidacionRequestDTO, ObservacionLiquidacion.class);
 
-        if (requestDTO.getLiquidacionId() != null) {
+        if (observacionLiquidacionRequestDTO.getLiquidacionId() != null) {
             Liquidacion liquidacion = new Liquidacion();
-            liquidacion.setId(requestDTO.getLiquidacionId());
+            liquidacion.setId(observacionLiquidacionRequestDTO.getLiquidacionId());
             entity.setLiquidacion(liquidacion);
         }
 
         return entity;
     }
 
-    public ObeservacionLiquidacionResponseDTO toResponseDTO(ObservacionLiquidacion observacionLiquidacion) {
+    public ObservacionLiquidacionResponseDTO toResponseDTO(ObservacionLiquidacion observacionLiquidacion) {
         if (observacionLiquidacion == null) {
             return null;
         }
 
-        ObeservacionLiquidacionResponseDTO obeservacionLiquidacionResponseDTO =
-                modelMapper.map(observacionLiquidacion, ObeservacionLiquidacionResponseDTO.class);
+        ObservacionLiquidacionResponseDTO observacionLiquidacionResponseDTO =
+                modelMapper.map(observacionLiquidacion, ObservacionLiquidacionResponseDTO.class);
 
         if (observacionLiquidacion.getLiquidacion() != null) {
-            obeservacionLiquidacionResponseDTO.setLiquidacion(liquidacionMapper.toResponseDTO(observacionLiquidacion.getLiquidacion()));
+            observacionLiquidacionResponseDTO.setLiquidacion(
+                    liquidacionMapper.toResponseDTO(observacionLiquidacion.getLiquidacion()));
         }
 
-        return obeservacionLiquidacionResponseDTO;
+        return observacionLiquidacionResponseDTO;
     }
 
     public void updateEntityFromDTO(ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO, ObservacionLiquidacion entity) {
         if (observacionLiquidacionRequestDTO == null || entity == null) {
             return;
         }
+
         modelMapper.map(observacionLiquidacionRequestDTO, entity);
+
         if (observacionLiquidacionRequestDTO.getLiquidacionId() != null) {
             Liquidacion liquidacion = new Liquidacion();
             liquidacion.setId(observacionLiquidacionRequestDTO.getLiquidacionId());

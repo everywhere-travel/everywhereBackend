@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-public class ObeservacionLiquidacionResponseDTO {
+public class ObservacionLiquidacionResponseDTO {
 
     private Long id;
     private String descripcion;

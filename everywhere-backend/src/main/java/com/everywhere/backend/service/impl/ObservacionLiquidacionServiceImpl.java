@@ -1,8 +1,9 @@
 package com.everywhere.backend.service.impl;
 
+import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.ObservacionLiquidacionMapper;
 import com.everywhere.backend.model.dto.ObservacionLiquidacionRequestDTO;
-import com.everywhere.backend.model.dto.ObeservacionLiquidacionResponseDTO;
+import com.everywhere.backend.model.dto.ObservacionLiquidacionResponseDTO;
 import com.everywhere.backend.model.entity.ObservacionLiquidacion;
 import com.everywhere.backend.repository.ObservacionLiquidacionRepository;
 import com.everywhere.backend.service.ObservacionLiquidacionService;
@@ -20,7 +21,7 @@ public class ObservacionLiquidacionServiceImpl implements ObservacionLiquidacion
     private final ObservacionLiquidacionMapper observacionLiquidacionMapper;
 
     @Override
-    public List<ObeservacionLiquidacionResponseDTO> findAll() {
+    public List<ObservacionLiquidacionResponseDTO> findAll() {
         return observacionLiquidacionRepository.findAll()
                 .stream()
                 .map(observacionLiquidacionMapper::toResponseDTO)
@@ -28,22 +29,22 @@ public class ObservacionLiquidacionServiceImpl implements ObservacionLiquidacion
     }
 
     @Override
-    public ObeservacionLiquidacionResponseDTO findById(Long id) {
+    public ObservacionLiquidacionResponseDTO findById(Long id) {
         ObservacionLiquidacion entity = observacionLiquidacionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Observación de liquidación no encontrada con ID: " + id));
-
+                .orElseThrow(() -> new ResourceNotFoundException("Observación de liquidación no encontrada con ID: " + id));
         return observacionLiquidacionMapper.toResponseDTO(entity);
     }
 
+
     @Override
-    public ObeservacionLiquidacionResponseDTO save(ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO) {
+    public ObservacionLiquidacionResponseDTO save(ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO) {
         ObservacionLiquidacion entity = observacionLiquidacionMapper.toEntity(observacionLiquidacionRequestDTO);
         ObservacionLiquidacion saved = observacionLiquidacionRepository.save(entity);
         return observacionLiquidacionMapper.toResponseDTO(saved);
     }
 
     @Override
-    public ObeservacionLiquidacionResponseDTO update(Long id, ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO) {
+    public ObservacionLiquidacionResponseDTO update(Long id, ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO) {
         ObservacionLiquidacion existing = observacionLiquidacionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Observación de liquidación no encontrada con ID: " + id));
 
@@ -62,7 +63,7 @@ public class ObservacionLiquidacionServiceImpl implements ObservacionLiquidacion
     }
 
     @Override
-    public List<ObeservacionLiquidacionResponseDTO> findByLiquidacionId(Integer liquidacionId) {
+    public List<ObservacionLiquidacionResponseDTO> findByLiquidacionId(Integer liquidacionId) {
         List<ObservacionLiquidacion> observaciones = observacionLiquidacionRepository.findByLiquidacionId(liquidacionId);
         return observaciones.stream()
                 .map(observacionLiquidacionMapper::toResponseDTO)
