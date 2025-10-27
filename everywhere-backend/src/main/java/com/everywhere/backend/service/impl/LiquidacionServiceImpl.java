@@ -7,12 +7,16 @@ import com.everywhere.backend.model.dto.DetalleLiquidacionResponseDTO;
 import com.everywhere.backend.model.dto.DetalleLiquidacionSimpleDTO;
 import com.everywhere.backend.model.entity.Carpeta;
 import com.everywhere.backend.model.entity.Cotizacion;
+import com.everywhere.backend.model.entity.FormaPago;
 import com.everywhere.backend.model.dto.ObeservacionLiquidacionResponseDTO;
 import com.everywhere.backend.model.dto.ObservacionLiquidacionSimpleDTO;
 import com.everywhere.backend.model.entity.Liquidacion;
+import com.everywhere.backend.model.entity.Producto;
 import com.everywhere.backend.repository.CarpetaRepository;
 import com.everywhere.backend.repository.CotizacionRepository;
+import com.everywhere.backend.repository.FormaPagoRepository;
 import com.everywhere.backend.repository.LiquidacionRepository;
+import com.everywhere.backend.repository.ProductoRepository;
 import com.everywhere.backend.service.LiquidacionService;
 import com.everywhere.backend.service.DetalleLiquidacionService;
 import com.everywhere.backend.service.ObservacionLiquidacionService;
@@ -22,7 +26,6 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,12 +39,13 @@ public class LiquidacionServiceImpl implements LiquidacionService {
     private final CotizacionRepository cotizacionRepository;
     private final CarpetaRepository carpetaRepository;
     private final ObservacionLiquidacionService observacionLiquidacionService;
+    private final FormaPagoRepository formaPagoRepository;
+    private final ProductoRepository productoRepository;
 
     @Override
     public List<LiquidacionResponseDTO> findAll() {
         return liquidacionRepository.findAllWithRelations().stream()
-                .map(liquidacionMapper::toResponseDTO)
-                .collect(Collectors.toList());
+                .map(liquidacionMapper::toResponseDTO).collect(Collectors.toList());
     }
 
     @Override
@@ -52,81 +56,78 @@ public class LiquidacionServiceImpl implements LiquidacionService {
     }
 
     @Override
-    public LiquidacionResponseDTO save(LiquidacionRequestDTO liquidacionRequestDTO) {
-        Liquidacion liquidacion = liquidacionMapper.toEntity(liquidacionRequestDTO);
-        liquidacion.setCreado(LocalDateTime.now());
-        liquidacion = liquidacionRepository.save(liquidacion);
-
-        // Fetch la entidad completa con relaciones después de guardar
-        Liquidacion liquidacionCompleta = liquidacionRepository.findByIdWithRelations(liquidacion.getId())
-                .orElse(liquidacion);
-
-        return liquidacionMapper.toResponseDTO(liquidacionCompleta);
-    }
-
-    @Override
     public LiquidacionResponseDTO update(Integer id, LiquidacionRequestDTO liquidacionRequestDTO) {
-        Liquidacion existingLiquidacion = liquidacionRepository.findById(id)
+        Liquidacion liquidacion = liquidacionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Liquidación no encontrada con ID: " + id));
 
-        liquidacionMapper.updateEntityFromDTO(liquidacionRequestDTO, existingLiquidacion);
-        existingLiquidacion = liquidacionRepository.save(existingLiquidacion);
+        liquidacionMapper.updateEntityFromRequest(liquidacion, liquidacionRequestDTO);
 
-        // Fetch la entidad completa con relaciones después de actualizar
-        Liquidacion liquidacionCompleta = liquidacionRepository.findByIdWithRelations(existingLiquidacion.getId())
-                .orElse(existingLiquidacion);
+        if (liquidacionRequestDTO.getCotizacionId() != null) {
+            Cotizacion cotizacion = cotizacionRepository.findById(liquidacionRequestDTO.getCotizacionId())
+                    .orElseThrow(() -> new EntityNotFoundException("Cotización no encontrada"));
+            liquidacion.setCotizacion(cotizacion);
+        }
+        
+        if (liquidacionRequestDTO.getProductoId() != null) {
+            Producto producto = productoRepository.findById(liquidacionRequestDTO.getProductoId())
+                    .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
+            liquidacion.setProducto(producto);
+        }
 
-        return liquidacionMapper.toResponseDTO(liquidacionCompleta);
+        if (liquidacionRequestDTO.getFormaPagoId() != null) {
+            FormaPago formaPago = formaPagoRepository.findById(liquidacionRequestDTO.getFormaPagoId())
+                    .orElseThrow(() -> new EntityNotFoundException("Forma de pago no encontrada"));
+            liquidacion.setFormaPago(formaPago);
+        }
+
+        if (liquidacionRequestDTO.getCarpetaId() != null) {
+            Carpeta carpeta = carpetaRepository.findById(liquidacionRequestDTO.getCarpetaId())
+                    .orElseThrow(() -> new EntityNotFoundException("Carpeta no encontrada"));
+            liquidacion.setCarpeta(carpeta);
+        }
+
+        return liquidacionMapper.toResponseDTO(liquidacionRepository.save(liquidacion));
     }
 
     @Override
     public void deleteById(Integer id) {
-        if (!liquidacionRepository.existsById(id)) {
+        if (!liquidacionRepository.existsById(id))
             throw new ResourceNotFoundException("Liquidación no encontrada con ID: " + id);
-        }
         liquidacionRepository.deleteById(id);
     }
 
     @Override
     public LiquidacionConDetallesResponseDTO findByIdWithDetalles(Integer id) {
-        // Obtener la liquidación
         Liquidacion liquidacion = liquidacionRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Liquidación no encontrada con ID: " + id));
 
-        // Convertir a DTO base
-        LiquidacionResponseDTO liquidacionDTO = liquidacionMapper.toResponseDTO(liquidacion);
+        LiquidacionResponseDTO liquidacionResponseDTO = liquidacionMapper.toResponseDTO(liquidacion);
 
-        // Obtener los detalles simplificados (sin liquidación repetida)
-        List<DetalleLiquidacionResponseDTO> detallesCompletos = detalleLiquidacionService.findByLiquidacionId(id);
-
-        // Convertir a detalles simples (sin liquidación)
-        List<DetalleLiquidacionSimpleDTO> detallesSimples = detallesCompletos.stream()
-                .map(this::convertirADetalleSimple)
-                .collect(Collectors.toList());
+        List<DetalleLiquidacionResponseDTO> detalleLiquidacionResponseDTOs = detalleLiquidacionService.findByLiquidacionId(id); // Obtener los detalles simplificados (sin liquidación repetida)
+        List<DetalleLiquidacionSimpleDTO> detalleLiquidacionSimpleDTOs = detalleLiquidacionResponseDTOs.stream() // Convertir a detalles simples (sin liquidación)
+                .map(this::convertirADetalleSimple).collect(Collectors.toList());
 
         // Obtener las observaciones simplificadas (sin liquidación repetida)
-        List<ObeservacionLiquidacionResponseDTO> observacionesCompletas = observacionLiquidacionService.findByLiquidacionId(id);
-
+        List<ObeservacionLiquidacionResponseDTO> obeservacionLiquidacionResponseDTOs = observacionLiquidacionService.findByLiquidacionId(id);
         // Convertir a observaciones simples (sin liquidación)
-        List<ObservacionLiquidacionSimpleDTO> observacionesSimples = observacionesCompletas.stream()
-                .map(this::convertirAObservacionSimple)
-                .collect(Collectors.toList());
+        List<ObservacionLiquidacionSimpleDTO> observacionLiquidacionSimpleDTOs = obeservacionLiquidacionResponseDTOs.stream()
+                .map(this::convertirAObservacionSimple).collect(Collectors.toList());
 
         // Crear el DTO con detalles y observaciones
-        LiquidacionConDetallesResponseDTO resultado = new LiquidacionConDetallesResponseDTO();
-        resultado.setId(liquidacionDTO.getId());
-        resultado.setNumero(liquidacionDTO.getNumero());
-        resultado.setFechaCompra(liquidacionDTO.getFechaCompra()); 
-        resultado.setDestino(liquidacionDTO.getDestino());
-        resultado.setNumeroPasajeros(liquidacionDTO.getNumeroPasajeros()); 
-        resultado.setCreado(liquidacionDTO.getCreado());
-        resultado.setActualizado(liquidacionDTO.getActualizado());
-        resultado.setProducto(liquidacionDTO.getProducto());
-        resultado.setFormaPago(liquidacionDTO.getFormaPago());
-        resultado.setDetalles(detallesSimples);
-        resultado.setObservaciones(observacionesSimples);
+        LiquidacionConDetallesResponseDTO liquidacionConDetallesResponseDTO = new LiquidacionConDetallesResponseDTO();
+        liquidacionConDetallesResponseDTO.setId(liquidacionResponseDTO.getId());
+        liquidacionConDetallesResponseDTO.setNumero(liquidacionResponseDTO.getNumero());
+        liquidacionConDetallesResponseDTO.setFechaCompra(liquidacionResponseDTO.getFechaCompra());
+        liquidacionConDetallesResponseDTO.setDestino(liquidacionResponseDTO.getDestino());
+        liquidacionConDetallesResponseDTO.setNumeroPasajeros(liquidacionResponseDTO.getNumeroPasajeros());
+        liquidacionConDetallesResponseDTO.setCreado(liquidacionResponseDTO.getCreado());
+        liquidacionConDetallesResponseDTO.setActualizado(liquidacionResponseDTO.getActualizado());
+        liquidacionConDetallesResponseDTO.setProducto(liquidacionResponseDTO.getProducto());
+        liquidacionConDetallesResponseDTO.setFormaPago(liquidacionResponseDTO.getFormaPago());
+        liquidacionConDetallesResponseDTO.setDetalles(detalleLiquidacionSimpleDTOs);
+        liquidacionConDetallesResponseDTO.setObservaciones(observacionLiquidacionSimpleDTOs);
 
-        return resultado;
+        return liquidacionConDetallesResponseDTO;
     }
 
     private DetalleLiquidacionSimpleDTO convertirADetalleSimple(DetalleLiquidacionResponseDTO detalleCompleto) {
@@ -154,44 +155,44 @@ public class LiquidacionServiceImpl implements LiquidacionService {
     }
 
     @Override
-    public LiquidacionResponseDTO create(LiquidacionRequestDTO dto, Integer cotizacionId) {
+    public LiquidacionResponseDTO create(LiquidacionRequestDTO liquidacionRequestDTO, Integer cotizacionId) {
         Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId)
                 .orElseThrow(() -> new EntityNotFoundException("Cotización no encontrada"));
 
-        Liquidacion liquidacion = liquidacionMapper.toEntity(dto);
+        Liquidacion liquidacion = liquidacionMapper.toEntity(liquidacionRequestDTO);
         liquidacion.setCotizacion(cotizacion);
-        liquidacion.setCreado(LocalDateTime.now());
 
-        Liquidacion saved = liquidacionRepository.save(liquidacion);
-        return liquidacionMapper.toResponseDTO(saved);
-    }
-
-    @Override
-    public LiquidacionResponseDTO setCarpeta(Integer liquidacionId, Integer carpetaId) {
-        Liquidacion liquidacion = liquidacionRepository.findById(liquidacionId)
-                .orElseThrow(() -> new EntityNotFoundException("Liquidación no encontrada"));
-
-        Carpeta carpeta = carpetaRepository.findById(carpetaId)
-                .orElseThrow(() -> new EntityNotFoundException("Carpeta no encontrada"));
-
-        liquidacion.setCarpeta(carpeta);
-        liquidacion.setActualizado(LocalDateTime.now());
-
-        Liquidacion updated = liquidacionRepository.save(liquidacion);
-        return liquidacionMapper.toResponseDTO(updated);
-    }
-
-        private ObservacionLiquidacionSimpleDTO convertirAObservacionSimple(ObeservacionLiquidacionResponseDTO observacionCompleta) {
-            ObservacionLiquidacionSimpleDTO observacionSimple = new ObservacionLiquidacionSimpleDTO();
-            observacionSimple.setId(observacionCompleta.getId());
-            observacionSimple.setDescripcion(observacionCompleta.getDescripcion());
-            observacionSimple.setValor(observacionCompleta.getValor());
-            observacionSimple.setDocumento(observacionCompleta.getDocumento());
-            observacionSimple.setNumeroDocumento(observacionCompleta.getNumeroDocumento());
-            observacionSimple.setCreado(observacionCompleta.getCreado());
-            observacionSimple.setActualizado(observacionCompleta.getActualizado());
-
-            // NO incluimos la liquidación para evitar referencia circular
-            return observacionSimple;
+        if (liquidacionRequestDTO.getProductoId() != null) {
+            Producto producto = productoRepository.findById(liquidacionRequestDTO.getProductoId())
+                    .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
+            liquidacion.setProducto(producto);
         }
+
+        if (liquidacionRequestDTO.getFormaPagoId() != null) {
+            FormaPago formaPago = formaPagoRepository.findById(liquidacionRequestDTO.getFormaPagoId())
+                    .orElseThrow(() -> new EntityNotFoundException("Forma de pago no encontrada"));
+            liquidacion.setFormaPago(formaPago);
+        }
+
+        if (liquidacionRequestDTO.getCarpetaId() != null) {
+            Carpeta carpeta = carpetaRepository.findById(liquidacionRequestDTO.getCarpetaId())
+                    .orElseThrow(() -> new EntityNotFoundException("Carpeta no encontrada"));
+            liquidacion.setCarpeta(carpeta);
+        }
+
+        return liquidacionMapper.toResponseDTO(liquidacionRepository.save(liquidacion));
     }
+
+    private ObservacionLiquidacionSimpleDTO convertirAObservacionSimple(ObeservacionLiquidacionResponseDTO obeservacionLiquidacionResponseDTO) {
+        ObservacionLiquidacionSimpleDTO observacionLiquidacionSimpleDTO = new ObservacionLiquidacionSimpleDTO();
+        observacionLiquidacionSimpleDTO.setId(obeservacionLiquidacionResponseDTO.getId());
+        observacionLiquidacionSimpleDTO.setDescripcion(obeservacionLiquidacionResponseDTO.getDescripcion());
+        observacionLiquidacionSimpleDTO.setValor(obeservacionLiquidacionResponseDTO.getValor());
+        observacionLiquidacionSimpleDTO.setDocumento(obeservacionLiquidacionResponseDTO.getDocumento());
+        observacionLiquidacionSimpleDTO.setNumeroDocumento(obeservacionLiquidacionResponseDTO.getNumeroDocumento());
+        observacionLiquidacionSimpleDTO.setCreado(obeservacionLiquidacionResponseDTO.getCreado());
+        observacionLiquidacionSimpleDTO.setActualizado(obeservacionLiquidacionResponseDTO.getActualizado());
+        // NO incluimos la liquidación para evitar referencia circular
+        return observacionLiquidacionSimpleDTO;
+    }
+}
