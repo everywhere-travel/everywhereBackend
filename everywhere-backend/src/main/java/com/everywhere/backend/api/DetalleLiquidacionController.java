@@ -47,9 +47,9 @@ public class DetalleLiquidacionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoDetalle);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @RequirePermission(module = "LIQUIDACIONES", permission = "UPDATE")
-    public ResponseEntity<DetalleLiquidacionResponseDTO> updateDetalleLiquidacion(@PathVariable Integer id, @Valid @RequestBody DetalleLiquidacionRequestDTO detalleLiquidacionRequestDTO) {
+    public ResponseEntity<DetalleLiquidacionResponseDTO> updateDetalleLiquidacion(@PathVariable Integer id, @RequestBody DetalleLiquidacionRequestDTO detalleLiquidacionRequestDTO) {
         DetalleLiquidacionResponseDTO detalleActualizado = detalleLiquidacionService.update(id, detalleLiquidacionRequestDTO);
         return ResponseEntity.ok(detalleActualizado);
     }
