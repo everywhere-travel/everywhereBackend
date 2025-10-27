@@ -6,7 +6,6 @@ import com.everywhere.backend.model.dto.DetalleDocumentoResponseDto;
 import java.util.List;
 
 public interface DetalleDocumentoService {
-    List<DetalleDocumentoResponseDto> findByViajeroId(Integer viajeroId);
     DetalleDocumentoResponseDto findById(Integer id);
     DetalleDocumentoResponseDto save(DetalleDocumentoRequestDto detalleDocumentoRequestDto);
     DetalleDocumentoResponseDto update(Integer id, DetalleDocumentoRequestDto detalleDocumentoRequestDto);

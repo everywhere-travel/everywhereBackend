@@ -28,12 +28,6 @@ public class DetalleDocumentoController {
         return detalleDocumentoService.findById(id);
     }
 
-    @GetMapping("/viajero/{viajeroId}")
-    @RequirePermission(module = "DOCUMENTOS", permission = "READ")
-    public List<DetalleDocumentoResponseDto> findByViajero(@PathVariable Integer viajeroId) {
-        return detalleDocumentoService.findByViajeroId(viajeroId);
-    }
-
     @GetMapping("/documento/{documentoId}")
     @RequirePermission(module = "DOCUMENTOS", permission = "READ")
     public List<DetalleDocumentoResponseDto> findByDocumentoId(@PathVariable Integer documentoId) {
