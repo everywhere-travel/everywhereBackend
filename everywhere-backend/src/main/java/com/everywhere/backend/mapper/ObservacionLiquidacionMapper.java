@@ -27,15 +27,16 @@ public class ObservacionLiquidacionMapper {
             return null;
         }
 
-        ObservacionLiquidacion entity = modelMapper.map(observacionLiquidacionRequestDTO, ObservacionLiquidacion.class);
+        ObservacionLiquidacion observacionLiquidacion =
+                modelMapper.map(observacionLiquidacionRequestDTO, ObservacionLiquidacion.class);
 
         if (observacionLiquidacionRequestDTO.getLiquidacionId() != null) {
             Liquidacion liquidacion = new Liquidacion();
             liquidacion.setId(observacionLiquidacionRequestDTO.getLiquidacionId());
-            entity.setLiquidacion(liquidacion);
+            observacionLiquidacion.setLiquidacion(liquidacion);
         }
 
-        return entity;
+        return observacionLiquidacion;
     }
 
     public ObservacionLiquidacionResponseDTO toResponseDTO(ObservacionLiquidacion observacionLiquidacion) {
@@ -54,17 +55,18 @@ public class ObservacionLiquidacionMapper {
         return observacionLiquidacionResponseDTO;
     }
 
-    public void updateEntityFromDTO(ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO, ObservacionLiquidacion entity) {
-        if (observacionLiquidacionRequestDTO == null || entity == null) {
+    public void updateEntityFromDTO(ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO,
+                                    ObservacionLiquidacion observacionLiquidacion) {
+        if (observacionLiquidacionRequestDTO == null || observacionLiquidacion == null) {
             return;
         }
 
-        modelMapper.map(observacionLiquidacionRequestDTO, entity);
+        modelMapper.map(observacionLiquidacionRequestDTO, observacionLiquidacion);
 
         if (observacionLiquidacionRequestDTO.getLiquidacionId() != null) {
             Liquidacion liquidacion = new Liquidacion();
             liquidacion.setId(observacionLiquidacionRequestDTO.getLiquidacionId());
-            entity.setLiquidacion(liquidacion);
+            observacionLiquidacion.setLiquidacion(liquidacion);
         }
     }
 }
