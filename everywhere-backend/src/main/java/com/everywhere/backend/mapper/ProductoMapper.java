@@ -16,20 +16,17 @@ public class ProductoMapper {
 
     private final ModelMapper modelMapper;
 
-    public Producto toEntity(ProductoRequestDTO productoRequestDto) {
-        Producto producto = modelMapper.map(productoRequestDto, Producto.class);
-        producto.setCodigo(UUID.randomUUID().toString());
-        producto.setCreado(LocalDateTime.now());
-        producto.setActualizado(LocalDateTime.now());
-        return producto;
-    }
-
-    public ProductoResponseDTO toResponse(Producto producto) {
+    public ProductoResponseDTO toResponseDTO(Producto producto) {
         return modelMapper.map(producto, ProductoResponseDTO.class);
     }
 
-    public void updateEntityFromDTO(ProductoRequestDTO productoRequestDto, Producto producto) {
-        modelMapper.map(productoRequestDto, producto);
-        producto.setActualizado(LocalDateTime.now());
+    public Producto toEntity(ProductoRequestDTO productoRequestDTO) {
+        Producto producto = modelMapper.map(productoRequestDTO, Producto.class);
+        producto.setCreado(LocalDateTime.now());
+        return producto;
+    }
+
+    public void updateEntityFromDTO(ProductoRequestDTO productoRequestDTO, Producto producto) {
+        modelMapper.map(productoRequestDTO, producto);
     }
 }

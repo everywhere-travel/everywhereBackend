@@ -21,31 +21,33 @@ public class ProductoServiceImpl implements ProductoService {
     private final ProductoMapper productoMapper;
 
     @Override
-    public ProductoResponseDTO create(ProductoRequestDTO dto) {
-        Producto producto = productoMapper.toEntity(dto);
-        return productoMapper.toResponse(productoRepository.save(producto));
+    public ProductoResponseDTO create(ProductoRequestDTO productoRequestDTO) {
+        Producto producto = productoMapper.toEntity(productoRequestDTO);
+        Producto saved = productoRepository.save(producto);
+        return productoMapper.toResponseDTO(saved);
     }
 
     @Override
-    public ProductoResponseDTO update(Integer id, ProductoRequestDTO dto) {
+    public ProductoResponseDTO update(Integer id, ProductoRequestDTO productoRequestDTO) {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
 
-        productoMapper.updateEntityFromDTO(dto, producto);
-        return productoMapper.toResponse(productoRepository.save(producto));
+        productoMapper.updateEntityFromDTO(productoRequestDTO, producto);
+        Producto updated = productoRepository.save(producto);
+        return productoMapper.toResponseDTO(updated);
     }
 
     @Override
     public Optional<ProductoResponseDTO> getById(Integer id) {
         return productoRepository.findById(id)
-                .map(productoMapper::toResponse);
+                .map(productoMapper::toResponseDTO);
     }
 
     @Override
     public List<ProductoResponseDTO> getAll() {
         return productoRepository.findAll()
                 .stream()
-                .map(productoMapper::toResponse)
+                .map(productoMapper::toResponseDTO)
                 .toList();
     }
 
@@ -57,9 +59,4 @@ public class ProductoServiceImpl implements ProductoService {
         productoRepository.deleteById(id);
     }
 
-    @Override
-    public Optional<ProductoResponseDTO> getByCodigo(String codigo) {
-        return productoRepository.findByCodigo(codigo)
-                .map(productoMapper::toResponse);
-    }
 }
