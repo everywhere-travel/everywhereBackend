@@ -8,8 +8,7 @@ import java.util.List;
 public interface DocumentoService {
     List<DocumentoResponseDto> findAll();
     DocumentoResponseDto findById(int id);
-    DocumentoResponseDto create(DocumentoRequestDto dto);
-    DocumentoResponseDto update(int id, DocumentoRequestDto dto);
+    DocumentoResponseDto create(DocumentoRequestDto documentoRequestDto);
+    DocumentoResponseDto patch(int id, DocumentoRequestDto documentoRequestDto);
     void delete(int id);
-
 }
