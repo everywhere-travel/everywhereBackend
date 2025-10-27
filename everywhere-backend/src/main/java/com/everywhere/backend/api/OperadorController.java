@@ -27,7 +27,7 @@ public class OperadorController {
 
     @GetMapping("/{id}")
     @RequirePermission(module = "OPERADOR", permission = "READ")
-    public ResponseEntity<OperadorResponseDTO> getById(@PathVariable int id) {
+    public ResponseEntity<OperadorResponseDTO> getById(@PathVariable Integer id) {
         return operadorService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -35,15 +35,15 @@ public class OperadorController {
 
     @PostMapping
     @RequirePermission(module = "OPERADOR", permission = "CREATE")
-    public ResponseEntity<OperadorResponseDTO> create(@RequestBody OperadorRequestDTO dto) {
-        OperadorResponseDTO response = operadorService.save(dto);
+    public ResponseEntity<OperadorResponseDTO> create(@RequestBody OperadorRequestDTO operadorRequestDTO) {
+        OperadorResponseDTO response = operadorService.save(operadorRequestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PatchMapping("/{id}")
     @RequirePermission(module = "OPERADOR", permission = "UPDATE")
     public ResponseEntity<OperadorResponseDTO> partialUpdate(
-            @PathVariable int id,
+            @PathVariable Integer id,
             @RequestBody OperadorRequestDTO dto) {
         try {
             OperadorResponseDTO updated = operadorService.update(id, dto);
@@ -55,7 +55,7 @@ public class OperadorController {
 
     @DeleteMapping("/{id}")
     @RequirePermission(module = "OPERADOR", permission = "DELETE")
-    public ResponseEntity<Void> delete(@PathVariable int id) {
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
         if (operadorService.findById(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
