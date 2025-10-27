@@ -1,31 +1,27 @@
 package com.everywhere.backend.mapper;
 
-import com.everywhere.backend.model.dto.OperadorRequestDto;
+import com.everywhere.backend.model.dto.OperadorRequestDTO;
 import com.everywhere.backend.model.dto.OperadorResponseDTO;
 import com.everywhere.backend.model.entity.Operador;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Component;
 
+@Component
+@RequiredArgsConstructor
 public class OperadorMapper {
 
-    public static Operador toEntity(OperadorRequestDto dto) {
-        if (dto == null) {
-            return null;
-        }
+    private final ModelMapper modelMapper;
 
-        Operador operador = new Operador();
-        operador.setNombre(dto.getNombre());
-        return operador;
+    public OperadorResponseDTO toResponseDTO(Operador operador) {
+        return modelMapper.map(operador, OperadorResponseDTO.class);
     }
 
-    public static OperadorResponseDTO toResponse(Operador operador) {
-        if (operador == null) {
-            return null;
-        }
-        OperadorResponseDTO dto = new OperadorResponseDTO();
-        dto.setId(operador.getId());
-        dto.setNombre(operador.getNombre());
-        dto.setCreado(operador.getCreado());
-        dto.setActualizado(operador.getActualizado());
-        return dto;
+    public Operador toEntity(OperadorRequestDTO operadorRequestDTO) {
+        return modelMapper.map(operadorRequestDTO, Operador.class);
     }
 
+    public void updateEntityFromDTO(OperadorRequestDTO operadorRequestDTO, Operador operador) {
+        modelMapper.map(operadorRequestDTO, operador);
+    }
 }

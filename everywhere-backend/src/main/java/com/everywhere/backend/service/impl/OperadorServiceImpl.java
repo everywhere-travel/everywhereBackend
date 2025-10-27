@@ -1,49 +1,56 @@
 package com.everywhere.backend.service.impl;
 
+import com.everywhere.backend.mapper.OperadorMapper;
+import com.everywhere.backend.model.dto.OperadorRequestDTO;
+import com.everywhere.backend.model.dto.OperadorResponseDTO;
 import com.everywhere.backend.model.entity.Operador;
 import com.everywhere.backend.repository.OperadorRepository;
 import com.everywhere.backend.service.OperadorService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class OperadorServiceImpl implements OperadorService {
 
     private final OperadorRepository operadorRepository;
+    private final OperadorMapper operadorMapper;
 
-    public OperadorServiceImpl(OperadorRepository operadorRepository) {
-        this.operadorRepository = operadorRepository;
+    @Override
+    public List<OperadorResponseDTO> findAll() {
+        return operadorRepository.findAll().stream()
+                .map(operadorMapper::toResponseDTO)
+                .toList();
     }
 
     @Override
-    public List<Operador> findAll() {
-        return operadorRepository.findAll();
+    public Optional<OperadorResponseDTO> findById(int id) {
+        return operadorRepository.findById(id)
+                .map(operadorMapper::toResponseDTO);
     }
 
     @Override
-    public Optional<Operador> findByNombre(String nombre) {
-        return operadorRepository.findByNombre(nombre);
+    public Optional<OperadorResponseDTO> findByNombre(String nombre) {
+        return operadorRepository.findByNombre(nombre)
+                .map(operadorMapper::toResponseDTO);
     }
 
     @Override
-    public Optional<Operador> findById(int id) {
-        return operadorRepository.findById(id);
+    public OperadorResponseDTO save(OperadorRequestDTO operadorRequestDTO) {
+        Operador operador = operadorMapper.toEntity(operadorRequestDTO);
+        return operadorMapper.toResponseDTO(operadorRepository.save(operador));
     }
 
     @Override
-    public Operador save(Operador operador) {
-        return operadorRepository.save(operador);
-    }
-
-    @Override
-    public Operador update(Operador operador) {
-        Optional<Operador> optional = operadorRepository.findById(operador.getId());
-        if (optional.isEmpty()) {
-            throw new RuntimeException("Operador con id " + operador.getId() + " no encontrado");
-        }
-        return operadorRepository.save(operador);
+    public OperadorResponseDTO update(int id, OperadorRequestDTO operadorRequestDTO) {
+        Operador operador = operadorRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Operador con id " + id + " no encontrado"));
+        operadorMapper.updateEntityFromDTO(operadorRequestDTO, operador);
+        return operadorMapper.toResponseDTO(operadorRepository.save(operador));
     }
 
     @Override
@@ -51,4 +58,3 @@ public class OperadorServiceImpl implements OperadorService {
         operadorRepository.deleteById(id);
     }
 }
-

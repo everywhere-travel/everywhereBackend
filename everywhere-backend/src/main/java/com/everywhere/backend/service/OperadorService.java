@@ -1,21 +1,22 @@
 package com.everywhere.backend.service;
 
-import com.everywhere.backend.model.entity.Operador;
+import com.everywhere.backend.model.dto.OperadorRequestDTO;
+import com.everywhere.backend.model.dto.OperadorResponseDTO;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface OperadorService {
 
-    List<Operador> findAll();
+    List<OperadorResponseDTO> findAll();
 
-    Optional<Operador> findByNombre(String nombre);
+    Optional<OperadorResponseDTO> findByNombre(String nombre);
 
-    Optional<Operador> findById(int id);
+    Optional<OperadorResponseDTO> findById(int id);
 
-    Operador save(Operador operador);
+    OperadorResponseDTO save(OperadorRequestDTO dto);
 
-    Operador update(Operador operador);
+    OperadorResponseDTO update(int id, OperadorRequestDTO dto);
 
     void deleteById(int id);
 }
