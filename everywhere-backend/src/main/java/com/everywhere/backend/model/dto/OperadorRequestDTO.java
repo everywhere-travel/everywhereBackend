@@ -7,6 +7,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OperadorRequestDto {
+public class OperadorRequestDTO {
     String nombre;
 }

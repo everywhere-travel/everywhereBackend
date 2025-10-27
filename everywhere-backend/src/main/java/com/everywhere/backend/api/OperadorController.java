@@ -1,76 +1,61 @@
 package com.everywhere.backend.api;
 
-import com.everywhere.backend.mapper.OperadorMapper;
-import com.everywhere.backend.model.dto.OperadorRequestDto;
+import com.everywhere.backend.model.dto.OperadorRequestDTO;
 import com.everywhere.backend.model.dto.OperadorResponseDTO;
-import com.everywhere.backend.model.entity.Operador; 
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.OperadorService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/operadores")
+@RequiredArgsConstructor
 public class OperadorController {
 
-    private OperadorService operadorService;
-
-    public OperadorController(OperadorService operadorService) {
-        this.operadorService = operadorService;
-    }
+    private final OperadorService operadorService;
 
     @GetMapping
     @RequirePermission(module = "OPERADOR", permission = "READ")
     public ResponseEntity<List<OperadorResponseDTO>> findAll() {
-        List<OperadorResponseDTO> response = operadorService.findAll()
-                .stream()
-                .map(OperadorMapper::toResponse)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(response);
+        List<OperadorResponseDTO> operadores = operadorService.findAll();
+        return ResponseEntity.ok(operadores);
     }
 
     @GetMapping("/{id}")
     @RequirePermission(module = "OPERADOR", permission = "READ")
-    public ResponseEntity<OperadorResponseDTO> getById(@PathVariable Integer id) {
+    public ResponseEntity<OperadorResponseDTO> getById(@PathVariable int id) {
         return operadorService.findById(id)
-                .map(OperadorMapper::toResponse)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     @RequirePermission(module = "OPERADOR", permission = "CREATE")
-    public ResponseEntity<OperadorResponseDTO> create(@RequestBody OperadorRequestDto dto) {
-        Operador operador = OperadorMapper.toEntity(dto);
-        Operador nuevoOperador = operadorService.save(operador);
-        return new ResponseEntity<>(OperadorMapper.toResponse(nuevoOperador), HttpStatus.CREATED);
+    public ResponseEntity<OperadorResponseDTO> create(@RequestBody OperadorRequestDTO dto) {
+        OperadorResponseDTO response = operadorService.save(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @RequirePermission(module = "OPERADOR", permission = "UPDATE")
-    public ResponseEntity<OperadorResponseDTO> update(
-            @PathVariable Integer id,
-            @RequestBody OperadorRequestDto dto) {
-
-        return operadorService.findById(id)
-                .map(existing -> {
-                    existing.setNombre(dto.getNombre());
-
-                    Operador updated = operadorService.update(existing);
-
-                    return ResponseEntity.ok(OperadorMapper.toResponse(updated));
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<OperadorResponseDTO> partialUpdate(
+            @PathVariable int id,
+            @RequestBody OperadorRequestDTO dto) {
+        try {
+            OperadorResponseDTO updated = operadorService.update(id, dto);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
-
 
     @DeleteMapping("/{id}")
     @RequirePermission(module = "OPERADOR", permission = "DELETE")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+    public ResponseEntity<Void> delete(@PathVariable int id) {
         if (operadorService.findById(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
