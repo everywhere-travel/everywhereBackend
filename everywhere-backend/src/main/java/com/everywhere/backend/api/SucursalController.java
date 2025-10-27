@@ -47,7 +47,7 @@ public class SucursalController {
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaSucursal);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @RequirePermission(module = "SUCURSALES", permission = "UPDATE")
     public ResponseEntity<SucursalResponseDTO> updateSucursal(
             @PathVariable Integer id,
