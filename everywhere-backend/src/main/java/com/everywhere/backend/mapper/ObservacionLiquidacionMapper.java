@@ -4,34 +4,29 @@ import com.everywhere.backend.model.dto.ObservacionLiquidacionRequestDTO;
 import com.everywhere.backend.model.dto.ObeservacionLiquidacionResponseDTO;
 import com.everywhere.backend.model.entity.ObservacionLiquidacion;
 import com.everywhere.backend.model.entity.Liquidacion;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class ObservacionLiquidacionMapper {
 
+    private final ModelMapper modelMapper;
     private final LiquidacionMapper liquidacionMapper;
 
-    public ObservacionLiquidacionMapper(LiquidacionMapper liquidacionMapper) {
-        this.liquidacionMapper = liquidacionMapper;
-    }
-
-    public ObservacionLiquidacion toEntity(ObservacionLiquidacionRequestDTO dto) {
-        if (dto == null) {
+    public ObservacionLiquidacion toEntity(ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO) {
+        if (observacionLiquidacionRequestDTO == null) {
             return null;
         }
 
-        ObservacionLiquidacion entity = new ObservacionLiquidacion();
-        entity.setDescripcion(dto.getDescripcion());
-        entity.setValor(dto.getValor());
-        entity.setDocumento(dto.getDocumento());
-        entity.setNumeroDocumento(dto.getNumeroDocumento());
+        ObservacionLiquidacion entity = modelMapper.map(observacionLiquidacionRequestDTO, ObservacionLiquidacion.class);
 
-        if (dto.getLiquidacionId() != null) {
+        if (observacionLiquidacionRequestDTO.getLiquidacionId() != null) {
             Liquidacion liquidacion = new Liquidacion();
-            liquidacion.setId(dto.getLiquidacionId());
+            liquidacion.setId(observacionLiquidacionRequestDTO.getLiquidacionId());
             entity.setLiquidacion(liquidacion);
         }
-
         return entity;
     }
 
@@ -39,41 +34,33 @@ public class ObservacionLiquidacionMapper {
         if (entity == null) {
             return null;
         }
-
-        ObeservacionLiquidacionResponseDTO dto = new ObeservacionLiquidacionResponseDTO();
-        dto.setId(entity.getId());
-        dto.setDescripcion(entity.getDescripcion());
-        dto.setValor(entity.getValor());
-        dto.setDocumento(entity.getDocumento());
-        dto.setNumeroDocumento(entity.getNumeroDocumento());
-        dto.setCreado(entity.getCreado());
-        dto.setActualizado(entity.getActualizado());
-
+        ObeservacionLiquidacionResponseDTO responseDTO = modelMapper.map(entity, ObeservacionLiquidacionResponseDTO.class);
         if (entity.getLiquidacion() != null) {
-            dto.setLiquidacion(liquidacionMapper.toResponseDTO(entity.getLiquidacion()));
+            responseDTO.setLiquidacion(liquidacionMapper.toResponseDTO(entity.getLiquidacion()));
         }
-
-        return dto;
+        return responseDTO;
     }
 
-    public void updateEntityFromDTO(ObservacionLiquidacionRequestDTO dto, ObservacionLiquidacion entity) {
-        if (dto == null || entity == null) {
+    public void updateEntityFromDTO(ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO, ObservacionLiquidacion entity) {
+        if (observacionLiquidacionRequestDTO == null || entity == null) {
             return;
         }
-
-        // Solo actualizar campos que se envían (no son null)
-        if (dto.getDescripcion() != null) {
-            entity.setDescripcion(dto.getDescripcion());
+        if (observacionLiquidacionRequestDTO.getDescripcion() != null) {
+            entity.setDescripcion(observacionLiquidacionRequestDTO.getDescripcion());
         }
-        if (dto.getValor() != null) {
-            entity.setValor(dto.getValor());
+        if (observacionLiquidacionRequestDTO.getValor() != null) {
+            entity.setValor(observacionLiquidacionRequestDTO.getValor());
         }
-        if (dto.getDocumento() != null) {
-            entity.setDocumento(dto.getDocumento());
+        if (observacionLiquidacionRequestDTO.getDocumento() != null) {
+            entity.setDocumento(observacionLiquidacionRequestDTO.getDocumento());
         }
-        if (dto.getNumeroDocumento() != null) {
-            entity.setNumeroDocumento(dto.getNumeroDocumento());
+        if (observacionLiquidacionRequestDTO.getNumeroDocumento() != null) {
+            entity.setNumeroDocumento(observacionLiquidacionRequestDTO.getNumeroDocumento());
         }
-
+        if (observacionLiquidacionRequestDTO.getLiquidacionId() != null) {
+            Liquidacion liquidacion = new Liquidacion();
+            liquidacion.setId(observacionLiquidacionRequestDTO.getLiquidacionId());
+            entity.setLiquidacion(liquidacion);
+        }
     }
 }
