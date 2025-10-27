@@ -1,8 +1,9 @@
 package com.everywhere.backend.service.impl;
 
+import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.ProductoMapper;
-import com.everywhere.backend.model.dto.ProductoRequestDto;
-import com.everywhere.backend.model.dto.ProductoResponse;
+import com.everywhere.backend.model.dto.ProductoRequestDTO;
+import com.everywhere.backend.model.dto.ProductoResponseDTO;
 import com.everywhere.backend.model.entity.Producto;
 import com.everywhere.backend.repository.ProductoRepository;
 import com.everywhere.backend.service.ProductoService;
@@ -17,52 +18,48 @@ import java.util.Optional;
 public class ProductoServiceImpl implements ProductoService {
 
     private final ProductoRepository productoRepository;
+    private final ProductoMapper productoMapper;
 
     @Override
-    public ProductoResponse create(ProductoRequestDto dto) {
-        Producto entity = ProductoMapper.toEntity(dto);
-        Producto saved = productoRepository.save(entity);
-        return ProductoMapper.toResponse(saved);
+    public ProductoResponseDTO create(ProductoRequestDTO dto) {
+        Producto producto = productoMapper.toEntity(dto);
+        return productoMapper.toResponse(productoRepository.save(producto));
     }
 
     @Override
-    public ProductoResponse update(Integer id, ProductoRequestDto dto) {
-        Producto entity = productoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+    public ProductoResponseDTO update(Integer id, ProductoRequestDTO dto) {
+        Producto producto = productoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
 
-        // actualizar campos
-        ProductoMapper.updateEntity(entity, dto);
-        Producto updated = productoRepository.save(entity);
-
-        return ProductoMapper.toResponse(updated);
+        productoMapper.updateEntityFromDTO(dto, producto);
+        return productoMapper.toResponse(productoRepository.save(producto));
     }
 
     @Override
-    public Optional<ProductoResponse> getById(Integer id) {
+    public Optional<ProductoResponseDTO> getById(Integer id) {
         return productoRepository.findById(id)
-                .map(ProductoMapper::toResponse);
+                .map(productoMapper::toResponse);
     }
 
     @Override
-    public List<ProductoResponse> getAll() {
+    public List<ProductoResponseDTO> getAll() {
         return productoRepository.findAll()
                 .stream()
-                .map(ProductoMapper::toResponse)
+                .map(productoMapper::toResponse)
                 .toList();
     }
 
     @Override
     public void delete(Integer id) {
         if (!productoRepository.existsById(id)) {
-            throw new RuntimeException("Producto no encontrado");
+            throw new ResourceNotFoundException("Producto no encontrado con ID: " + id);
         }
         productoRepository.deleteById(id);
     }
 
     @Override
-    public Optional<ProductoResponse> getByCodigo(String codigo) {
+    public Optional<ProductoResponseDTO> getByCodigo(String codigo) {
         return productoRepository.findByCodigo(codigo)
-                .map(ProductoMapper::toResponse);
+                .map(productoMapper::toResponse);
     }
-
 }

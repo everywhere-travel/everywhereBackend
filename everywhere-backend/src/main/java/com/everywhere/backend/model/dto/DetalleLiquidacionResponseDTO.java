@@ -22,7 +22,7 @@ public class DetalleLiquidacionResponseDTO {
 
     private LiquidacionResponseDTO liquidacion;
     private ViajeroResponseDTO viajero;
-    private ProductoResponse producto;
+    private ProductoResponseDTO producto;
     private ProveedorResponseDTO proveedor;
     private OperadorResponseDTO operador;
 }
