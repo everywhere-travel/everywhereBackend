@@ -37,7 +37,7 @@ public class Liquidacion {
     private LocalDateTime creado;
 
     @UpdateTimestamp
-    @Column(name = "liq_fec_upd_tmp", updatable = true)
+    @Column(name = "liq_fec_upd_tmp")
     private LocalDateTime actualizado;
 
     @OneToOne
