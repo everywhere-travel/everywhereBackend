@@ -21,28 +21,36 @@ public class ObservacionLiquidacionController {
     @GetMapping
     @RequirePermission(module = "LIQUIDACIONES", permission = "READ")
     public ResponseEntity<List<ObeservacionLiquidacionResponseDTO>> findAll() {
-        List<ObeservacionLiquidacionResponseDTO> observaciones = observacionLiquidacionService.findAll();
+        List<ObeservacionLiquidacionResponseDTO> observaciones =
+                observacionLiquidacionService.findAll();
         return ResponseEntity.ok(observaciones);
     }
 
     @GetMapping("/{id}")
     @RequirePermission(module = "LIQUIDACIONES", permission = "READ")
     public ResponseEntity<ObeservacionLiquidacionResponseDTO> findById(@PathVariable Long id) {
-        ObeservacionLiquidacionResponseDTO observacion = observacionLiquidacionService.findById(id);
+        ObeservacionLiquidacionResponseDTO observacion =
+                observacionLiquidacionService.findById(id);
         return ResponseEntity.ok(observacion);
     }
 
     @PostMapping
     @RequirePermission(module = "LIQUIDACIONES", permission = "CREATE")
-    public ResponseEntity<ObeservacionLiquidacionResponseDTO> create(@RequestBody ObservacionLiquidacionRequestDTO requestDTO) {
-        ObeservacionLiquidacionResponseDTO observacion = observacionLiquidacionService.save(requestDTO);
+    public ResponseEntity<ObeservacionLiquidacionResponseDTO> create(
+            @RequestBody ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO) {
+        ObeservacionLiquidacionResponseDTO observacion =
+                observacionLiquidacionService.save(observacionLiquidacionRequestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(observacion);
     }
 
-    @PutMapping("/{id}")
+
+    @PatchMapping("/{id}")
     @RequirePermission(module = "LIQUIDACIONES", permission = "UPDATE")
-    public ResponseEntity<ObeservacionLiquidacionResponseDTO> update(@PathVariable Long id, @RequestBody ObservacionLiquidacionRequestDTO requestDTO) {
-        ObeservacionLiquidacionResponseDTO observacion = observacionLiquidacionService.update(id, requestDTO);
+    public ResponseEntity<ObeservacionLiquidacionResponseDTO> partialUpdate(
+            @PathVariable Long id,
+            @RequestBody ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO) {
+        ObeservacionLiquidacionResponseDTO observacion =
+                observacionLiquidacionService.update(id, observacionLiquidacionRequestDTO);
         return ResponseEntity.ok(observacion);
     }
 
@@ -55,8 +63,10 @@ public class ObservacionLiquidacionController {
 
     @GetMapping("/liquidacion/{liquidacionId}")
     @RequirePermission(module = "LIQUIDACIONES", permission = "READ")
-    public ResponseEntity<List<ObeservacionLiquidacionResponseDTO>> findByLiquidacionId(@PathVariable Integer liquidacionId) {
-        List<ObeservacionLiquidacionResponseDTO> observaciones = observacionLiquidacionService.findByLiquidacionId(liquidacionId);
+    public ResponseEntity<List<ObeservacionLiquidacionResponseDTO>> findByLiquidacionId(
+            @PathVariable Integer liquidacionId) {
+        List<ObeservacionLiquidacionResponseDTO> observaciones =
+                observacionLiquidacionService.findByLiquidacionId(liquidacionId);
         return ResponseEntity.ok(observaciones);
     }
 }

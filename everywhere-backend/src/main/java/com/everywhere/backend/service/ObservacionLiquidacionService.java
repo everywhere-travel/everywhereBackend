@@ -9,8 +9,8 @@ public interface ObservacionLiquidacionService {
 
     List<ObeservacionLiquidacionResponseDTO> findAll();
     ObeservacionLiquidacionResponseDTO findById(Long id);
-    ObeservacionLiquidacionResponseDTO save(ObservacionLiquidacionRequestDTO requestDTO);
-    ObeservacionLiquidacionResponseDTO update(Long id, ObservacionLiquidacionRequestDTO requestDTO);
+    ObeservacionLiquidacionResponseDTO save(ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO);
+    ObeservacionLiquidacionResponseDTO update(Long id, ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO);
     void deleteById(Long id);
     List<ObeservacionLiquidacionResponseDTO> findByLiquidacionId(Integer liquidacionId);
 }
