@@ -107,20 +107,7 @@ public class SucursalServiceImpl implements SucursalService {
             throw new BadRequestException("Ya existe una sucursal con el email: " + sucursalRequestDTO.getEmail());
         }
 
-        if (sucursalRequestDTO.getDescripcion() != null && !sucursalRequestDTO.getDescripcion().trim().isEmpty())
-            existing.setDescripcion(sucursalRequestDTO.getDescripcion());
-
-        if (sucursalRequestDTO.getDireccion() != null)
-            existing.setDireccion(sucursalRequestDTO.getDireccion());
-
-        if (sucursalRequestDTO.getTelefono() != null)
-            existing.setTelefono(sucursalRequestDTO.getTelefono());
-
-        if (sucursalRequestDTO.getEmail() != null)
-            existing.setEmail(sucursalRequestDTO.getEmail().trim().isEmpty() ? null : sucursalRequestDTO.getEmail());
-
-        if (sucursalRequestDTO.getEstado() != null)
-            existing.setEstado(sucursalRequestDTO.getEstado());
+        sucursalMapper.updateEntityFromDTO(sucursalRequestDTO, existing);
 
         return sucursalMapper.toResponseDTO(sucursalRepository.save(existing));
     }
