@@ -15,5 +15,5 @@ public class DetalleDocumentoResponseDto {
     private LocalDateTime creado;
     private LocalDateTime actualizado;
     private DocumentoResponseDto documento;
-    private ViajeroResponseDTO viajero;
+    private PersonaNaturalResponseDTO personaNatural;
 }

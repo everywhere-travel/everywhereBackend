@@ -44,6 +44,6 @@ public class DetalleDocumento {
     private Documento documento;
 
     @ManyToOne
-    @JoinColumn(name = "via_id_int")
-    private Viajero viajero;
+    @JoinColumn(name = "per_nat_id_int")
+    private PersonaNatural personaNatural;
 }

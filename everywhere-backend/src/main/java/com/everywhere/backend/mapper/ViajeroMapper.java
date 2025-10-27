@@ -22,7 +22,6 @@ public class ViajeroMapper {
     }
 
     public void updateEntityFromDTO(ViajeroRequestDTO viajeroRequestDTO, Viajero viajero) {
-        modelMapper.getConfiguration().setSkipNullEnabled(true); // Configurar ModelMapper para saltar campos null
-        modelMapper.map(viajeroRequestDTO, viajero); // Mapeo automático 
+        modelMapper.map(viajeroRequestDTO, viajero); 
     }
 }

@@ -5,10 +5,10 @@ import com.everywhere.backend.model.dto.DetalleDocumentoRequestDto;
 import com.everywhere.backend.model.dto.DetalleDocumentoResponseDto;
 import com.everywhere.backend.model.entity.DetalleDocumento;
 import com.everywhere.backend.model.entity.Documento;
-import com.everywhere.backend.model.entity.Viajero;
+import com.everywhere.backend.model.entity.PersonaNatural;
 import com.everywhere.backend.repository.DetalleDocumentoRepository;
 import com.everywhere.backend.repository.DocumentoRepository;
-import com.everywhere.backend.repository.ViajeroRepository;
+import com.everywhere.backend.repository.PersonaNaturalRepository;
 import com.everywhere.backend.service.DetalleDocumentoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,16 +19,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
 
-    private final ViajeroRepository viajeroRepository;
+    private final PersonaNaturalRepository personaNaturalRepository;
     private final DocumentoRepository documentoRepository;
     private final DetalleDocumentoRepository detalleDocumentoRepository;
     private final DetalleDocumentoMapper detalleDocumentoMapper;
-
-    @Override
-    public List<DetalleDocumentoResponseDto> findByViajeroId(Integer viajeroId) {
-        List<DetalleDocumento> detalles = detalleDocumentoRepository.findByViajeroId(viajeroId);
-        return detalles.stream().map(detalleDocumentoMapper::toResponse).toList();
-    }
 
     @Override
     public DetalleDocumentoResponseDto findById(Integer id) {
@@ -47,10 +41,10 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
             detalleDocumento.setDocumento(documento);
         }
 
-        if (detalleDocumentoRequestDto.getViajeroId() != null) {
-            Viajero viajero = viajeroRepository.findById(detalleDocumentoRequestDto.getViajeroId())
-                    .orElseThrow(() -> new RuntimeException("Viajero no encontrado con id: " + detalleDocumentoRequestDto.getViajeroId()));
-            detalleDocumento.setViajero(viajero);
+        if (detalleDocumentoRequestDto.getPersonaNaturalId() != null) {
+            PersonaNatural personaNatural = personaNaturalRepository.findById(detalleDocumentoRequestDto.getPersonaNaturalId())
+                    .orElseThrow(() -> new RuntimeException("PersonaNatural no encontrado con id: " + detalleDocumentoRequestDto.getPersonaNaturalId()));
+            detalleDocumento.setPersonaNatural(personaNatural);
         }
 
         return detalleDocumentoMapper.toResponse(detalleDocumentoRepository.save(detalleDocumento));
@@ -69,10 +63,10 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
             detalleDocumento.setDocumento(documento);
         }
 
-        if (detalleDocumentoRequestDto.getViajeroId() != null) {
-            Viajero viajero = viajeroRepository.findById(detalleDocumentoRequestDto.getViajeroId())
-                    .orElseThrow(() -> new RuntimeException("Viajero no encontrado con id: " + detalleDocumentoRequestDto.getViajeroId()));
-            detalleDocumento.setViajero(viajero);
+        if (detalleDocumentoRequestDto.getPersonaNaturalId() != null) {
+            PersonaNatural personaNatural = personaNaturalRepository.findById(detalleDocumentoRequestDto.getPersonaNaturalId())
+                    .orElseThrow(() -> new RuntimeException("PersonaNatural no encontrado con id: " + detalleDocumentoRequestDto.getPersonaNaturalId()));
+            detalleDocumento.setPersonaNatural(personaNatural);
         }
 
         return detalleDocumentoMapper.toResponse(detalleDocumentoRepository.save(detalleDocumento));

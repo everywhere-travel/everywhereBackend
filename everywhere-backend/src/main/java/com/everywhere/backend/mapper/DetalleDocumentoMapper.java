@@ -20,7 +20,7 @@ public class DetalleDocumentoMapper {
     public void configureMappings() {
         modelMapper.typeMap(DetalleDocumentoRequestDto.class, DetalleDocumento.class).addMappings(mapper -> {
             mapper.skip(DetalleDocumento::setDocumento);
-            mapper.skip(DetalleDocumento::setViajero);
+            mapper.skip(DetalleDocumento::setPersonaNatural);
         });
     }
 
