@@ -19,16 +19,16 @@ public class EstadosCotizacionController {
 
     @PostMapping
     @RequirePermission(module = "COTIZACIONES", permission = "CREATE")
-    public ResponseEntity<EstadoCotizacionResponseDTO> create(@RequestBody EstadoCotizacionRequestDTO request) {
-        return ResponseEntity.ok(estadoCotizacionService.create(request));
+    public ResponseEntity<EstadoCotizacionResponseDTO> create(@RequestBody EstadoCotizacionRequestDTO estadoCotizacionRequestDTO) {
+        return ResponseEntity.ok(estadoCotizacionService.create(estadoCotizacionRequestDTO));
     }
 
     @PatchMapping("/{id}")
     @RequirePermission(module = "COTIZACIONES", permission = "UPDATE")
     public ResponseEntity<EstadoCotizacionResponseDTO> update(
             @PathVariable Integer id,
-            @RequestBody EstadoCotizacionRequestDTO request) {
-        return ResponseEntity.ok(estadoCotizacionService.update(id, request));
+            @RequestBody EstadoCotizacionRequestDTO estadoCotizacionRequestDTO) {
+        return ResponseEntity.ok(estadoCotizacionService.update(id, estadoCotizacionRequestDTO));
     }
 
     @GetMapping("/{id}")
