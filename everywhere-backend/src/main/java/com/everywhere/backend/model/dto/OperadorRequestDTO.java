@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OperadorRequestDTO {
-    String nombre;
+    private String nombre;
 }
