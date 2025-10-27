@@ -69,9 +69,7 @@ public class PersonaServiceImpl implements PersonaService {
 
     @Override
     public void deleteById(Integer id) {
-        if (!personaRepository.existsById(id))
-            throw new ResourceNotFoundException("Persona no encontrada con ID: " + id);
-
+        if (!personaRepository.existsById(id)) throw new ResourceNotFoundException("Persona no encontrada con ID: " + id);
         personaRepository.deleteById(id);
     }
 

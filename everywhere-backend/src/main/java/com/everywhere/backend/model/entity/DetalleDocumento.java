@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Data
 @Entity
@@ -23,6 +27,14 @@ public class DetalleDocumento {
 
     @Column(name = "dtdoc_fec_ven_tmp")
     private LocalDate fechaVencimiento;
+
+    @CreationTimestamp
+    @Column(name = "dtdoc_cre_tmp")
+    private LocalDateTime creado;
+
+    @UpdateTimestamp
+    @Column(name = "dtdoc_upd_tmp")
+    private LocalDateTime actualizado;
 
     @Column(name = "dtdoc_ori_vac")
     private String origen;
