@@ -41,9 +41,7 @@ public class ProveedorServiceImpl implements ProveedorService {
             throw new RuntimeException("Ya existe un proveedor con el RUC: " + proveedorRequestDTO.getRuc());
         }
 
-        proveedorMapper.updateEntityFromDTO(proveedorRequestDTO, proveedor);
-        Proveedor updated = proveedorRepository.save(proveedor);
-        return proveedorMapper.toResponseDTO(updated);
+        return proveedorMapper.toResponseDTO(proveedorRepository.save(proveedor));
     }
 
     @Override
