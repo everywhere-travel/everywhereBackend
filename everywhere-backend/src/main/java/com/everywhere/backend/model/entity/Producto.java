@@ -16,9 +16,6 @@ public class Producto {
     @Column(name = "prod_id_int")
     private int id;
 
-    @Column(name = "prod_cod_vac", length = 100)
-    private String codigo;
-
     @Column(name = "prod_desc_vac", length = 255)
     private String descripcion;
 
