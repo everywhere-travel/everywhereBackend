@@ -2,8 +2,7 @@ package com.everywhere.backend.mapper;
 
 import com.everywhere.backend.model.dto.ObservacionLiquidacionRequestDTO;
 import com.everywhere.backend.model.dto.ObservacionLiquidacionResponseDTO;
-import com.everywhere.backend.model.entity.ObservacionLiquidacion;
-import com.everywhere.backend.model.entity.Liquidacion;
+import com.everywhere.backend.model.entity.ObservacionLiquidacion; 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -13,8 +12,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ObservacionLiquidacionMapper {
 
-    private final ModelMapper modelMapper;
-    private final LiquidacionMapper liquidacionMapper;
+    private final ModelMapper modelMapper; 
 
     @PostConstruct
     public void configureMapping() {
@@ -23,7 +21,6 @@ public class ObservacionLiquidacionMapper {
     }
 
     public ObservacionLiquidacion toEntity(ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO) {
-
         ObservacionLiquidacion observacionLiquidacion =
                 modelMapper.map(observacionLiquidacionRequestDTO, ObservacionLiquidacion.class);
 
@@ -31,16 +28,14 @@ public class ObservacionLiquidacionMapper {
     }
 
     public ObservacionLiquidacionResponseDTO toResponseDTO(ObservacionLiquidacion observacionLiquidacion) {
-
         ObservacionLiquidacionResponseDTO observacionLiquidacionResponseDTO =
                 modelMapper.map(observacionLiquidacion, ObservacionLiquidacionResponseDTO.class);
-
 
         return observacionLiquidacionResponseDTO;
     }
 
     public void updateEntityFromDTO(ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO,
                                     ObservacionLiquidacion observacionLiquidacion) {
-               modelMapper.map(observacionLiquidacionRequestDTO, observacionLiquidacion);
+        modelMapper.map(observacionLiquidacionRequestDTO, observacionLiquidacion);
    }
 }
