@@ -17,11 +17,11 @@ public class OperadorMapper {
         return modelMapper.map(operador, OperadorResponseDTO.class);
     }
 
-    public Operador toEntity(OperadorRequestDTO dto) {
-        return modelMapper.map(dto, Operador.class);
+    public Operador toEntity(OperadorRequestDTO operadorRequestDTO) {
+        return modelMapper.map(operadorRequestDTO, Operador.class);
     }
 
-    public void updateEntityFromDTO(OperadorRequestDTO dto, Operador operador) {
-        modelMapper.map(dto, operador);
+    public void updateEntityFromDTO(OperadorRequestDTO operadorRequestDTO, Operador operador) {
+        modelMapper.map(operadorRequestDTO, operador);
     }
 }

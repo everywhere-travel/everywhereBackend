@@ -24,7 +24,7 @@ public class OperadorServiceImpl implements OperadorService {
     public List<OperadorResponseDTO> findAll() {
         return operadorRepository.findAll().stream()
                 .map(operadorMapper::toResponseDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -40,16 +40,16 @@ public class OperadorServiceImpl implements OperadorService {
     }
 
     @Override
-    public OperadorResponseDTO save(OperadorRequestDTO dto) {
-        Operador operador = operadorMapper.toEntity(dto);
+    public OperadorResponseDTO save(OperadorRequestDTO operadorRequestDTO) {
+        Operador operador = operadorMapper.toEntity(operadorRequestDTO);
         return operadorMapper.toResponseDTO(operadorRepository.save(operador));
     }
 
     @Override
-    public OperadorResponseDTO update(int id, OperadorRequestDTO dto) {
+    public OperadorResponseDTO update(int id, OperadorRequestDTO operadorRequestDTO) {
         Operador operador = operadorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Operador con id " + id + " no encontrado"));
-        operadorMapper.updateEntityFromDTO(dto, operador);
+        operadorMapper.updateEntityFromDTO(operadorRequestDTO, operador);
         return operadorMapper.toResponseDTO(operadorRepository.save(operador));
     }
 
