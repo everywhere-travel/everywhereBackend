@@ -15,7 +15,7 @@ public class LiquidacionResponseDTO {
     private LocalDateTime actualizado;
 
     private CotizacionResponseDto cotizacion;
-    private ProductoResponse producto;
+    private ProductoResponseDTO producto;
     private FormaPagoResponseDTO formaPago; 
     private CarpetaResponseDto carpeta;
 }
