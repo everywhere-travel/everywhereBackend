@@ -9,3 +9,7 @@ public class BadRequestException extends RuntimeException {
         super(message);
     }
 }
+/*
+ * https://www.arquitecturajava.com/controlleradvice-en-spring-boot-manejo-global-de-errores/#%C2%BFQue_es_ControllerAdvice
+ * 
+ */
