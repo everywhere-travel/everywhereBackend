@@ -49,13 +49,6 @@ public class TelefonoPersonaServiceImpl implements TelefonoPersonaService {
 
     @Override
     public TelefonoPersonaResponseDTO save(TelefonoPersonaRequestDTO telefonoPersonaRequestDTO, Integer personaId) {
-        if (telefonoPersonaRequestDTO.getNumero() == null || telefonoPersonaRequestDTO.getNumero().isBlank())
-            throw new BadRequestException("El número de teléfono es obligatorio");
-        if (telefonoPersonaRequestDTO.getCodigoPais() == null || telefonoPersonaRequestDTO.getCodigoPais().isBlank())
-            throw new BadRequestException("El código de país es obligatorio");
-        if (telefonoPersonaRequestDTO.getTipo() == null || telefonoPersonaRequestDTO.getTipo().isBlank())
-            throw new BadRequestException("El tipo de teléfono es obligatorio");
-
         Personas persona = personaRepository.findById(personaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Persona no encontrada con ID: " + personaId));
 
@@ -67,12 +60,11 @@ public class TelefonoPersonaServiceImpl implements TelefonoPersonaService {
 
 
     @Override
-    public TelefonoPersonaResponseDTO update(Integer personaId, TelefonoPersonaRequestDTO dto, Integer telefonoId) {
+    public TelefonoPersonaResponseDTO update(Integer personaId, TelefonoPersonaRequestDTO telefonoPersonaRequestDTO, Integer telefonoId) {
         TelefonoPersona telefono = telefonoPersonaRepository.findById(telefonoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Teléfono no encontrado con ID: " + telefonoId));
 
-        telefonoPersonaMapper.updateEntityFromDTO(dto, telefono);
-        telefono.setActualizado(LocalDateTime.now());
+        telefonoPersonaMapper.updateEntityFromDTO(telefonoPersonaRequestDTO, telefono);
 
         return telefonoPersonaMapper.toResponseDTO(telefonoPersonaRepository.save(telefono));
     }

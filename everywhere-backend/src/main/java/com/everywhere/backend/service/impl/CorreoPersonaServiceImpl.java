@@ -47,11 +47,7 @@ public class CorreoPersonaServiceImpl implements CorreoPersonaService {
 
     @Override
     public CorreoPersonaResponseDTO save(CorreoPersonaRequestDTO correoPersonaRequestDTO, Integer personaId) {
-        if (correoPersonaRequestDTO.getEmail() == null || correoPersonaRequestDTO.getEmail().isEmpty()) {
-            throw new IllegalArgumentException("El correo electrónico es obligatorio");
-        }
-
-        boolean existeCorreo = correoPersonaRepository.existsByEmail(correoPersonaRequestDTO.getEmail());
+                boolean existeCorreo = correoPersonaRepository.existsByEmail(correoPersonaRequestDTO.getEmail());
         if (existeCorreo) {
             throw new IllegalArgumentException("El correo electrónico ya está registrado");
         }
@@ -76,12 +72,11 @@ public class CorreoPersonaServiceImpl implements CorreoPersonaService {
         Personas persona = personaRepository.findById(personaId)
                 .orElseThrow(() -> new RuntimeException("Persona no encontrada con ID: " + personaId));
 
-        correoPersonaMapper.updateEntityFromDTO(correoPersonaMapper.toEntity(correoPersonaRequestDTO), correo);
+        correoPersonaMapper.updateEntityFromDTO(correo, correoPersonaRequestDTO);
         correo.setPersona(persona);
-        correo.setActualizado(LocalDateTime.now());
-
         return correoPersonaMapper.toResponseDTO(correoPersonaRepository.save(correo));
     }
+
 
     @Override
     public void deleteById(Integer id) {
