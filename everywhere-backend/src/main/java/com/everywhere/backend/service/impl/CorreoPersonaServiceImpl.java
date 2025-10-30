@@ -57,8 +57,6 @@ public class CorreoPersonaServiceImpl implements CorreoPersonaService {
 
         CorreoPersona correoPersona = correoPersonaMapper.toEntity(correoPersonaRequestDTO);
         correoPersona.setPersona(persona);
-        correoPersona.setCreado(LocalDateTime.now());
-        correoPersona.setActualizado(LocalDateTime.now());
 
         return correoPersonaMapper.toResponseDTO(correoPersonaRepository.save(correoPersona));
     }

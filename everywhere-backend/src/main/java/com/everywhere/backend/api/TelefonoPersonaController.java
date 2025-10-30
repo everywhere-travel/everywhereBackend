@@ -37,8 +37,7 @@ public class    TelefonoPersonaController {
     @RequirePermission(module = "PERSONAS", permission = "CREATE")
     public ResponseEntity<TelefonoPersonaResponseDTO> create(@PathVariable Integer personaId,
                                                              @RequestBody @Valid TelefonoPersonaRequestDTO telefonoPersonaRequestDTO) {
-        TelefonoPersonaResponseDTO created = telefonoPersonaService.save(telefonoPersonaRequestDTO, personaId);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+        return new ResponseEntity<>(telefonoPersonaService.save(telefonoPersonaRequestDTO, personaId), HttpStatus.CREATED);
     }
 
     @PatchMapping("/{telefonoId}")
