@@ -48,22 +48,19 @@ public class TelefonoPersonaServiceImpl implements TelefonoPersonaService {
     }
 
     @Override
-    public TelefonoPersonaResponseDTO save(TelefonoPersonaRequestDTO dto, Integer personaId) {
-        if (dto.getNumero() == null || dto.getNumero().isBlank())
+    public TelefonoPersonaResponseDTO save(TelefonoPersonaRequestDTO telefonoPersonaRequestDTO, Integer personaId) {
+        if (telefonoPersonaRequestDTO.getNumero() == null || telefonoPersonaRequestDTO.getNumero().isBlank())
             throw new BadRequestException("El número de teléfono es obligatorio");
-        if (dto.getCodigoPais() == null || dto.getCodigoPais().isBlank())
+        if (telefonoPersonaRequestDTO.getCodigoPais() == null || telefonoPersonaRequestDTO.getCodigoPais().isBlank())
             throw new BadRequestException("El código de país es obligatorio");
-        if (dto.getTipo() == null || dto.getTipo().isBlank())
+        if (telefonoPersonaRequestDTO.getTipo() == null || telefonoPersonaRequestDTO.getTipo().isBlank())
             throw new BadRequestException("El tipo de teléfono es obligatorio");
 
         Personas persona = personaRepository.findById(personaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Persona no encontrada con ID: " + personaId));
 
-        TelefonoPersona telefono = telefonoPersonaMapper.toEntity(dto);
+        TelefonoPersona telefono = telefonoPersonaMapper.toEntity(telefonoPersonaRequestDTO);
         telefono.setPersona(persona);
-        telefono.setCreado(LocalDateTime.now());
-        telefono.setActualizado(LocalDateTime.now());
-
         return telefonoPersonaMapper.toResponseDTO(telefonoPersonaRepository.save(telefono));
     }
 
