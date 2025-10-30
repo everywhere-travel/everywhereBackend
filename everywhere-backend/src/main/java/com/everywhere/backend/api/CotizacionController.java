@@ -30,7 +30,7 @@ public class CotizacionController {
     @GetMapping("/{id}")
     @RequirePermission(module = "COTIZACIONES", permission = "READ")
     public ResponseEntity<CotizacionResponseDto> findById(@PathVariable Integer id) {
-        return cotizacionService.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(cotizacionService.findById(id));
     }
 
     @GetMapping("/{id}/con-detalles")

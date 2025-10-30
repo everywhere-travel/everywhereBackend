@@ -43,8 +43,7 @@ public class PdfController {
                     .body(new InputStreamResource(pdfStream));
 
         } catch (Exception e) {
-            System.err.println("Error generando PDF: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Error generando PDF: " + e.getMessage()); 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

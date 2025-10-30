@@ -1,5 +1,6 @@
 package com.everywhere.backend.service.impl;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,6 @@ import com.everywhere.backend.model.entity.PersonaNatural;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,9 +30,7 @@ public class CategoriaPersonaServiceImpl implements CategoriaPersonaService {
     @Override
     public List<CategoriaPersonaResponseDTO> findAll() {
         List<CategoriaPersona> categorias = categoriaPersonaRepository.findAll();
-        return categorias.stream()
-                .map(categoriaPersonaMapper::toResponseDTO)
-                .collect(Collectors.toList());
+        return categorias.stream().map(categoriaPersonaMapper::toResponseDTO).toList();
     }
 
     @Override
@@ -45,40 +43,34 @@ public class CategoriaPersonaServiceImpl implements CategoriaPersonaService {
     @Override
     public List<CategoriaPersonaResponseDTO> findByNombre(String nombre) {
         List<CategoriaPersona> categorias = categoriaPersonaRepository.findByNombreContainingIgnoreCase(nombre);
-        return categorias.stream()
-                .map(categoriaPersonaMapper::toResponseDTO)
-                .collect(Collectors.toList());
+        if (categorias.isEmpty())
+            throw new ResourceNotFoundException("No existen categorías de persona con el nombre que contiene: " + nombre);
+        return categorias.stream().map(categoriaPersonaMapper::toResponseDTO).toList();
     }
 
     @Override
     @Transactional
     public CategoriaPersonaResponseDTO save(CategoriaPersonaRequestDTO categoriaPersonaRequestDTO) {
-        // Validar que no exista una categoría con el mismo nombre
-        if (categoriaPersonaRepository.existsByNombreIgnoreCase(categoriaPersonaRequestDTO.getNombre())) {
-            throw new IllegalArgumentException("Ya existe una categoría con el nombre: " + categoriaPersonaRequestDTO.getNombre());
-        }
-        
-        CategoriaPersona categoria = categoriaPersonaMapper.toEntity(categoriaPersonaRequestDTO);
-        categoria = categoriaPersonaRepository.save(categoria);
-        return categoriaPersonaMapper.toResponseDTO(categoria);
+        if (categoriaPersonaRepository.existsByNombreIgnoreCase(categoriaPersonaRequestDTO.getNombre()))
+            throw new DataIntegrityViolationException("Ya existe una categoría con el nombre: " + categoriaPersonaRequestDTO.getNombre());
+        CategoriaPersona categoria = categoriaPersonaMapper.toEntity(categoriaPersonaRequestDTO); 
+        return categoriaPersonaMapper.toResponseDTO(categoriaPersonaRepository.save(categoria));
     }
 
     @Override
     @Transactional
     public CategoriaPersonaResponseDTO patch(Integer id, CategoriaPersonaRequestDTO categoriaPersonaRequestDTO) {
-        CategoriaPersona categoria = categoriaPersonaRepository.findById(id)
+        CategoriaPersona categoriaPersona = categoriaPersonaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría de persona no encontrada con ID: " + id));
         
-        // Validar nombre duplicado solo si se está actualizando el nombre
         if (categoriaPersonaRequestDTO.getNombre() != null && 
-            !categoriaPersonaRequestDTO.getNombre().equalsIgnoreCase(categoria.getNombre()) &&
+            !categoriaPersonaRequestDTO.getNombre().equalsIgnoreCase(categoriaPersona.getNombre()) &&
             categoriaPersonaRepository.existsByNombreIgnoreCase(categoriaPersonaRequestDTO.getNombre())) {
-            throw new IllegalArgumentException("Ya existe una categoría con el nombre: " + categoriaPersonaRequestDTO.getNombre());
+            throw new DataIntegrityViolationException("Ya existe una categoría con el nombre: " + categoriaPersonaRequestDTO.getNombre());
         }
         
-        categoriaPersonaMapper.updateEntityFromDTO(categoriaPersonaRequestDTO, categoria);
-        categoria = categoriaPersonaRepository.save(categoria);
-        return categoriaPersonaMapper.toResponseDTO(categoria);
+        categoriaPersonaMapper.updateEntityFromDTO(categoriaPersonaRequestDTO, categoriaPersona); 
+        return categoriaPersonaMapper.toResponseDTO(categoriaPersonaRepository.save(categoriaPersona));
     }
 
     @Override
@@ -97,9 +89,8 @@ public class CategoriaPersonaServiceImpl implements CategoriaPersonaService {
         CategoriaPersona categoria = categoriaPersonaRepository.findById(categoriaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + categoriaId));
         
-        personaNatural.setCategoriaPersona(categoria);
-        personaNatural = personaNaturalRepository.save(personaNatural);
-        return personaNaturalMapper.toResponseDTO(personaNatural);
+        personaNatural.setCategoriaPersona(categoria); 
+        return personaNaturalMapper.toResponseDTO(personaNaturalRepository.save(personaNatural));
     }
 
     @Override
@@ -107,9 +98,8 @@ public class CategoriaPersonaServiceImpl implements CategoriaPersonaService {
         PersonaNatural personaNatural = personaNaturalRepository.findById(personaNaturalId)
                 .orElseThrow(() -> new ResourceNotFoundException("Persona natural no encontrada con ID: " + personaNaturalId));
         
-        personaNatural.setCategoriaPersona(null);
-        personaNatural = personaNaturalRepository.save(personaNatural);
-        return personaNaturalMapper.toResponseDTO(personaNatural);
+        personaNatural.setCategoriaPersona(null); 
+        return personaNaturalMapper.toResponseDTO(personaNaturalRepository.save(personaNatural));
     }
 
     @Override
@@ -119,18 +109,19 @@ public class CategoriaPersonaServiceImpl implements CategoriaPersonaService {
             throw new ResourceNotFoundException("Categoría no encontrada con ID: " + categoriaId);
 
         List<PersonaNatural> personasNaturales = personaNaturalRepository.findByCategoriaPersonaId(categoriaId);
-        return personasNaturales.stream().map(personaNaturalMapper::toResponseDTO).collect(Collectors.toList());
+        return personasNaturales.stream().map(personaNaturalMapper::toResponseDTO).toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public CategoriaPersonaResponseDTO getCategoriaDePersona(Integer personaNaturalId) {
         PersonaNatural personaNatural = personaNaturalRepository.findById(personaNaturalId)
-                .orElseThrow(() -> new ResourceNotFoundException("Persona natural no encontrada con ID: " + personaNaturalId));
-        
-        CategoriaPersona categoria = personaNatural.getCategoriaPersona();
-        
-        if (categoria == null) return null;
-        return categoriaPersonaMapper.toResponseDTO(categoria);
+            .orElseThrow(() -> new ResourceNotFoundException("Persona natural no encontrada con ID: " + personaNaturalId));
+
+        CategoriaPersona categoriaPersona = personaNatural.getCategoriaPersona();
+        if (categoriaPersona == null)
+            throw new ResourceNotFoundException("La persona natural con ID: " + personaNaturalId + " no tiene categoría asignada.");
+            
+        return categoriaPersonaMapper.toResponseDTO(categoriaPersona);
     }
 }

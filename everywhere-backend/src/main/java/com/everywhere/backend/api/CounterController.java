@@ -53,8 +53,7 @@ public class CounterController {
     public ResponseEntity<CounterResponseDto> get(@RequestBody CounterRequestDto request) {
         return counterService.get(
                         request.getCodigo() != null ? request.getCodigo() : request.getNombre()
-                ).map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                ).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     //Get all counters
