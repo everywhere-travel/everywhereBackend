@@ -13,15 +13,15 @@ public class TelefonoPersonaMapper {
     @Autowired
     private ModelMapper modelMapper;
 
-    public TelefonoPersona toEntity(TelefonoPersonaRequestDTO dto) {
-        return modelMapper.map(dto, TelefonoPersona.class);
+    public TelefonoPersona toEntity(TelefonoPersonaRequestDTO telefonoPersonaRequestDTO) {
+        return modelMapper.map(telefonoPersonaRequestDTO, TelefonoPersona.class);
     }
 
-    public TelefonoPersonaResponseDTO toResponseDTO(TelefonoPersona entity) {
-        return modelMapper.map(entity, TelefonoPersonaResponseDTO.class);
+    public TelefonoPersonaResponseDTO toResponseDTO(TelefonoPersona telefonoPersona) {
+        return modelMapper.map(telefonoPersona, TelefonoPersonaResponseDTO.class);
     }
 
-    public void updateEntityFromDTO(TelefonoPersonaRequestDTO dto, TelefonoPersona entity) {
-        modelMapper.map(dto, entity);
+    public void updateEntityFromDTO(TelefonoPersonaRequestDTO telefonoPersonaRequestDTO, TelefonoPersona telefonoPersona) {
+        modelMapper.map(telefonoPersonaRequestDTO, telefonoPersona);
     }
 }

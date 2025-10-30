@@ -44,5 +44,9 @@ public class Personas {
     @JsonManagedReference
     private List<TelefonoPersona> telefonos;
 
+    @OneToMany(mappedBy = "persona", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<CorreoPersona> correos;
+
 
 }
