@@ -45,8 +45,7 @@ public class    TelefonoPersonaController {
     public ResponseEntity<TelefonoPersonaResponseDTO> update(@PathVariable Integer personaId,
                                                              @PathVariable Integer telefonoId,
                                                              @RequestBody  TelefonoPersonaRequestDTO telefonoPersonaRequestDTO) {
-        TelefonoPersonaResponseDTO updated = telefonoPersonaService.update(personaId, telefonoPersonaRequestDTO, telefonoId);
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(telefonoPersonaService.update(personaId, telefonoPersonaRequestDTO, telefonoId));
     }
 
     @DeleteMapping("/{telefonoId}")
