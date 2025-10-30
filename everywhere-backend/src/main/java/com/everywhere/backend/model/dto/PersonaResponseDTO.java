@@ -14,4 +14,5 @@ public class PersonaResponseDTO {
     private LocalDateTime creado;
     private LocalDateTime actualizado;
     private List<TelefonoPersonaResponseDTO> telefonos;
+    private List<CorreoPersonaResponseDTO> correos;
 }
