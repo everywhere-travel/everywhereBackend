@@ -28,8 +28,7 @@ public class DetalleCotizacionController {
     @GetMapping("/{id}")
     @RequirePermission(module = "COTIZACIONES", permission = "READ")
     public ResponseEntity<DetalleCotizacionResponseDto> getById(@PathVariable int id) {
-        return detalleCotizacionService.findById(id)
-                .map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(detalleCotizacionService.findById(id));
     }
 
     @GetMapping("/cotizacion/{cotizacionId}")

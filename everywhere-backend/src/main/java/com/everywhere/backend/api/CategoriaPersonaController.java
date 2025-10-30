@@ -1,6 +1,5 @@
 package com.everywhere.backend.api;
 
-import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.model.dto.CategoriaPersonaRequestDTO;
 import com.everywhere.backend.model.dto.CategoriaPersonaResponseDTO;
 import com.everywhere.backend.model.dto.PersonaNaturalResponseDTO;
@@ -67,57 +66,28 @@ public class CategoriaPersonaController {
     @PatchMapping("/persona-natural/{personaNaturalId}/asignar")
     @RequirePermission(module = "CATEGORIA_PERSONAS", permission = "UPDATE")
     public ResponseEntity<?> asignarCategoria(@PathVariable Integer personaNaturalId, @RequestBody PersonaNaturalCategoriaDTO categoriaDTO) {
-        try {
-            PersonaNaturalResponseDTO personaActualizada = categoriaPersonaService.asignarCategoria(personaNaturalId, categoriaDTO.getCategoriaId());
-            return ResponseEntity.ok(personaActualizada);
-        } catch (ResourceNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al asignar categoría");
-        }
+        PersonaNaturalResponseDTO personaActualizada = categoriaPersonaService.asignarCategoria(personaNaturalId, categoriaDTO.getCategoriaId());
+        return ResponseEntity.ok(personaActualizada);
     }
 
     @DeleteMapping("/persona-natural/{personaNaturalId}/desasignar")
     @RequirePermission(module = "CATEGORIA_PERSONAS", permission = "UPDATE")
     public ResponseEntity<?> desasignarCategoria(@PathVariable Integer personaNaturalId) {
-        try {
-            PersonaNaturalResponseDTO personaActualizada = categoriaPersonaService.desasignarCategoria(personaNaturalId);
-            return ResponseEntity.ok(personaActualizada);
-        } catch (ResourceNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al desasignar categoría");
-        }
+        PersonaNaturalResponseDTO personaActualizada = categoriaPersonaService.desasignarCategoria(personaNaturalId);
+        return ResponseEntity.ok(personaActualizada);
     }
 
     @GetMapping("/categoria/{categoriaId}")
     @RequirePermission(module = "CATEGORIA_PERSONAS", permission = "READ")
     public ResponseEntity<List<PersonaNaturalResponseDTO>> getPersonasPorCategoria(@PathVariable Integer categoriaId) {
-        try {
-            List<PersonaNaturalResponseDTO> personas = categoriaPersonaService.findPersonasPorCategoria(categoriaId);
-            return ResponseEntity.ok(personas);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        List<PersonaNaturalResponseDTO> personas = categoriaPersonaService.findPersonasPorCategoria(categoriaId);
+        return ResponseEntity.ok(personas);
     }
 
     @GetMapping("/persona-natural/{personaNaturalId}/categoria")
     @RequirePermission(module = "CATEGORIA_PERSONAS", permission = "READ")
     public ResponseEntity<CategoriaPersonaResponseDTO> getCategoriaDePersona(@PathVariable Integer personaNaturalId) {
-        try {
-            CategoriaPersonaResponseDTO categoria = categoriaPersonaService.getCategoriaDePersona(personaNaturalId);
-            if (categoria == null) {
-                return ResponseEntity.noContent().build();
-            }
-            return ResponseEntity.ok(categoria);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        CategoriaPersonaResponseDTO categoria = categoriaPersonaService.getCategoriaDePersona(personaNaturalId);
+        return ResponseEntity.ok(categoria);
     }
 }

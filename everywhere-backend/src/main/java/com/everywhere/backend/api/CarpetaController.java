@@ -31,7 +31,7 @@ public class CarpetaController {
     @GetMapping("/{id}")
     @RequirePermission(module = "CARPETA", permission = "READ")
     public ResponseEntity<CarpetaResponseDto> findById(@PathVariable Integer id) {
-        return carpetaService.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(carpetaService.findById(id));
     }
 
     @GetMapping
@@ -40,7 +40,7 @@ public class CarpetaController {
         return ResponseEntity.ok(carpetaService.findAll());
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @RequirePermission(module = "CARPETA", permission = "UPDATE")
     public ResponseEntity<CarpetaResponseDto> update(@PathVariable Integer id, @RequestBody CarpetaRequestDto carpetaRequestDto) {
         return ResponseEntity.ok(carpetaService.update(id, carpetaRequestDto));

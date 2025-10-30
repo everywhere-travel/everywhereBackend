@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +30,7 @@ public class DetalleDocumentoCobranzaServiceImpl implements DetalleDocumentoCobr
     @Override
     public List<DetalleDocumentoCobranzaResponseDTO> findAll() {
         return detalleDocumentoCobranzaRepository.findAllWithRelations().stream()
-                .map(detalleDocumentoCobranzaMapper::toResponseDTO).collect(Collectors.toList());
+                .map(detalleDocumentoCobranzaMapper::toResponseDTO).toList();
     }
 
     @Override
@@ -43,25 +42,26 @@ public class DetalleDocumentoCobranzaServiceImpl implements DetalleDocumentoCobr
 
     @Override
     public List<DetalleDocumentoCobranzaResponseDTO> findByDocumentoCobranzaId(Long documentoId) {
+        if (!documentoCobranzaRepository.existsById(documentoId))
+            throw new ResourceNotFoundException("Documento de cobranza no encontrado con ID: " + documentoId);
         return detalleDocumentoCobranzaRepository.findByDocumentoCobranzaIdWithRelations(documentoId).stream()
-                .map(detalleDocumentoCobranzaMapper::toResponseDTO).collect(Collectors.toList());
+                .map(detalleDocumentoCobranzaMapper::toResponseDTO).toList();
     }
 
     @Override
     @Transactional
     public DetalleDocumentoCobranzaResponseDTO save(DetalleDocumentoCobranzaRequestDTO detalleDocumentoCobranzaRequestDTO) {
         DocumentoCobranza documentoCobranza = documentoCobranzaRepository.findById(detalleDocumentoCobranzaRequestDTO.getDocumentoCobranzaId())
-                .orElseThrow(() -> new ResourceNotFoundException("Documento de cobranza no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Documento de cobranza no encontrado con ID: " + detalleDocumentoCobranzaRequestDTO.getDocumentoCobranzaId()));
         
         Producto producto = productoRepository.findById(detalleDocumentoCobranzaRequestDTO.getProductoId())
-                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + detalleDocumentoCobranzaRequestDTO.getProductoId()));
 
         DetalleDocumentoCobranza detalleDocumentoCobranza = detalleDocumentoCobranzaMapper.toEntity(detalleDocumentoCobranzaRequestDTO);
         detalleDocumentoCobranza.setDocumentoCobranza(documentoCobranza);
         detalleDocumentoCobranza.setProducto(producto);
-
-        detalleDocumentoCobranza = detalleDocumentoCobranzaRepository.save(detalleDocumentoCobranza);
-        return detalleDocumentoCobranzaMapper.toResponseDTO(detalleDocumentoCobranza);
+ 
+        return detalleDocumentoCobranzaMapper.toResponseDTO(detalleDocumentoCobranzaRepository.save(detalleDocumentoCobranza));
     }
 
     @Override
@@ -74,24 +74,24 @@ public class DetalleDocumentoCobranzaServiceImpl implements DetalleDocumentoCobr
 
         if (detalleDocumentoCobranzaRequestDTO.getDocumentoCobranzaId() != null) {
             DocumentoCobranza documento = documentoCobranzaRepository.findById(detalleDocumentoCobranzaRequestDTO.getDocumentoCobranzaId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Documento de cobranza no encontrado"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Documento de cobranza no encontrado con ID: " + detalleDocumentoCobranzaRequestDTO.getDocumentoCobranzaId()));
             detalleDocumentoCobranza.setDocumentoCobranza(documento);
         }
 
         if (detalleDocumentoCobranzaRequestDTO.getProductoId() != null) {
             Producto producto = productoRepository.findById(detalleDocumentoCobranzaRequestDTO.getProductoId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + detalleDocumentoCobranzaRequestDTO.getProductoId()));
             detalleDocumentoCobranza.setProducto(producto);
         }
-
-        detalleDocumentoCobranza = detalleDocumentoCobranzaRepository.save(detalleDocumentoCobranza);
-        return detalleDocumentoCobranzaMapper.toResponseDTO(detalleDocumentoCobranza);
+ 
+        return detalleDocumentoCobranzaMapper.toResponseDTO(detalleDocumentoCobranzaRepository.save(detalleDocumentoCobranza));
     }
 
     @Override
     @Transactional
     public void deleteById(Long id) {
-        if (!detalleDocumentoCobranzaRepository.existsById(id)) throw new ResourceNotFoundException("Detalle no encontrado con ID: " + id);
+        if (!detalleDocumentoCobranzaRepository.existsById(id)) 
+            throw new ResourceNotFoundException("Detalle no encontrado con ID: " + id);
         detalleDocumentoCobranzaRepository.deleteById(id);
     }
 }
