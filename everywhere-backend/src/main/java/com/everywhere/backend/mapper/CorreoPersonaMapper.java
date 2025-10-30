@@ -3,15 +3,16 @@ package com.everywhere.backend.mapper;
 import com.everywhere.backend.model.dto.CorreoPersonaRequestDTO;
 import com.everywhere.backend.model.dto.CorreoPersonaResponseDTO;
 import com.everywhere.backend.model.entity.CorreoPersona;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class CorreoPersonaMapper {
 
-    @Autowired
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
 
     public CorreoPersona toEntity(CorreoPersonaRequestDTO correoPersona) {
         return modelMapper.map(correoPersona, CorreoPersona.class);
@@ -21,7 +22,7 @@ public class CorreoPersonaMapper {
         return modelMapper.map(correoPersona, CorreoPersonaResponseDTO.class);
     }
 
-    public void updateEntityFromDTO(CorreoPersona correoPersonaSource, CorreoPersona correoPersonaTarget) {
-        modelMapper.map(correoPersonaSource, correoPersonaTarget);
+    public void updateEntityFromDTO(CorreoPersona correoPersona, CorreoPersonaRequestDTO correoPersonaRequestDTO) {
+        modelMapper.map(correoPersonaRequestDTO, correoPersona);
     }
 }

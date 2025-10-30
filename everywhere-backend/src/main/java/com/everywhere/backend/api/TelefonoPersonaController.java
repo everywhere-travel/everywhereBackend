@@ -4,6 +4,7 @@ import com.everywhere.backend.model.dto.TelefonoPersonaRequestDTO;
 import com.everywhere.backend.model.dto.TelefonoPersonaResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.TelefonoPersonaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/personas/{personaId}/telefonos")
 @RequiredArgsConstructor
-public class TelefonoPersonaController {
+public class    TelefonoPersonaController {
 
     private final TelefonoPersonaService telefonoPersonaService;
 
@@ -35,7 +36,7 @@ public class TelefonoPersonaController {
     @PostMapping
     @RequirePermission(module = "PERSONAS", permission = "CREATE")
     public ResponseEntity<TelefonoPersonaResponseDTO> create(@PathVariable Integer personaId,
-                                                             @RequestBody TelefonoPersonaRequestDTO telefonoPersonaRequestDTO) {
+                                                             @RequestBody @Valid TelefonoPersonaRequestDTO telefonoPersonaRequestDTO) {
         TelefonoPersonaResponseDTO created = telefonoPersonaService.save(telefonoPersonaRequestDTO, personaId);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
@@ -44,7 +45,7 @@ public class TelefonoPersonaController {
     @RequirePermission(module = "PERSONAS", permission = "UPDATE")
     public ResponseEntity<TelefonoPersonaResponseDTO> update(@PathVariable Integer personaId,
                                                              @PathVariable Integer telefonoId,
-                                                             @RequestBody TelefonoPersonaRequestDTO telefonoPersonaRequestDTO) {
+                                                             @RequestBody  TelefonoPersonaRequestDTO telefonoPersonaRequestDTO) {
         TelefonoPersonaResponseDTO updated = telefonoPersonaService.update(personaId, telefonoPersonaRequestDTO, telefonoId);
         return ResponseEntity.ok(updated);
     }
