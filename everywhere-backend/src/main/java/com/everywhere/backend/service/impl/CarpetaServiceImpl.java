@@ -6,10 +6,6 @@ import com.everywhere.backend.model.dto.CarpetaResponseDto;
 import com.everywhere.backend.model.entity.Carpeta;
 import com.everywhere.backend.repository.CarpetaRepository;
 import com.everywhere.backend.service.CarpetaService;
-
-import jakarta.servlet.http.HttpServletRequest;
-
-import com.everywhere.backend.exceptions.BadRequestException;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 
@@ -18,8 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
