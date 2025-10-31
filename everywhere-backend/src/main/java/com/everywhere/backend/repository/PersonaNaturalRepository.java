@@ -25,4 +25,5 @@ public interface PersonaNaturalRepository extends JpaRepository<PersonaNatural, 
     List<PersonaNatural> findByApellidosMaternoIgnoreAccents(@Param("apellidosMaterno") String apellidosMaterno);
 
     List<PersonaNatural> findByCategoriaPersonaId(Integer categoriaId);
+    Optional<PersonaNatural> findByDocumentoIgnoreCaseAndIdNot(String documento, Integer id);
 }

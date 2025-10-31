@@ -7,6 +7,8 @@ import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.LiquidacionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,6 +57,6 @@ public class LiquidacionController {
     @RequirePermission(module = "LIQUIDACIONES", permission = "CREATE")
     public ResponseEntity<LiquidacionResponseDTO> createLiquidacionConCotizacion(
             @PathVariable Integer cotizacionId, @Valid @RequestBody LiquidacionRequestDTO liquidacionRequestDTO) { 
-        return ResponseEntity.ok(liquidacionService.create(liquidacionRequestDTO, cotizacionId));
+        return ResponseEntity.status(HttpStatus.CREATED).body(liquidacionService.create(liquidacionRequestDTO, cotizacionId));
     }
 }

@@ -37,14 +37,6 @@ public class CarpetaServiceImpl implements CarpetaService {
     @Override
     public CarpetaResponseDto create(CarpetaRequestDto carpetaRequestDto, Integer carpetaPadreId) {
         Carpeta carpeta = carpetaMapper.toEntity(carpetaRequestDto);
-
-        ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        if (attrs != null) {
-            HttpServletRequest request = attrs.getRequest();
-            if (request.getParameterMap().size() > 0 && request.getParameter("carpetaPadreId") == null) {
-                throw new BadRequestException("El parámetro 'carpetaPadreId' está mal escrito o no es válido.");
-            }
-        }
         
         if (carpetaPadreId != null) { // Primero asignar el nivel correcto
             Carpeta carpetaPadre = carpetaRepository.findById(carpetaPadreId)

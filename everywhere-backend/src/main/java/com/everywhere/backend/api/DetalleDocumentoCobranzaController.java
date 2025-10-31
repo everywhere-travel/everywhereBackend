@@ -5,7 +5,9 @@ import com.everywhere.backend.model.dto.DetalleDocumentoCobranzaResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.DetalleDocumentoCobranzaService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor; 
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,7 +41,7 @@ public class DetalleDocumentoCobranzaController {
     @PostMapping
     @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "CREATE")
     public ResponseEntity<DetalleDocumentoCobranzaResponseDTO> createDetalle(@Valid @RequestBody DetalleDocumentoCobranzaRequestDTO dto) {
-        return ResponseEntity.ok(detalleService.save(dto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(detalleService.save(dto));
     }
 
     @PatchMapping("/{id}")

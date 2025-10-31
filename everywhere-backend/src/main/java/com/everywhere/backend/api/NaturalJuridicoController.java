@@ -23,39 +23,34 @@ public class NaturalJuridicoController {
     @GetMapping
     @RequirePermission(module = "PERSONAS", permission = "READ")
     public ResponseEntity<List<NaturalJuridicoResponseDTO>> getAllRelaciones() {
-        List<NaturalJuridicoResponseDTO> relaciones = naturalJuridicoService.findAll();
-        return ResponseEntity.ok(relaciones);
+        return ResponseEntity.ok(naturalJuridicoService.findAll());
     }
 
     @GetMapping("/{id}")
     @RequirePermission(module = "PERSONAS", permission = "READ")
-    public ResponseEntity<NaturalJuridicoResponseDTO> getRelacionById(@PathVariable Integer id) {
-        NaturalJuridicoResponseDTO relacion = naturalJuridicoService.findById(id);
-        return ResponseEntity.ok(relacion);
+    public ResponseEntity<NaturalJuridicoResponseDTO> getRelacionById(@PathVariable Integer id) { 
+        return ResponseEntity.ok(naturalJuridicoService.findById(id));
     }
 
     @GetMapping("/persona-natural/{personaNaturalId}")
     @RequirePermission(module = "PERSONAS", permission = "READ")
     public ResponseEntity<List<NaturalJuridicoResponseDTO>> getRelacionesByPersonaNatural(
-            @PathVariable Integer personaNaturalId) {
-        List<NaturalJuridicoResponseDTO> relaciones = naturalJuridicoService.findByPersonaNaturalId(personaNaturalId);
-        return ResponseEntity.ok(relaciones);
+            @PathVariable Integer personaNaturalId) { 
+        return ResponseEntity.ok(naturalJuridicoService.findByPersonaNaturalId(personaNaturalId));
     }
 
     @GetMapping("/persona-juridica/{personaJuridicaId}")
     @RequirePermission(module = "PERSONAS", permission = "READ")
     public ResponseEntity<List<NaturalJuridicoResponseDTO>> getRelacionesByPersonaJuridica(
-            @PathVariable Integer personaJuridicaId) {
-        List<NaturalJuridicoResponseDTO> relaciones = naturalJuridicoService.findByPersonaJuridicaId(personaJuridicaId);
-        return ResponseEntity.ok(relaciones);
+            @PathVariable Integer personaJuridicaId) { 
+        return ResponseEntity.ok(naturalJuridicoService.findByPersonaJuridicaId(personaJuridicaId));
     }
 
     @PostMapping
     @RequirePermission(module = "PERSONAS", permission = "CREATE")
     public ResponseEntity<List<NaturalJuridicoResponseDTO>> crearRelaciones(
             @Valid @RequestBody NaturalJuridicoRequestDTO naturalJuridicoRequestDTO) {
-        List<NaturalJuridicoResponseDTO> relacionesCreadas = naturalJuridicoService.crearRelaciones(naturalJuridicoRequestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(relacionesCreadas);
+        return ResponseEntity.status(HttpStatus.CREATED).body(naturalJuridicoService.crearRelaciones(naturalJuridicoRequestDTO));
     }
 
     @DeleteMapping("/{id}")
@@ -77,8 +72,7 @@ public class NaturalJuridicoController {
     @PatchMapping("/persona-natural/{personaNaturalId}")
     @RequirePermission(module = "PERSONAS", permission = "UPDATE")
     public ResponseEntity<List<NaturalJuridicoResponseDTO>> patchRelacionesPersonaNatural(
-            @PathVariable Integer personaNaturalId, @RequestBody NaturalJuridicoPatchDTO naturalJuridicoPatchDTO) {
-        List<NaturalJuridicoResponseDTO> relacionesActualizadas = naturalJuridicoService.patchRelacionesPersonaNatural(personaNaturalId, naturalJuridicoPatchDTO);
-        return ResponseEntity.ok(relacionesActualizadas);
+            @PathVariable Integer personaNaturalId, @RequestBody NaturalJuridicoPatchDTO naturalJuridicoPatchDTO) { 
+        return ResponseEntity.ok(naturalJuridicoService.patchRelacionesPersonaNatural(personaNaturalId, naturalJuridicoPatchDTO));
     }
 }

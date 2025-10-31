@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,10 +24,7 @@ public class ObservacionLiquidacionServiceImpl implements ObservacionLiquidacion
 
     @Override
     public List<ObservacionLiquidacionResponseDTO> findAll() {
-        return observacionLiquidacionRepository.findAll()
-                .stream()
-                .map(observacionLiquidacionMapper::toResponseDTO)
-                .collect(Collectors.toList());
+        return observacionLiquidacionRepository.findAll().stream().map(observacionLiquidacionMapper::toResponseDTO).toList();
     }
 
     @Override
@@ -50,16 +46,13 @@ public class ObservacionLiquidacionServiceImpl implements ObservacionLiquidacion
                             "Liquidación no encontrada con id " + observacionLiquidacionRequestDTO.getLiquidacionId()));
             observacionLiquidacion.setLiquidacion(liquidacion);
         }
-        return observacionLiquidacionMapper.toResponseDTO(
-                observacionLiquidacionRepository.save(observacionLiquidacion)
-        );
+        return observacionLiquidacionMapper.toResponseDTO(observacionLiquidacionRepository.save(observacionLiquidacion));
     }
 
     @Override
     public ObservacionLiquidacionResponseDTO update(Long id, ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO) {
         ObservacionLiquidacion observacionLiquidacion = observacionLiquidacionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Observación de liquidación no encontrada con ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Observación de liquidación no encontrada con ID: " + id));
 
         observacionLiquidacionMapper.updateEntityFromDTO(observacionLiquidacionRequestDTO, observacionLiquidacion);
 
@@ -70,30 +63,22 @@ public class ObservacionLiquidacionServiceImpl implements ObservacionLiquidacion
             observacionLiquidacion.setLiquidacion(liquidacion);
         }
 
-        return observacionLiquidacionMapper.toResponseDTO(
-                observacionLiquidacionRepository.save(observacionLiquidacion)
-        );
+        return observacionLiquidacionMapper.toResponseDTO(observacionLiquidacionRepository.save(observacionLiquidacion));
     }
 
     @Override
     public void deleteById(Long id) {
-        if (!observacionLiquidacionRepository.existsById(id)) {
+        if (!observacionLiquidacionRepository.existsById(id))
             throw new ResourceNotFoundException("No existe una observación de liquidación con ID: " + id);
-        }
         observacionLiquidacionRepository.deleteById(id);
     }
 
     @Override
     public List<ObservacionLiquidacionResponseDTO> findByLiquidacionId(Integer liquidacionId) {
         List<ObservacionLiquidacion> observaciones = observacionLiquidacionRepository.findByLiquidacionId(liquidacionId);
+        if (observaciones.isEmpty())
+            throw new ResourceNotFoundException("No se encontraron observaciones para la liquidación con ID: " + liquidacionId);
 
-        if (observaciones.isEmpty()) {
-            throw new ResourceNotFoundException(
-                    "No se encontraron observaciones para la liquidación con ID: " + liquidacionId);
-        }
-
-        return observaciones.stream()
-                .map(observacionLiquidacionMapper::toResponseDTO)
-                .collect(Collectors.toList());
+        return observaciones.stream().map(observacionLiquidacionMapper::toResponseDTO).toList();
     }
 }
