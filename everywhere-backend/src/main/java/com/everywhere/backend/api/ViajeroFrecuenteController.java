@@ -29,8 +29,8 @@ public class ViajeroFrecuenteController {
 
     @GetMapping
     @RequirePermission(module = "VIAJEROS", permission = "READ")
-    public List<ViajeroFrecuenteResponseDto> findAll() {
-        return viajeroFrecuenteService.findAll();
+    public ResponseEntity<List<ViajeroFrecuenteResponseDto>> findAll() {
+        return ResponseEntity.ok(viajeroFrecuenteService.findAll());
     }
     
     @GetMapping("/{id}")

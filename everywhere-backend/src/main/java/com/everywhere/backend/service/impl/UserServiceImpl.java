@@ -1,6 +1,5 @@
 package com.everywhere.backend.service.impl;
 
-import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.exceptions.UserNotFoundException;
 import io.jsonwebtoken.Claims;
 import com.everywhere.backend.mapper.UserMapper;

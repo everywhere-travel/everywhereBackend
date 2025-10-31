@@ -23,9 +23,8 @@ public class OperadorController {
 
     @GetMapping
     @RequirePermission(module = "OPERADOR", permission = "READ")
-    public ResponseEntity<List<OperadorResponseDTO>> findAll() {
-        List<OperadorResponseDTO> operadores = operadorService.findAll();
-        return ResponseEntity.ok(operadores);
+    public ResponseEntity<List<OperadorResponseDTO>> findAll() { 
+        return ResponseEntity.ok(operadorService.findAll());
     }
 
     @GetMapping("/{id}")

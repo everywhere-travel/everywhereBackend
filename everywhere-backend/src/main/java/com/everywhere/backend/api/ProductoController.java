@@ -35,9 +35,7 @@ public class ProductoController {
     @GetMapping("/{id}")
     @RequirePermission(module = "PRODUCTOS", permission = "READ")
     public ResponseEntity<ProductoResponseDTO> getById(@PathVariable Integer id) {
-        return productoService.getById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(productoService.getById(id));
     }
 
     @GetMapping
