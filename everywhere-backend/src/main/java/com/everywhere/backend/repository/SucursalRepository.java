@@ -16,4 +16,6 @@ public interface SucursalRepository extends JpaRepository<Sucursal, Integer> {
     List<Sucursal> findByDireccionContainingIgnoreCase(String direccion);
     Optional<Sucursal> findByEmail(String email);
     boolean existsByEmail(String email);
+
+    boolean existsByDescripcion(String descripcion);
 }

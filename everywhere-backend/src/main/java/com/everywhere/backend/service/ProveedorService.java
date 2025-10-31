@@ -10,7 +10,7 @@ public interface ProveedorService {
 
     ProveedorResponseDTO create(ProveedorRequestDTO proveedorRequestDTO);
     ProveedorResponseDTO update(Integer id, ProveedorRequestDTO proveedorRequestDTO);
-    Optional<ProveedorResponseDTO> getById(Integer id);
+    ProveedorResponseDTO getById(Integer id);
     List<ProveedorResponseDTO> getAll();
     void delete(Integer id);
 }
