@@ -4,6 +4,7 @@ import com.everywhere.backend.model.dto.ProveedorRequestDTO;
 import com.everywhere.backend.model.dto.ProveedorResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.ProveedorService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +36,7 @@ public class ProveedorController {
 
     @PostMapping
     @RequirePermission(module = "PROVEEDORES", permission = "CREATE")
-    public ResponseEntity<ProveedorResponseDTO> create(@RequestBody ProveedorRequestDTO proveedorRequestDTO) {
+    public ResponseEntity<ProveedorResponseDTO> create(@RequestBody @Valid ProveedorRequestDTO proveedorRequestDTO) {
         ProveedorResponseDTO created = proveedorService.create(proveedorRequestDTO);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
