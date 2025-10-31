@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import com.everywhere.backend.service.DocumentoCobranzaService;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,8 +23,8 @@ public class DocumentoCobranzaController {
 
     @PostMapping
     @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "CREATE")
-    public ResponseEntity<?> createDocumentoCobranza(@RequestParam Integer cotizacionId) { 
-        return ResponseEntity.ok(documentoCobranzaService.createDocumentoCobranza(cotizacionId));
+    public ResponseEntity<DocumentoCobranzaResponseDTO> createDocumentoCobranza(@RequestParam Integer cotizacionId) { 
+        return ResponseEntity.status(HttpStatus.CREATED).body(documentoCobranzaService.createDocumentoCobranza(cotizacionId));
     }
 
     @GetMapping

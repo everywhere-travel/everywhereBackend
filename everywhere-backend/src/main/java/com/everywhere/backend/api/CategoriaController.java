@@ -7,6 +7,7 @@ import com.everywhere.backend.service.CategoriaService;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -33,7 +34,7 @@ public class CategoriaController {
 	@PostMapping
     @RequirePermission(module = "CATEGORIA", permission = "CREATE")
 	public ResponseEntity<CategoriaResponseDto> create(@RequestBody CategoriaRequestDto categoriaRequestDto) {
-		return ResponseEntity.ok(categoriaService.create(categoriaRequestDto));
+		return ResponseEntity.status(HttpStatus.CREATED).body(categoriaService.create(categoriaRequestDto));
 	}
 
 	@PatchMapping("/{id}")

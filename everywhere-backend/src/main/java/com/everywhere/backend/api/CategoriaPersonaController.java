@@ -41,9 +41,8 @@ public class CategoriaPersonaController {
 
     @PostMapping
     @RequirePermission(module = "CATEGORIA_PERSONAS", permission = "CREATE")
-    public ResponseEntity<CategoriaPersonaResponseDTO> createCategoria(@Valid @RequestBody CategoriaPersonaRequestDTO categoriaPersonaRequestDTO) {
-        CategoriaPersonaResponseDTO nuevaCategoria = categoriaPersonaService.save(categoriaPersonaRequestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(nuevaCategoria);
+    public ResponseEntity<CategoriaPersonaResponseDTO> createCategoria(@Valid @RequestBody CategoriaPersonaRequestDTO categoriaPersonaRequestDTO) { 
+        return ResponseEntity.status(HttpStatus.CREATED).body(categoriaPersonaService.save(categoriaPersonaRequestDTO));
     }
 
     @PatchMapping("/{id}")

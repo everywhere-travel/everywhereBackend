@@ -7,6 +7,7 @@ import com.everywhere.backend.service.DetalleCotizacionService;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,7 +42,7 @@ public class DetalleCotizacionController {
     @RequirePermission(module = "COTIZACIONES", permission = "CREATE")
     public ResponseEntity<DetalleCotizacionResponseDto> create(
             @PathVariable int cotizacionId, @RequestBody DetalleCotizacionRequestDto detalleCotizacionRequestDto) {
-        return ResponseEntity.ok(detalleCotizacionService.create(detalleCotizacionRequestDto, cotizacionId));
+        return ResponseEntity.status(HttpStatus.CREATED).body(detalleCotizacionService.create(detalleCotizacionRequestDto, cotizacionId));
     }
 
     @PatchMapping("/{id}")

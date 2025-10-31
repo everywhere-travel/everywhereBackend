@@ -6,6 +6,7 @@ import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.FormaPagoService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,7 +48,7 @@ public class FormaPagoController {
     @PostMapping
     @RequirePermission(module = "FORMA-PAGO", permission = "CREATE")
     public ResponseEntity<FormaPagoResponseDTO> createFormaPago(@Valid @RequestBody FormaPagoRequestDTO formaPagoRequestDTO) { 
-        return ResponseEntity.ok(formaPagoService.save(formaPagoRequestDTO));
+        return ResponseEntity.status(HttpStatus.CREATED).body(formaPagoService.save(formaPagoRequestDTO));
     }
 
     @PatchMapping("/{id}")
