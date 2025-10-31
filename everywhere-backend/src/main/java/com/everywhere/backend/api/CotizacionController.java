@@ -35,9 +35,8 @@ public class CotizacionController {
 
     @GetMapping("/{id}/con-detalles")
     @RequirePermission(module = "COTIZACIONES", permission = "READ")
-    public ResponseEntity<CotizacionConDetallesResponseDTO> getCotizacionConDetalles(@PathVariable Integer id) {
-        CotizacionConDetallesResponseDTO cotizacionConDetalles = cotizacionService.findByIdWithDetalles(id);
-        return ResponseEntity.ok(cotizacionConDetalles);
+    public ResponseEntity<CotizacionConDetallesResponseDTO> getCotizacionConDetalles(@PathVariable Integer id) { 
+        return ResponseEntity.ok(cotizacionService.findByIdWithDetalles(id));
     }
 
     @GetMapping

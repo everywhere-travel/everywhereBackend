@@ -6,9 +6,11 @@ import com.everywhere.backend.model.entity.*;
 import com.everywhere.backend.repository.*;
 import com.everywhere.backend.service.CotizacionService;
 import com.everywhere.backend.service.DetalleCotizacionService;
+
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,7 +35,7 @@ public class CotizacionServiceImpl implements CotizacionService {
         Cotizacion cotizacion = cotizacionMapper.toEntity(cotizacionRequestDto);
         cotizacion.setCodigoCotizacion(generateCodigoCotizacion());
 
-        if (personaId == null) throw new ResourceNotFoundException("PersonaId es obligatorio para crear una cotización");
+        if (personaId == null) throw new DataIntegrityViolationException("PersonaId es obligatorio para crear una cotización");
         
         Personas persona = personasRepository.findById(personaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Persona no encontrada con id " + personaId));

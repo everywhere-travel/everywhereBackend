@@ -3,8 +3,7 @@ package com.everywhere.backend.service;
 import com.everywhere.backend.model.dto.EstadoCotizacionRequestDTO;
 import com.everywhere.backend.model.dto.EstadoCotizacionResponseDTO;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.List; 
 
 public interface EstadoCotizacionService {
 
@@ -12,7 +11,7 @@ public interface EstadoCotizacionService {
 
     EstadoCotizacionResponseDTO update(Integer id, EstadoCotizacionRequestDTO dto);
 
-    Optional<EstadoCotizacionResponseDTO> getById(Integer id);
+    EstadoCotizacionResponseDTO getById(Integer id);
 
     List<EstadoCotizacionResponseDTO> getAll();
 

@@ -34,9 +34,7 @@ public class EstadosCotizacionController {
     @GetMapping("/{id}")
     @RequirePermission(module = "COTIZACIONES", permission = "READ")
     public ResponseEntity<EstadoCotizacionResponseDTO> getById(@PathVariable Integer id) {
-        return estadoCotizacionService.getById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(estadoCotizacionService.getById(id));
     }
 
     @GetMapping
