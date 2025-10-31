@@ -2,6 +2,7 @@ package com.everywhere.backend.model.dto;
 
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class PersonaResponseDTO {
@@ -11,5 +12,7 @@ public class PersonaResponseDTO {
     private String direccion;
     private String observacion;
     private LocalDateTime creado;
-    private LocalDateTime actualizado; 
+    private LocalDateTime actualizado;
+    private List<TelefonoPersonaResponseDTO> telefonos;
+    private List<CorreoPersonaResponseDTO> correos;
 }
