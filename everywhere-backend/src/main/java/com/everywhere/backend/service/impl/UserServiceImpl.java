@@ -1,6 +1,7 @@
 package com.everywhere.backend.service.impl;
 
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
+import com.everywhere.backend.exceptions.UserNotFoundException;
 import io.jsonwebtoken.Claims;
 import com.everywhere.backend.mapper.UserMapper;
 import com.everywhere.backend.model.dto.*;
@@ -47,11 +48,15 @@ public class UserServiceImpl implements UserService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.isAuthenticated()) {
-            String token = (String) authentication.getCredentials(); // Extraer email del token
+            String token = (String) authentication.getCredentials();
+
             Claims claims = tokenProvider.getJwtParser().parseClaimsJws(token).getBody();
-            String email = claims.getSubject(); // Buscar usuario por email
-            User user = userRepository.findByEmail(email).orElse(null);
-            return user != null ? user.getId() : null;
+            String email = claims.getSubject();
+
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado con email: " + email));
+
+            return user.getId();
         }
         return null;
     }
@@ -59,7 +64,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public User getUserbyId(Integer userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + userId));
+        return userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("Usuario no encontrado con ID: " + userId));
     }
 
     @Override
