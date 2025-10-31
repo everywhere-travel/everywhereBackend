@@ -5,6 +5,8 @@ import com.everywhere.backend.model.dto.EstadoCotizacionResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.EstadoCotizacionService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +22,7 @@ public class EstadosCotizacionController {
     @PostMapping
     @RequirePermission(module = "COTIZACIONES", permission = "CREATE")
     public ResponseEntity<EstadoCotizacionResponseDTO> create(@RequestBody EstadoCotizacionRequestDTO estadoCotizacionRequestDTO) {
-        return ResponseEntity.ok(estadoCotizacionService.create(estadoCotizacionRequestDTO));
+        return ResponseEntity.status(HttpStatus.CREATED).body(estadoCotizacionService.create(estadoCotizacionRequestDTO));
     }
 
     @PatchMapping("/{id}")
@@ -34,9 +36,7 @@ public class EstadosCotizacionController {
     @GetMapping("/{id}")
     @RequirePermission(module = "COTIZACIONES", permission = "READ")
     public ResponseEntity<EstadoCotizacionResponseDTO> getById(@PathVariable Integer id) {
-        return estadoCotizacionService.getById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(estadoCotizacionService.getById(id));
     }
 
     @GetMapping

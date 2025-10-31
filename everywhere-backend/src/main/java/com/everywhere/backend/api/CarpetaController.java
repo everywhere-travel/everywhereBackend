@@ -1,14 +1,17 @@
 package com.everywhere.backend.api;
 
+import com.everywhere.backend.exceptions.BadRequestException;
 import com.everywhere.backend.model.dto.CarpetaRequestDto;
 import com.everywhere.backend.model.dto.CarpetaResponseDto;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.CarpetaService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.*; 
 
 import java.time.LocalDate;
 import java.util.List;
@@ -24,14 +27,19 @@ public class CarpetaController {
     @RequirePermission(module = "CARPETA", permission = "CREATE")
     public ResponseEntity<CarpetaResponseDto> create(
             @RequestBody CarpetaRequestDto carpetaRequestDto,
-            @RequestParam(required = false) Integer carpetaPadreId) {
-        return ResponseEntity.ok(carpetaService.create(carpetaRequestDto, carpetaPadreId));
+            @RequestParam(required = false) Integer carpetaPadreId,
+            HttpServletRequest request) {
+                
+        if (!request.getParameterMap().isEmpty() && request.getParameter("carpetaPadreId") == null)
+                throw new BadRequestException("El parámetro 'carpetaPadreId' está mal escrito o no es válido.");
+        
+        return ResponseEntity.status(HttpStatus.CREATED).body(carpetaService.create(carpetaRequestDto, carpetaPadreId));
     }
 
     @GetMapping("/{id}")
     @RequirePermission(module = "CARPETA", permission = "READ")
     public ResponseEntity<CarpetaResponseDto> findById(@PathVariable Integer id) {
-        return carpetaService.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(carpetaService.findById(id));
     }
 
     @GetMapping
@@ -40,7 +48,7 @@ public class CarpetaController {
         return ResponseEntity.ok(carpetaService.findAll());
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @RequirePermission(module = "CARPETA", permission = "UPDATE")
     public ResponseEntity<CarpetaResponseDto> update(@PathVariable Integer id, @RequestBody CarpetaRequestDto carpetaRequestDto) {
         return ResponseEntity.ok(carpetaService.update(id, carpetaRequestDto));

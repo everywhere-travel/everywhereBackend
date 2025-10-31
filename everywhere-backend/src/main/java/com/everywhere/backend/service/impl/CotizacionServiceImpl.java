@@ -6,14 +6,14 @@ import com.everywhere.backend.model.entity.*;
 import com.everywhere.backend.repository.*;
 import com.everywhere.backend.service.CotizacionService;
 import com.everywhere.backend.service.DetalleCotizacionService;
+
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +35,7 @@ public class CotizacionServiceImpl implements CotizacionService {
         Cotizacion cotizacion = cotizacionMapper.toEntity(cotizacionRequestDto);
         cotizacion.setCodigoCotizacion(generateCodigoCotizacion());
 
-        if (personaId == null) throw new ResourceNotFoundException("PersonaId es obligatorio para crear una cotización");
+        if (personaId == null) throw new DataIntegrityViolationException("PersonaId es obligatorio para crear una cotización");
         
         Personas persona = personasRepository.findById(personaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Persona no encontrada con id " + personaId));
@@ -75,14 +75,15 @@ public class CotizacionServiceImpl implements CotizacionService {
     }
 
     @Override
-    public Optional<CotizacionResponseDto> findById(Integer id) {
-        return cotizacionRepository.findById(id).map(cotizacionMapper::toResponse);
+    public CotizacionResponseDto findById(Integer id) {
+        return cotizacionRepository.findById(id).map(cotizacionMapper::toResponse)
+            .orElseThrow(()-> new ResourceNotFoundException("Cotización no encontrada con ID: " + id));
     }
 
     @Override
     public List<CotizacionResponseDto> findAll() {
         return cotizacionRepository.findAll()
-                .stream().map(cotizacionMapper::toResponse).collect(Collectors.toList());
+                .stream().map(cotizacionMapper::toResponse).toList();
     }
 
     @Override
@@ -127,6 +128,8 @@ public class CotizacionServiceImpl implements CotizacionService {
 
     @Override
     public void delete(Integer id) {
+        if (!cotizacionRepository.existsById(id))
+            throw new ResourceNotFoundException("Cotización no encontrada con ID: " + id);
         cotizacionRepository.deleteById(id);
     }
 
@@ -143,15 +146,13 @@ public class CotizacionServiceImpl implements CotizacionService {
 
         CotizacionResponseDto cotizacionDTO = cotizacionMapper.toResponse(cotizacion);
         List<DetalleCotizacionResponseDto> detallesCompletos = detalleCotizacionService.findByCotizacionId(id);
-        List<DetalleCotizacionSimpleDTO> detallesSimples = detallesCompletos.stream()
-                .map(cotizacionMapper::toDetalleSimple).collect(Collectors.toList());
-
+        List<DetalleCotizacionSimpleDTO> detallesSimples = detallesCompletos.stream().map(cotizacionMapper::toDetalleSimple).toList();
         return cotizacionMapper.toResponseWithDetalles(cotizacionDTO, detallesSimples);
     }
 
     @Override
     public List<CotizacionResponseDto> findCotizacionesSinLiquidacion() {
         List<Cotizacion> cotizaciones = cotizacionRepository.findCotizacionesSinLiquidacion();
-        return cotizaciones.stream().map(cotizacionMapper::toResponse).collect(Collectors.toList());
+        return cotizaciones.stream().map(cotizacionMapper::toResponse).toList();
     }
 }

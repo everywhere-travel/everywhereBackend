@@ -6,6 +6,7 @@ import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.DetalleDocumentoCobranzaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,38 +22,33 @@ public class DetalleDocumentoCobranzaController {
 
     @GetMapping
     @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "READ")
-    public ResponseEntity<List<DetalleDocumentoCobranzaResponseDTO>> getAllDetalles() {
-        List<DetalleDocumentoCobranzaResponseDTO> detalles = detalleService.findAll();
-        return ResponseEntity.ok(detalles);
+    public ResponseEntity<List<DetalleDocumentoCobranzaResponseDTO>> getAllDetalles() { 
+        return ResponseEntity.ok(detalleService.findAll());
     }
 
     @GetMapping("/{id}")
     @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "READ")
     public ResponseEntity<DetalleDocumentoCobranzaResponseDTO> getDetalleById(@PathVariable Long id) {
-        DetalleDocumentoCobranzaResponseDTO detalle = detalleService.findById(id);
-        return ResponseEntity.ok(detalle);
+        return ResponseEntity.ok(detalleService.findById(id));
     }
 
     @GetMapping("/documento-cobranza/{documentoId}")
     @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "READ")
     public ResponseEntity<List<DetalleDocumentoCobranzaResponseDTO>> getDetallesByDocumentoCobranza(@PathVariable Long documentoId) {
-        List<DetalleDocumentoCobranzaResponseDTO> detalles = detalleService.findByDocumentoCobranzaId(documentoId);
-        return ResponseEntity.ok(detalles);
+        return ResponseEntity.ok(detalleService.findByDocumentoCobranzaId(documentoId));
     }
 
     @PostMapping
     @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "CREATE")
     public ResponseEntity<DetalleDocumentoCobranzaResponseDTO> createDetalle(@Valid @RequestBody DetalleDocumentoCobranzaRequestDTO dto) {
-        DetalleDocumentoCobranzaResponseDTO detalle = detalleService.save(dto);
-        return new ResponseEntity<>(detalle, HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(detalleService.save(dto));
     }
 
     @PatchMapping("/{id}")
     @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "UPDATE")
     public ResponseEntity<DetalleDocumentoCobranzaResponseDTO> updateDetalle(
-            @PathVariable Long id, @Valid @RequestBody DetalleDocumentoCobranzaRequestDTO detalleDocumentoCobranzaRequestDTO) {
-        DetalleDocumentoCobranzaResponseDTO detalle = detalleService.patch(id, detalleDocumentoCobranzaRequestDTO);
-        return ResponseEntity.ok(detalle);
+            @PathVariable Long id, @Valid @RequestBody DetalleDocumentoCobranzaRequestDTO detalleDocumentoCobranzaRequestDTO) { 
+        return ResponseEntity.ok(detalleService.patch(id, detalleDocumentoCobranzaRequestDTO));
     }
 
     @DeleteMapping("/{id}")

@@ -1,19 +1,18 @@
 package com.everywhere.backend.service.impl;
 
+import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.DetalleCotizacionMapper;
 import com.everywhere.backend.model.dto.DetalleCotizacionRequestDto;
 import com.everywhere.backend.model.dto.DetalleCotizacionResponseDto;
 import com.everywhere.backend.model.entity.*;
 import com.everywhere.backend.repository.*;
 import com.everywhere.backend.service.DetalleCotizacionService;
-import jakarta.persistence.EntityNotFoundException;
+
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.List;  
 
 @Service
 @RequiredArgsConstructor
@@ -29,18 +28,22 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
     @Override
     public List<DetalleCotizacionResponseDto> findAll() {
         return detalleCotizacionRepository.findAll()
-                .stream().map(detalleCotizacionMapper::toResponse).collect(Collectors.toList());
+                .stream().map(detalleCotizacionMapper::toResponse).toList();
     }
 
     @Override
-    public Optional<DetalleCotizacionResponseDto> findById(Integer id) {
-        return detalleCotizacionRepository.findById(id).map(detalleCotizacionMapper::toResponse);
+    public DetalleCotizacionResponseDto findById(Integer id) {
+        return detalleCotizacionRepository.findById(id).map(detalleCotizacionMapper::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Detalle de cotización no encontrado con ID: " + id));
     }
 
     @Override
     public List<DetalleCotizacionResponseDto> findByCotizacionId(Integer cotizacionId) {
+        if (!cotizacionRepository.existsById(cotizacionId))
+            throw new ResourceNotFoundException("Cotización no encontrada con ID: " + cotizacionId);
+        
         return detalleCotizacionRepository.findByCotizacionId(cotizacionId)
-                .stream().map(detalleCotizacionMapper::toResponse).collect(Collectors.toList());
+            .stream().map(detalleCotizacionMapper::toResponse).toList();
     }
 
     @Override
@@ -51,24 +54,24 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
         if (cotizacionId == null) throw new IllegalArgumentException("El ID de la cotización es obligatorio");
         
         Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId)
-                .orElseThrow(() -> new RuntimeException("Cotización no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cotización no encontrada con ID: " + cotizacionId));
         detalleCotizacion.setCotizacion(cotizacion);
 
         if (detalleCotizacionRequestDto.getCategoriaId() != null) {
             Categoria categoria = categoriaRepository.findById(detalleCotizacionRequestDto.getCategoriaId())
-                    .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + detalleCotizacionRequestDto.getCategoriaId()));
             detalleCotizacion.setCategoria(categoria);
         }
 
         if (detalleCotizacionRequestDto.getProductoId() != null) {
             Producto producto = productoRepository.findById(detalleCotizacionRequestDto.getProductoId())
-                    .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + detalleCotizacionRequestDto.getProductoId()));
             detalleCotizacion.setProducto(producto);
         }
 
         if (detalleCotizacionRequestDto.getProveedorId() != null) {
             Proveedor proveedor = proveedorRepository.findById(detalleCotizacionRequestDto.getProveedorId())
-                    .orElseThrow(() -> new RuntimeException("Proveedor no encontrado"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Proveedor no encontrado con ID: " + detalleCotizacionRequestDto.getProveedorId()));
             detalleCotizacion.setProveedor(proveedor);
         }
 
@@ -78,25 +81,25 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
     @Override
     public DetalleCotizacionResponseDto patch(Integer id, DetalleCotizacionRequestDto detalleCotizacionRequestDto) {
         DetalleCotizacion detalleCotizacion = detalleCotizacionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Detalle de cotización no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Detalle de cotización no encontrado con ID: " + id));
 
         detalleCotizacionMapper.updateEntityFromRequest(detalleCotizacion, detalleCotizacionRequestDto);
 
         if (detalleCotizacionRequestDto.getCategoriaId() != null) {
             Categoria categoria = categoriaRepository.findById(detalleCotizacionRequestDto.getCategoriaId())
-                    .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada"));
             detalleCotizacion.setCategoria(categoria);
         }
 
         if (detalleCotizacionRequestDto.getProductoId() != null) {
             Producto producto = productoRepository.findById(detalleCotizacionRequestDto.getProductoId())
-                    .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
             detalleCotizacion.setProducto(producto);
         }
 
         if (detalleCotizacionRequestDto.getProveedorId() != null) {
             Proveedor proveedor = proveedorRepository.findById(detalleCotizacionRequestDto.getProveedorId())
-                    .orElseThrow(() -> new RuntimeException("Proveedor no encontrado"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Proveedor no encontrado"));
             detalleCotizacion.setProveedor(proveedor);
         }
 
@@ -105,7 +108,8 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
 
     @Override
     public void delete(Integer id) {
-        if (!detalleCotizacionRepository.existsById(id)) throw new EntityNotFoundException("Detalle de cotización no encontrado");
+        if (!detalleCotizacionRepository.existsById(id))
+            throw new ResourceNotFoundException("Detalle de cotización no encontrado con ID: " + id);
         detalleCotizacionRepository.deleteById(id);
     }
 }

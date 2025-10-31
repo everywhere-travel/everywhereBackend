@@ -18,6 +18,9 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
     List<Carpeta> findByCarpetaPadreIsNull(); // Carpeta raíz (sin padre) 
     List<Carpeta> findAllByOrderByCreadoDesc(); 
 
+    @Query("SELECT COUNT(c) > 0 FROM Carpeta c WHERE c.nombre = :nombre AND c.nivel = :nivel")
+    boolean existsByNombreAndNivel(@Param("nombre") String nombre, @Param("nivel") Integer nivel);
+
     @Query("SELECT c FROM Carpeta c WHERE YEAR(c.creado) = :anio AND MONTH(c.creado) = :mes")
     List<Carpeta> findByAnioAndMes(@Param("anio") int anio, @Param("mes") int mes);
 }

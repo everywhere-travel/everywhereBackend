@@ -1,5 +1,6 @@
 package com.everywhere.backend.api;
 
+import com.everywhere.backend.model.dto.DocumentoCobranzaResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.DocumentoCobranzaService;
 import lombok.AllArgsConstructor;
@@ -25,7 +26,7 @@ public class PdfController {
 
         try {
             // Verificar que el documento existe usando el DTO
-            com.everywhere.backend.model.dto.DocumentoCobranzaResponseDTO documentoDto = documentoCobranzaService.findById(id);
+            DocumentoCobranzaResponseDTO documentoDto = documentoCobranzaService.findById(id);
             
             if (documentoDto == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             
@@ -43,8 +44,7 @@ public class PdfController {
                     .body(new InputStreamResource(pdfStream));
 
         } catch (Exception e) {
-            System.err.println("Error generando PDF: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Error generando PDF: " + e.getMessage()); 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
