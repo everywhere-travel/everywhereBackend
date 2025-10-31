@@ -10,9 +10,14 @@ import com.everywhere.backend.repository.NaturalJuridicoRepository;
 import com.everywhere.backend.repository.PersonaNaturalRepository;
 import com.everywhere.backend.repository.PersonaJuridicaRepository;
 import com.everywhere.backend.service.NaturalJuridicoService;
+
+import io.opentelemetry.sdk.metrics.data.Data;
+
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.exceptions.BadRequestException;
 import com.everywhere.backend.mapper.NaturalJuridicoMapper;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -47,7 +52,7 @@ public class NaturalJuridicoServiceImpl implements NaturalJuridicoService {
                     .findByPersonaNaturalIdAndPersonaJuridicaId(naturalJuridicoRequestDTO.getPersonaNaturalId(), personaJuridicaId);
             
             if (relacionExistente.isPresent())
-                throw new BadRequestException("Ya existe una relación entre la persona natural " + naturalJuridicoRequestDTO.getPersonaNaturalId() + " y la persona jurídica " + personaJuridicaId);
+                throw new DataIntegrityViolationException("Ya existe una relación entre la persona natural " + naturalJuridicoRequestDTO.getPersonaNaturalId() + " y la persona jurídica " + personaJuridicaId);
 
             NaturalJuridico nuevaRelacion = new NaturalJuridico(); // Crear nueva relación
             nuevaRelacion.setPersonaNatural(personaNatural);
@@ -80,20 +85,21 @@ public class NaturalJuridicoServiceImpl implements NaturalJuridicoService {
         if (relaciones.isEmpty())
             throw new ResourceNotFoundException("No se encontraron relaciones para la persona jurídica con ID: " + personaJuridicaId);
         
-        return relaciones.stream().map(naturalJuridicoMapper::toResponseDTO).collect(Collectors.toList());
+        return relaciones.stream().map(naturalJuridicoMapper::toResponseDTO).toList();
     }
 
     @Override
     public NaturalJuridicoResponseDTO findById(Integer id) {
-        NaturalJuridico relacion = naturalJuridicoRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Relación no encontrada con ID: " + id));
-        return naturalJuridicoMapper.toResponseDTO(relacion);
+        NaturalJuridico naturalJuridico = naturalJuridicoRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Relación no encontrada con ID: " + id));
+        return naturalJuridicoMapper.toResponseDTO(naturalJuridico);
     }
 
     @Override
     @Transactional
     public void deleteById(Integer id) {
-        if (!naturalJuridicoRepository.existsById(id)) throw new ResourceNotFoundException("Relación no encontrada con ID: " + id);
-
+        if (!naturalJuridicoRepository.existsById(id)) 
+            throw new ResourceNotFoundException("Relación no encontrada con ID: " + id);
         naturalJuridicoRepository.deleteById(id);
     }
 

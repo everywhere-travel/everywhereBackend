@@ -22,12 +22,10 @@ import com.everywhere.backend.service.DetalleLiquidacionService;
 import com.everywhere.backend.service.ObservacionLiquidacionService;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.LiquidacionMapper;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -44,8 +42,7 @@ public class LiquidacionServiceImpl implements LiquidacionService {
 
     @Override
     public List<LiquidacionResponseDTO> findAll() {
-        return liquidacionRepository.findAllWithRelations().stream()
-                .map(liquidacionMapper::toResponseDTO).collect(Collectors.toList());
+        return liquidacionRepository.findAllWithRelations().stream().map(liquidacionMapper::toResponseDTO).toList();
     }
 
     @Override
@@ -64,25 +61,25 @@ public class LiquidacionServiceImpl implements LiquidacionService {
 
         if (liquidacionRequestDTO.getCotizacionId() != null) {
             Cotizacion cotizacion = cotizacionRepository.findById(liquidacionRequestDTO.getCotizacionId())
-                    .orElseThrow(() -> new EntityNotFoundException("Cotización no encontrada"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Cotización no encontrada con ID: " + liquidacionRequestDTO.getCotizacionId()));
             liquidacion.setCotizacion(cotizacion);
         }
         
         if (liquidacionRequestDTO.getProductoId() != null) {
             Producto producto = productoRepository.findById(liquidacionRequestDTO.getProductoId())
-                    .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + liquidacionRequestDTO.getProductoId()));
             liquidacion.setProducto(producto);
         }
 
         if (liquidacionRequestDTO.getFormaPagoId() != null) {
             FormaPago formaPago = formaPagoRepository.findById(liquidacionRequestDTO.getFormaPagoId())
-                    .orElseThrow(() -> new EntityNotFoundException("Forma de pago no encontrada"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Forma de pago no encontrada con ID: " + liquidacionRequestDTO.getFormaPagoId()));
             liquidacion.setFormaPago(formaPago);
         }
 
         if (liquidacionRequestDTO.getCarpetaId() != null) {
             Carpeta carpeta = carpetaRepository.findById(liquidacionRequestDTO.getCarpetaId())
-                    .orElseThrow(() -> new EntityNotFoundException("Carpeta no encontrada"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Carpeta no encontrada con ID: " + liquidacionRequestDTO.getCarpetaId()));
             liquidacion.setCarpeta(carpeta);
         }
 
@@ -105,13 +102,13 @@ public class LiquidacionServiceImpl implements LiquidacionService {
 
         List<DetalleLiquidacionResponseDTO> detalleLiquidacionResponseDTOs = detalleLiquidacionService.findByLiquidacionId(id); // Obtener los detalles simplificados (sin liquidación repetida)
         List<DetalleLiquidacionSimpleDTO> detalleLiquidacionSimpleDTOs = detalleLiquidacionResponseDTOs.stream() // Convertir a detalles simples (sin liquidación)
-                .map(this::convertirADetalleSimple).collect(Collectors.toList());
+                .map(this::convertirADetalleSimple).toList();
 
         // Obtener las observaciones simplificadas (sin liquidación repetida)
         List<ObservacionLiquidacionResponseDTO> observacionLiquidacionResponseDTOS = observacionLiquidacionService.findByLiquidacionId(id);
         // Convertir a observaciones simples (sin liquidación)
-        List<ObservacionLiquidacionSimpleDTO> observacionLiquidacionSimpleDTOs = observacionLiquidacionResponseDTOS.stream()
-                .map(this::convertirAObservacionSimple).collect(Collectors.toList());
+        List<ObservacionLiquidacionSimpleDTO> observacionLiquidacionSimpleDTOs = 
+                observacionLiquidacionResponseDTOS.stream().map(this::convertirAObservacionSimple).toList();
 
         // Crear el DTO con detalles y observaciones
         LiquidacionConDetallesResponseDTO liquidacionConDetallesResponseDTO = new LiquidacionConDetallesResponseDTO();
@@ -130,56 +127,55 @@ public class LiquidacionServiceImpl implements LiquidacionService {
         return liquidacionConDetallesResponseDTO;
     }
 
-    private DetalleLiquidacionSimpleDTO convertirADetalleSimple(DetalleLiquidacionResponseDTO detalleCompleto) {
-        DetalleLiquidacionSimpleDTO detalleSimple = new DetalleLiquidacionSimpleDTO();
-        detalleSimple.setId(detalleCompleto.getId());
-        detalleSimple.setTicket(detalleCompleto.getTicket());
-        detalleSimple.setCostoTicket(detalleCompleto.getCostoTicket());
-        detalleSimple.setCargoServicio(detalleCompleto.getCargoServicio());
-        detalleSimple.setValorVenta(detalleCompleto.getValorVenta());
-        detalleSimple.setFacturaCompra(detalleCompleto.getFacturaCompra());
-        detalleSimple.setBoletaPasajero(detalleCompleto.getBoletaPasajero());
-        detalleSimple.setMontoDescuento(detalleCompleto.getMontoDescuento());
-        detalleSimple.setPagoPaxUSD(detalleCompleto.getPagoPaxUSD());
-        detalleSimple.setPagoPaxPEN(detalleCompleto.getPagoPaxPEN());
-        detalleSimple.setCreado(detalleCompleto.getCreado());
-        detalleSimple.setActualizado(detalleCompleto.getActualizado());
+    private DetalleLiquidacionSimpleDTO convertirADetalleSimple(DetalleLiquidacionResponseDTO detalleLiquidacionResponseDTO) {
+        DetalleLiquidacionSimpleDTO detalleLiquidacionSimpleDTO = new DetalleLiquidacionSimpleDTO();
+        detalleLiquidacionSimpleDTO.setId(detalleLiquidacionResponseDTO.getId());
+        detalleLiquidacionSimpleDTO.setTicket(detalleLiquidacionResponseDTO.getTicket());
+        detalleLiquidacionSimpleDTO.setCostoTicket(detalleLiquidacionResponseDTO.getCostoTicket());
+        detalleLiquidacionSimpleDTO.setCargoServicio(detalleLiquidacionResponseDTO.getCargoServicio());
+        detalleLiquidacionSimpleDTO.setValorVenta(detalleLiquidacionResponseDTO.getValorVenta());
+        detalleLiquidacionSimpleDTO.setFacturaCompra(detalleLiquidacionResponseDTO.getFacturaCompra());
+        detalleLiquidacionSimpleDTO.setBoletaPasajero(detalleLiquidacionResponseDTO.getBoletaPasajero());
+        detalleLiquidacionSimpleDTO.setMontoDescuento(detalleLiquidacionResponseDTO.getMontoDescuento());
+        detalleLiquidacionSimpleDTO.setPagoPaxUSD(detalleLiquidacionResponseDTO.getPagoPaxUSD());
+        detalleLiquidacionSimpleDTO.setPagoPaxPEN(detalleLiquidacionResponseDTO.getPagoPaxPEN());
+        detalleLiquidacionSimpleDTO.setCreado(detalleLiquidacionResponseDTO.getCreado());
+        detalleLiquidacionSimpleDTO.setActualizado(detalleLiquidacionResponseDTO.getActualizado());
 
         // Mapear todas las relaciones (excepto liquidación)
-        detalleSimple.setViajero(detalleCompleto.getViajero());
-        detalleSimple.setProducto(detalleCompleto.getProducto());
-        detalleSimple.setProveedor(detalleCompleto.getProveedor());
-        detalleSimple.setOperador(detalleCompleto.getOperador());
+        detalleLiquidacionSimpleDTO.setViajero(detalleLiquidacionResponseDTO.getViajero());
+        detalleLiquidacionSimpleDTO.setProducto(detalleLiquidacionResponseDTO.getProducto());
+        detalleLiquidacionSimpleDTO.setProveedor(detalleLiquidacionResponseDTO.getProveedor());
+        detalleLiquidacionSimpleDTO.setOperador(detalleLiquidacionResponseDTO.getOperador());
 
-        return detalleSimple;
+        return detalleLiquidacionSimpleDTO;
     }
 
     @Override
     public LiquidacionResponseDTO create(LiquidacionRequestDTO liquidacionRequestDTO, Integer cotizacionId) {
         Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId)
-                .orElseThrow(() -> new EntityNotFoundException("Cotización no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cotización no encontrada con ID: " + cotizacionId));
 
         Liquidacion liquidacion = liquidacionMapper.toEntity(liquidacionRequestDTO);
         liquidacion.setCotizacion(cotizacion);
 
         if (liquidacionRequestDTO.getProductoId() != null) {
             Producto producto = productoRepository.findById(liquidacionRequestDTO.getProductoId())
-                    .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + liquidacionRequestDTO.getProductoId()));
             liquidacion.setProducto(producto);
         }
 
         if (liquidacionRequestDTO.getFormaPagoId() != null) {
             FormaPago formaPago = formaPagoRepository.findById(liquidacionRequestDTO.getFormaPagoId())
-                    .orElseThrow(() -> new EntityNotFoundException("Forma de pago no encontrada"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Forma de pago no encontrada con ID: " + liquidacionRequestDTO.getFormaPagoId()));
             liquidacion.setFormaPago(formaPago);
         }
 
         if (liquidacionRequestDTO.getCarpetaId() != null) {
             Carpeta carpeta = carpetaRepository.findById(liquidacionRequestDTO.getCarpetaId())
-                    .orElseThrow(() -> new EntityNotFoundException("Carpeta no encontrada"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Carpeta no encontrada con ID: " + liquidacionRequestDTO.getCarpetaId()));
             liquidacion.setCarpeta(carpeta);
         }
-
         return liquidacionMapper.toResponseDTO(liquidacionRepository.save(liquidacion));
     }
 
