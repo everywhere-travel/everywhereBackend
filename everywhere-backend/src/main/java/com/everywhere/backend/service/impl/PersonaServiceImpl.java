@@ -41,20 +41,25 @@ public class PersonaServiceImpl implements PersonaService {
     @Override
     public List<PersonaResponseDTO> findByEmail(String email) {
         List<Personas> personas = personaRepository.findByEmailContainingIgnoreCase(email);
-        return personas.stream().map(personaMapper::toResponseDTO).collect(Collectors.toList());
+        if (personas.isEmpty()) {
+            throw new ResourceNotFoundException("Persona no encontrada con email: " + email);
+        }
+        return personas.stream().map(personaMapper::toResponseDTO).toList();
     }
 
     @Override
     public List<PersonaResponseDTO> findByTelefono(String telefono) {
         List<Personas> personas = personaRepository.findByTelefonoContainingIgnoreCase(telefono);
-        return personas.stream().map(personaMapper::toResponseDTO).collect(Collectors.toList());
+        if(personas.isEmpty()) {
+            throw new ResourceNotFoundException("Persona no encontrada con telefono: " + telefono);
+        }
+        return personas.stream().map(personaMapper::toResponseDTO).toList();
     }
 
     @Override
     public PersonaResponseDTO save(PersonaRequestDTO personaRequestDTO) {
-        Personas persona = personaMapper.toEntity(personaRequestDTO); 
-        persona = personaRepository.save(persona);
-        return personaMapper.toResponseDTO(persona);
+        Personas persona = personaMapper.toEntity(personaRequestDTO);
+        return personaMapper.toResponseDTO(personaRepository.save(persona));
     }
 
     @Override
@@ -68,22 +73,24 @@ public class PersonaServiceImpl implements PersonaService {
 
     @Override
     public void deleteById(Integer id) {
-        if (!personaRepository.existsById(id)) throw new ResourceNotFoundException("Persona no encontrada con ID: " + id);
+        if (!personaRepository.existsById(id))
+            throw new ResourceNotFoundException("Persona no encontrada con ID: " + id);
         personaRepository.deleteById(id);
     }
 
     @Override
     public PersonaDisplayDto findPersonaNaturalOrJuridicaById(Integer id) {
         Personas base = personaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Persona no encontrada con ID " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Persona no encontrada con ID " + id));
 
-        Optional<PersonaNatural> naturalOpt = personaNaturalRepository.findByPersonasId(id); // Verificamos si existe como natural
+        Optional<PersonaNatural> naturalOpt = personaNaturalRepository.findByPersonasId(id);
         if (naturalOpt.isPresent()) return personaMapper.toDisplayDTO(naturalOpt.get());
         
-        Optional<PersonaJuridica> juridicaOpt = personaJuridicaRepository.findByPersonasId(id); // Verificamos si existe como juridica
+        Optional<PersonaJuridica> juridicaOpt = personaJuridicaRepository.findByPersonasId(id);
         if (juridicaOpt.isPresent()) return personaMapper.toDisplayDTO(juridicaOpt.get());
-        
-        // Si existe, pero no está ni en natural ni en jurídica
-        return new PersonaDisplayDto(base.getId(), "GENERICA", null, "Persona sin tipo definido");
+
+        throw new ResourceNotFoundException(
+                "No se encontró información adicional (natural o jurídica) para la persona con ID: " + id
+        );
     }
 }

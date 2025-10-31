@@ -8,6 +8,7 @@ import com.everywhere.backend.model.entity.Producto;
 import com.everywhere.backend.repository.ProductoRepository;
 import com.everywhere.backend.service.ProductoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,24 +24,25 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     public ProductoResponseDTO create(ProductoRequestDTO productoRequestDTO) {
         Producto producto = productoMapper.toEntity(productoRequestDTO);
-        Producto saved = productoRepository.save(producto);
-        return productoMapper.toResponseDTO(saved);
+        return productoMapper.toResponseDTO(productoRepository.save(producto));
     }
 
     @Override
     public ProductoResponseDTO update(Integer id, ProductoRequestDTO productoRequestDTO) {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
-
+        if (productoRequestDTO.getTipo() != null && productoRepository.existsProductosByTipo(productoRequestDTO.getTipo())) {
+            throw new DataIntegrityViolationException("Ya existe  un proveedor con el tipo: " + productoRequestDTO.getTipo());
+        }
         productoMapper.updateEntityFromDTO(productoRequestDTO, producto);
-        Producto updated = productoRepository.save(producto);
-        return productoMapper.toResponseDTO(updated);
+        return productoMapper.toResponseDTO(productoRepository.save(producto));
     }
 
     @Override
-    public Optional<ProductoResponseDTO> getById(Integer id) {
-        return productoRepository.findById(id)
-                .map(productoMapper::toResponseDTO);
+    public ProductoResponseDTO getById(Integer id) {
+        Producto producto = productoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
+        return productoMapper.toResponseDTO(producto);
     }
 
     @Override
