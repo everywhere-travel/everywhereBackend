@@ -5,12 +5,11 @@ import com.everywhere.backend.model.dto.CarpetaResponseDto;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 public interface CarpetaService {
 
     CarpetaResponseDto create(CarpetaRequestDto carpetaRequestDto, Integer carpetaPadreId);
-    Optional<CarpetaResponseDto> findById(Integer id);
+    CarpetaResponseDto findById(Integer id);
     List<CarpetaResponseDto> findAll();
     CarpetaResponseDto update(Integer id, CarpetaRequestDto carpetaRequestDto);
     void delete(Integer id);

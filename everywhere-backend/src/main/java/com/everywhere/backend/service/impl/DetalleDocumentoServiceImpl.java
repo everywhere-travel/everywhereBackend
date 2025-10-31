@@ -1,5 +1,6 @@
 package com.everywhere.backend.service.impl;
 
+import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.DetalleDocumentoMapper;
 import com.everywhere.backend.model.dto.DetalleDocumentoRequestDto;
 import com.everywhere.backend.model.dto.DetalleDocumentoResponseDto;
@@ -12,6 +13,7 @@ import com.everywhere.backend.repository.PersonaNaturalRepository;
 import com.everywhere.backend.service.DetalleDocumentoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -27,23 +29,24 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
     @Override
     public DetalleDocumentoResponseDto findById(Integer id) {
         DetalleDocumento detalle = detalleDocumentoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("DetalleDocumento no encontrado con id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("DetalleDocumento no encontrado con id: " + id));
         return detalleDocumentoMapper.toResponse(detalle);
     }
 
     @Override
+    @Transactional
     public DetalleDocumentoResponseDto save(DetalleDocumentoRequestDto detalleDocumentoRequestDto) {
         DetalleDocumento detalleDocumento = detalleDocumentoMapper.toEntity(detalleDocumentoRequestDto);
         
         if (detalleDocumentoRequestDto.getDocumentoId() != null) {
             Documento documento = documentoRepository.findById(detalleDocumentoRequestDto.getDocumentoId())
-                    .orElseThrow(() -> new RuntimeException("Documento no encontrado con id: " + detalleDocumentoRequestDto.getDocumentoId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Documento no encontrado con id: " + detalleDocumentoRequestDto.getDocumentoId()));
             detalleDocumento.setDocumento(documento);
         }
 
         if (detalleDocumentoRequestDto.getPersonaNaturalId() != null) {
             PersonaNatural personaNatural = personaNaturalRepository.findById(detalleDocumentoRequestDto.getPersonaNaturalId())
-                    .orElseThrow(() -> new RuntimeException("PersonaNatural no encontrado con id: " + detalleDocumentoRequestDto.getPersonaNaturalId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("PersonaNatural no encontrado con id: " + detalleDocumentoRequestDto.getPersonaNaturalId()));
             detalleDocumento.setPersonaNatural(personaNatural);
         }
 
@@ -51,21 +54,22 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
     }
 
     @Override
+    @Transactional
     public DetalleDocumentoResponseDto update(Integer id, DetalleDocumentoRequestDto detalleDocumentoRequestDto) {
         DetalleDocumento detalleDocumento = detalleDocumentoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("DetalleDocumento no encontrado con id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("DetalleDocumento no encontrado con id: " + id));
 
         detalleDocumentoMapper.updateEntityFromDto(detalleDocumentoRequestDto, detalleDocumento);
 
         if (detalleDocumentoRequestDto.getDocumentoId() != null) {
             Documento documento = documentoRepository.findById(detalleDocumentoRequestDto.getDocumentoId())
-                    .orElseThrow(() -> new RuntimeException("Documento no encontrado con id: " + detalleDocumentoRequestDto.getDocumentoId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Documento no encontrado con id: " + detalleDocumentoRequestDto.getDocumentoId()));
             detalleDocumento.setDocumento(documento);
         }
 
         if (detalleDocumentoRequestDto.getPersonaNaturalId() != null) {
             PersonaNatural personaNatural = personaNaturalRepository.findById(detalleDocumentoRequestDto.getPersonaNaturalId())
-                    .orElseThrow(() -> new RuntimeException("PersonaNatural no encontrado con id: " + detalleDocumentoRequestDto.getPersonaNaturalId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("PersonaNatural no encontrado con id: " + detalleDocumentoRequestDto.getPersonaNaturalId()));
             detalleDocumento.setPersonaNatural(personaNatural);
         }
 
@@ -73,8 +77,10 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
     }
 
     @Override
+    @Transactional
     public void delete(Integer id) {
-        if (!detalleDocumentoRepository.existsById(id)) throw new RuntimeException("DetalleDocumento no encontrado con id: " + id);
+        if (!detalleDocumentoRepository.existsById(id)) 
+            throw new ResourceNotFoundException("DetalleDocumento no encontrado con id: " + id);
         detalleDocumentoRepository.deleteById(id);
     }
 
@@ -85,6 +91,8 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
 
     @Override
     public List<DetalleDocumentoResponseDto> findByDocumentoId(Integer documentoId) {
+        if (!documentoRepository.existsById(documentoId)) 
+            throw new ResourceNotFoundException("Documento no encontrado con id: " + documentoId);
         List<DetalleDocumento> detalles = detalleDocumentoRepository.findByDocumentoId(documentoId);
         return detalles.stream().map(detalleDocumentoMapper::toResponse).toList();
     }

@@ -6,6 +6,7 @@ import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.DetalleLiquidacionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,37 +22,34 @@ public class DetalleLiquidacionController {
 
     @GetMapping
     @RequirePermission(module = "LIQUIDACIONES", permission = "READ")
-    public ResponseEntity<List<DetalleLiquidacionResponseDTO>> getAllDetallesLiquidacion() {
-        List<DetalleLiquidacionResponseDTO> detalles = detalleLiquidacionService.findAll();
-        return ResponseEntity.ok(detalles);
+    public ResponseEntity<List<DetalleLiquidacionResponseDTO>> getAllDetallesLiquidacion() { 
+        return ResponseEntity.ok(detalleLiquidacionService.findAll());
     }
 
     @GetMapping("/{id}")
     @RequirePermission(module = "LIQUIDACIONES", permission = "READ")
-    public ResponseEntity<DetalleLiquidacionResponseDTO> getDetalleLiquidacionById(@PathVariable Integer id) {
-        DetalleLiquidacionResponseDTO detalle = detalleLiquidacionService.findById(id);
-        return ResponseEntity.ok(detalle);
+    public ResponseEntity<DetalleLiquidacionResponseDTO> getDetalleLiquidacionById(@PathVariable Integer id) { 
+        return ResponseEntity.ok(detalleLiquidacionService.findById(id));
     }
 
     @GetMapping("/liquidacion/{liquidacionId}")
     @RequirePermission(module = "LIQUIDACIONES", permission = "READ")
-    public ResponseEntity<List<DetalleLiquidacionResponseDTO>> getDetallesByLiquidacionId(@PathVariable Integer liquidacionId) {
-        List<DetalleLiquidacionResponseDTO> detalles = detalleLiquidacionService.findByLiquidacionId(liquidacionId);
-        return ResponseEntity.ok(detalles);
+    public ResponseEntity<List<DetalleLiquidacionResponseDTO>> getDetallesByLiquidacionId(@PathVariable Integer liquidacionId) { 
+        return ResponseEntity.ok(detalleLiquidacionService.findByLiquidacionId(liquidacionId));
     }
 
     @PostMapping
     @RequirePermission(module = "LIQUIDACIONES", permission = "CREATE")
-    public ResponseEntity<DetalleLiquidacionResponseDTO> createDetalleLiquidacion(@Valid @RequestBody DetalleLiquidacionRequestDTO detalleLiquidacionRequestDTO) {
-        DetalleLiquidacionResponseDTO nuevoDetalle = detalleLiquidacionService.save(detalleLiquidacionRequestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(nuevoDetalle);
+    public ResponseEntity<DetalleLiquidacionResponseDTO> createDetalleLiquidacion(
+            @Valid @RequestBody DetalleLiquidacionRequestDTO detalleLiquidacionRequestDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(detalleLiquidacionService.save(detalleLiquidacionRequestDTO));
     }
 
     @PatchMapping("/{id}")
     @RequirePermission(module = "LIQUIDACIONES", permission = "UPDATE")
-    public ResponseEntity<DetalleLiquidacionResponseDTO> updateDetalleLiquidacion(@PathVariable Integer id, @RequestBody DetalleLiquidacionRequestDTO detalleLiquidacionRequestDTO) {
-        DetalleLiquidacionResponseDTO detalleActualizado = detalleLiquidacionService.update(id, detalleLiquidacionRequestDTO);
-        return ResponseEntity.ok(detalleActualizado);
+    public ResponseEntity<DetalleLiquidacionResponseDTO> updateDetalleLiquidacion(
+            @PathVariable Integer id, @RequestBody DetalleLiquidacionRequestDTO detalleLiquidacionRequestDTO) {
+        return ResponseEntity.ok(detalleLiquidacionService.update(id, detalleLiquidacionRequestDTO));
     }
 
     @DeleteMapping("/{id}")

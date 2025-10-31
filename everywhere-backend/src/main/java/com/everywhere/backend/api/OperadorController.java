@@ -10,6 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/operadores")
@@ -20,24 +23,25 @@ public class OperadorController {
 
     @GetMapping
     @RequirePermission(module = "OPERADOR", permission = "READ")
-    public ResponseEntity<List<OperadorResponseDTO>> findAll() {
-        List<OperadorResponseDTO> operadores = operadorService.findAll();
-        return ResponseEntity.ok(operadores);
+    public ResponseEntity<List<OperadorResponseDTO>> findAll() { 
+        return ResponseEntity.ok(operadorService.findAll());
     }
 
     @GetMapping("/{id}")
     @RequirePermission(module = "OPERADOR", permission = "READ")
     public ResponseEntity<OperadorResponseDTO> getById(@PathVariable Integer id) {
-        return operadorService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(operadorService.findById(id));
+    }
+
+    @GetMapping("/nombre")
+    public ResponseEntity<OperadorResponseDTO> getByNombre(@RequestParam String nombre) {
+        return ResponseEntity.ok(operadorService.findByNombre(nombre));
     }
 
     @PostMapping
     @RequirePermission(module = "OPERADOR", permission = "CREATE")
-    public ResponseEntity<OperadorResponseDTO> create(@RequestBody OperadorRequestDTO operadorRequestDTO) {
-        OperadorResponseDTO response = operadorService.save(operadorRequestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<OperadorResponseDTO> create(@RequestBody OperadorRequestDTO operadorRequestDTO) { 
+        return ResponseEntity.status(HttpStatus.CREATED).body(operadorService.save(operadorRequestDTO));
     }
 
     @PatchMapping("/{id}")
@@ -45,20 +49,12 @@ public class OperadorController {
     public ResponseEntity<OperadorResponseDTO> partialUpdate(
             @PathVariable Integer id,
             @RequestBody OperadorRequestDTO dto) {
-        try {
-            OperadorResponseDTO updated = operadorService.update(id, dto);
-            return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+            return ResponseEntity.ok(operadorService.update(id, dto));
     }
 
     @DeleteMapping("/{id}")
     @RequirePermission(module = "OPERADOR", permission = "DELETE")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        if (operadorService.findById(id).isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
         operadorService.deleteById(id);
         return ResponseEntity.noContent().build();
     }

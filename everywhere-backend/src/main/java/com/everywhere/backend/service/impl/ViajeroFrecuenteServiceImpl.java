@@ -52,8 +52,15 @@ public class ViajeroFrecuenteServiceImpl implements ViajeroFrecuenteService {
 
     @Override
     public List<ViajeroFrecuenteResponseDto> listarPorViajero(Integer viajeroId) {
-        return viajeroFrecuenteRepository.findByViajero_Id(viajeroId).stream().map(viajeroFrecuenteMapper::toResponse).toList();
+        List<ViajeroFrecuente> viajerosFrecuentes = viajeroFrecuenteRepository.findByViajero_Id(viajeroId);
+
+        if (viajerosFrecuentes.isEmpty()) {
+            throw new ResourceNotFoundException("No se encontraron viajeros frecuentes para el viajero con id: " + viajeroId);
+        }
+
+        return viajerosFrecuentes.stream().map(viajeroFrecuenteMapper::toResponse).toList();
     }
+
 
     @Override
     public void eliminar(Integer id) {
@@ -65,12 +72,27 @@ public class ViajeroFrecuenteServiceImpl implements ViajeroFrecuenteService {
     public ViajeroFrecuenteResponseDto actualizar(Integer id, ViajeroFrecuenteRequestDto viajeroFrecuenteRequestDto) {
         ViajeroFrecuente viajeroFrecuente = viajeroFrecuenteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("ViajeroFrecuente no encontrado con id: " + id));
+        if (viajeroFrecuenteRepository.existsByAerolineaAndCodigo(
+                viajeroFrecuenteRequestDto.getAreolinea(),
+                viajeroFrecuenteRequestDto.getCodigo())) {
+            throw new IllegalArgumentException(
+                    "Ya existe un viajero frecuente con la aerolínea " +
+                            viajeroFrecuenteRequestDto.getAreolinea() +
+                            " y el código " + viajeroFrecuenteRequestDto.getCodigo()
+            );
+        }
+
+
         viajeroFrecuenteMapper.updateEntityFromDto(viajeroFrecuenteRequestDto, viajeroFrecuente);
         return viajeroFrecuenteMapper.toResponse(viajeroFrecuenteRepository.save(viajeroFrecuente));
     }
 
     @Override
     public List<ViajeroFrecuenteResponseDto> buscarPorViajeroId(Integer viajeroId) {
+        List<ViajeroFrecuente> viajerosFrecuentes = viajeroFrecuenteRepository.findByViajero_Id(viajeroId);
+        if (viajerosFrecuentes.isEmpty()) {
+            throw new ResourceNotFoundException("ViajeroFrecuentes no encontrados con id: " + viajeroId);
+        }
         return viajeroFrecuenteRepository.findByViajero_Id(viajeroId).stream().map(viajeroFrecuenteMapper::toResponse).toList();
     }
 }

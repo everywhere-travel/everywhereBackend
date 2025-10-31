@@ -1,8 +1,6 @@
 package com.everywhere.backend.service.impl;
 
 import com.everywhere.backend.model.dto.*;
-import com.everywhere.backend.model.entity.PersonaJuridica;
-import com.everywhere.backend.model.entity.PersonaNatural;
 import com.everywhere.backend.model.entity.Personas;
 import com.everywhere.backend.repository.PersonaJuridicaRepository;
 import com.everywhere.backend.repository.PersonaNaturalRepository;
@@ -13,8 +11,7 @@ import com.everywhere.backend.mapper.PersonaMapper;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.List; 
 import java.util.stream.Collectors;
 
 @Service
@@ -42,20 +39,23 @@ public class PersonaServiceImpl implements PersonaService {
     @Override
     public List<PersonaResponseDTO> findByEmail(String email) {
         List<Personas> personas = personaRepository.findByEmailContainingIgnoreCase(email);
-        return personas.stream().map(personaMapper::toResponseDTO).collect(Collectors.toList());
+        if (personas.isEmpty())
+            throw new ResourceNotFoundException("Persona no encontrada con email: " + email);
+        return personas.stream().map(personaMapper::toResponseDTO).toList();
     }
 
     @Override
     public List<PersonaResponseDTO> findByTelefono(String telefono) {
         List<Personas> personas = personaRepository.findByTelefonoContainingIgnoreCase(telefono);
-        return personas.stream().map(personaMapper::toResponseDTO).collect(Collectors.toList());
+        if(personas.isEmpty())
+            throw new ResourceNotFoundException("Persona no encontrada con telefono: " + telefono);
+        return personas.stream().map(personaMapper::toResponseDTO).toList();
     }
 
     @Override
     public PersonaResponseDTO save(PersonaRequestDTO personaRequestDTO) {
-        Personas persona = personaMapper.toEntity(personaRequestDTO); 
-        persona = personaRepository.save(persona);
-        return personaMapper.toResponseDTO(persona);
+        Personas persona = personaMapper.toEntity(personaRequestDTO);
+        return personaMapper.toResponseDTO(personaRepository.save(persona));
     }
 
     @Override
@@ -69,21 +69,20 @@ public class PersonaServiceImpl implements PersonaService {
 
     @Override
     public void deleteById(Integer id) {
-        if (!personaRepository.existsById(id)) throw new ResourceNotFoundException("Persona no encontrada con ID: " + id);
+        if (!personaRepository.existsById(id))
+            throw new ResourceNotFoundException("Persona no encontrada con ID: " + id);
         personaRepository.deleteById(id);
     }
 
     @Override
     public PersonaDisplayDto findPersonaNaturalOrJuridicaById(Integer id) {
-        Personas base = personaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Persona no encontrada con ID " + id));
+    personaRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Persona no encontrada con ID " + id));
 
-        Optional<PersonaNatural> naturalOpt = personaNaturalRepository.findByPersonasId(id); // Verificamos si existe como natural
-        if (naturalOpt.isPresent()) return personaMapper.toDisplayDTO(naturalOpt.get());
-        
-        Optional<PersonaJuridica> juridicaOpt = personaJuridicaRepository.findByPersonasId(id); // Verificamos si existe como juridica
-        if (juridicaOpt.isPresent()) return personaMapper.toDisplayDTO(juridicaOpt.get());
-        
-        return new PersonaDisplayDto(base.getId(), "GENERICA", null, "Persona sin tipo definido");
+    return personaNaturalRepository.findByPersonasId(id)
+        .map(personaMapper::toDisplayDTO)
+        .or(() -> personaJuridicaRepository.findByPersonasId(id).map(personaMapper::toDisplayDTO))
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "No se encontró información adicional (natural o jurídica) para la persona con ID: " + id));
     }
 }

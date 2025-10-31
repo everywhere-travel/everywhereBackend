@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +38,7 @@ public class DetalleLiquidacionServiceImpl implements DetalleLiquidacionService 
     @Override
     public List<DetalleLiquidacionResponseDTO> findAll() {
         return detalleLiquidacionRepository.findAllWithRelations().stream()
-                .map(detalleLiquidacionMapper::toResponseDTO).collect(Collectors.toList());
+                .map(detalleLiquidacionMapper::toResponseDTO).toList();
     }
 
     @Override
@@ -52,7 +51,7 @@ public class DetalleLiquidacionServiceImpl implements DetalleLiquidacionService 
     @Override
     public List<DetalleLiquidacionResponseDTO> findByLiquidacionId(Integer liquidacionId) {
         List<DetalleLiquidacion> detalles = detalleLiquidacionRepository.findByLiquidacionIdWithRelations(liquidacionId);
-        return detalles.stream().map(detalleLiquidacionMapper::toResponseDTO).collect(Collectors.toList());
+        return detalles.stream().map(detalleLiquidacionMapper::toResponseDTO).toList();
     }
 
     @Override
@@ -134,7 +133,8 @@ public class DetalleLiquidacionServiceImpl implements DetalleLiquidacionService 
 
     @Override
     public void deleteById(Integer id) {
-        if (!detalleLiquidacionRepository.existsById(id)) throw new ResourceNotFoundException("Detalle de liquidación no encontrado con ID: " + id);
+        if (!detalleLiquidacionRepository.existsById(id)) 
+            throw new ResourceNotFoundException("Detalle de liquidación no encontrado con ID: " + id);
         detalleLiquidacionRepository.deleteById(id);
     }
 }

@@ -8,6 +8,7 @@ import com.everywhere.backend.service.CotizacionService;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,20 +25,19 @@ public class CotizacionController {
     @RequirePermission(module = "COTIZACIONES", permission = "CREATE")
     public ResponseEntity<CotizacionResponseDto> createWithPersona(
             @PathVariable Integer personaId, @RequestBody CotizacionRequestDto cotizacionRequestDto) {
-        return ResponseEntity.ok(cotizacionService.create(cotizacionRequestDto, personaId));
+        return ResponseEntity.status(HttpStatus.CREATED).body(cotizacionService.create(cotizacionRequestDto, personaId));
     }
 
     @GetMapping("/{id}")
     @RequirePermission(module = "COTIZACIONES", permission = "READ")
     public ResponseEntity<CotizacionResponseDto> findById(@PathVariable Integer id) {
-        return cotizacionService.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(cotizacionService.findById(id));
     }
 
     @GetMapping("/{id}/con-detalles")
     @RequirePermission(module = "COTIZACIONES", permission = "READ")
-    public ResponseEntity<CotizacionConDetallesResponseDTO> getCotizacionConDetalles(@PathVariable Integer id) {
-        CotizacionConDetallesResponseDTO cotizacionConDetalles = cotizacionService.findByIdWithDetalles(id);
-        return ResponseEntity.ok(cotizacionConDetalles);
+    public ResponseEntity<CotizacionConDetallesResponseDTO> getCotizacionConDetalles(@PathVariable Integer id) { 
+        return ResponseEntity.ok(cotizacionService.findByIdWithDetalles(id));
     }
 
     @GetMapping
