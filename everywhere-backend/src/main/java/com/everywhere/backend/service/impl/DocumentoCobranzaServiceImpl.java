@@ -16,6 +16,7 @@ import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
+
 import com.itextpdf.io.image.ImageDataFactory;
 import com.everywhere.backend.model.dto.CotizacionConDetallesResponseDTO;
 import com.everywhere.backend.model.dto.DetalleDocumentoCobranzaResponseDTO;
@@ -31,6 +32,8 @@ import com.everywhere.backend.repository.DocumentoCobranzaRepository;
 import com.everywhere.backend.service.CotizacionService;
 import com.everywhere.backend.service.DocumentoCobranzaService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +44,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -58,10 +60,10 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     @Transactional
     public DocumentoCobranzaResponseDTO createDocumentoCobranza(Integer cotizacionId) {
         if (documentoCobranzaRepository.findByCotizacionId(cotizacionId).isPresent())
-            throw new RuntimeException("Ya existe un documento de cobranza para la cotización ID: " + cotizacionId);
+            throw new DataIntegrityViolationException("Ya existe un documento de cobranza para la cotización ID: " + cotizacionId);
         
         CotizacionConDetallesResponseDTO cotizacion = cotizacionService.findByIdWithDetalles(cotizacionId);
-        if (cotizacion == null) throw new RuntimeException("Cotización no encontrada con ID: " + cotizacionId);
+        if (cotizacion == null) throw new ResourceNotFoundException("Cotización no encontrada con ID: " + cotizacionId);
         
         String numeroDocumento = generateNextDocumentNumber();
         DocumentoCobranza documentoCobranza = documentoCobranzaMapper.fromCotizacion(cotizacion, numeroDocumento);
@@ -103,8 +105,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
     @Override
     public List<DocumentoCobranzaResponseDTO> findAll() {
-        return documentoCobranzaRepository.findAllWithRelations().stream()
-                .map(documentoCobranzaMapper::toResponseDTO).collect(Collectors.toList());
+        return documentoCobranzaRepository.findAllWithRelations().stream().map(documentoCobranzaMapper::toResponseDTO).toList();
     }
 
     @Override
@@ -121,9 +122,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Documento de cobranza no encontrado con ID: " + id));
 
         documentoCobranzaMapper.updateEntityFromUpdateDTO(documentoCobranza, documentoCobranzaUpdateDTO);
-        
-        documentoCobranza = documentoCobranzaRepository.save(documentoCobranza);
-        return documentoCobranzaMapper.toResponseDTO(documentoCobranza);
+        return documentoCobranzaMapper.toResponseDTO(documentoCobranzaRepository.save(documentoCobranza));
     }
 
     // ========== MÉTODOS PRIVADOS ==========
@@ -247,33 +246,27 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     }
 
     private ByteArrayInputStream generatePdfFromDTO(DocumentoCobranzaResponseDTO documentoCobranzaResponseDTO) {
-        if (documentoCobranzaResponseDTO == null) return null;
-
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        boolean hasValidData = false;
-
+        if (documentoCobranzaResponseDTO == null) 
+            throw new ResourceNotFoundException("No se encontró el documento de cobranza para generar el PDF");
+        
         try {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             PdfWriter pdfWriter = new PdfWriter(byteArrayOutputStream);
             PdfDocument pdfDocument = new PdfDocument(pdfWriter);
             Document document = new Document(pdfDocument);
 
-            // 1. ENCABEZADO DE LA EMPRESA
-            addCompanyHeader(document, documentoCobranzaResponseDTO);
-            hasValidData = true;
-            // 2. TABLA DE RESUMEN (MONEDA, FILE, FORMA DE PAGO)
-            addSummaryTable(document, documentoCobranzaResponseDTO);
+            addCompanyHeader(document, documentoCobranzaResponseDTO); // 1. ENCABEZADO DE LA EMPRESA
+            addSummaryTable(document, documentoCobranzaResponseDTO); // 2. TABLA DE RESUMEN (MONEDA, FILE, FORMA DE PAGO)
             // 3. TABLA DE DETALLES DE SERVICIOS
-            if (documentoCobranzaResponseDTO.getDetalles() != null && !documentoCobranzaResponseDTO.getDetalles().isEmpty()) addServicesTable(document, documentoCobranzaResponseDTO);
-            // 4. CUADRO DE OBSERVACIONES (separado)
-            addObservationsBox(document, documentoCobranzaResponseDTO);
-            // 5. PIE DE PÁGINA EN CADA HOJA
-            addPageFooter(pdfDocument);
+            if (documentoCobranzaResponseDTO.getDetalles() != null && !documentoCobranzaResponseDTO.getDetalles().isEmpty()) 
+                addServicesTable(document, documentoCobranzaResponseDTO);
+            addObservationsBox(document, documentoCobranzaResponseDTO); // 4. CUADRO DE OBSERVACIONES (separado)
+            addPageFooter(pdfDocument); // 5. PIE DE PÁGINA EN CADA HOJA
             document.close();
-            if (!hasValidData) return null;
+            return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         } catch (Exception e) {
-            throw new RuntimeException("Error al generar el PDF del documento de cobranza", e);
+            throw new ResourceNotFoundException("Error al generar el PDF del documento de cobranza");
         }
-        return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
     }
 
     // 1. ENCABEZADO DE LA EMPRESA
@@ -288,39 +281,20 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         Table logoTable = new Table(1).setWidth(UnitValue.createPercentValue(100));
         Cell logoCell = new Cell().setBorder(Border.NO_BORDER).setTextAlignment(TextAlignment.LEFT).setPadding(10).setHeight(60);
 
-        // Cargar y agregar la imagen del logo
         try {
-            String logoPath = "/logo/everyLogo.png";
+            String logoPath = "/static/images/everyLogo.png";
             java.io.InputStream logoStream = getClass().getResourceAsStream(logoPath);
 
-            if (logoStream != null) {
-                byte[] logoBytes = logoStream.readAllBytes();
-                Image logoImage = new Image(ImageDataFactory.create(logoBytes));
+            byte[] logoBytes = logoStream.readAllBytes();
+            Image logoImage = new Image(ImageDataFactory.create(logoBytes));
 
-                // Poner un tamaño fijo para que no interfiera con el layout, alineada a la izquierda
-                logoImage.setWidth(150); // Ancho fijo en puntos
-                logoImage.setHeight(50); // Alto fijo en puntos
+            logoImage.setWidth(150); // Ancho fijo en puntos
+            logoImage.setHeight(50); // Alto fijo en puntos
 
-                logoCell.add(logoImage);
-                logoStream.close();
-            } else {
-                throw new Exception("No se encontró el archivo en el classpath");
-            }
+            logoCell.add(logoImage);
+            logoStream.close();
         } catch (Exception e) {
-            try {// Intentar con ruta absoluta como segunda opción
-                String logoPath = "src/main/resources/logo/everyLogo.png";
-                Image logoImage = new Image(ImageDataFactory.create(logoPath));
-
-                // Poner un tamaño fijo para que no interfiera con el layout
-                logoImage.setWidth(220); // Ancho fijo en puntos
-                logoImage.setHeight(50); // Alto fijo en puntos
-
-                logoCell.add(logoImage);
-            } catch (Exception e2) {// Si no se puede cargar la imagen, usar texto como fallback
-                System.out.println("No se pudo cargar la imagen del logo: " + e2.getMessage());
-                logoCell.add(new Paragraph("everywhere").setFontSize(24).setBold().setFontColor(ColorConstants.BLUE));
-                logoCell.add(new Paragraph("TRAVEL").setFontSize(12).setMarginTop(-5));
-            }
+            throw new ResourceNotFoundException("Error al cargar el logo para el PDF del documento de cobranza");
         }
 
         logoTable.addCell(logoCell);
@@ -615,7 +589,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                         .showText("Representación Impresa de DOCUMENTO DE COBRANZA")
                         .endText();
                 } catch (Exception e) {// Manejo silencioso de errores para no interrumpir la generación
-                    System.err.println("Error al agregar pie de página: " + e.getMessage());
+                    throw new RuntimeException("Error al agregar el pie de página en el PDF del documento de cobranza");
                 }
             }
         });

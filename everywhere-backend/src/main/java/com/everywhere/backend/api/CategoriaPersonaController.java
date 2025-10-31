@@ -23,23 +23,20 @@ public class CategoriaPersonaController {
 
     @GetMapping
     @RequirePermission(module = "CATEGORIA_PERSONAS", permission = "READ")
-    public ResponseEntity<List<CategoriaPersonaResponseDTO>> getAllCategorias() {
-        List<CategoriaPersonaResponseDTO> categorias = categoriaPersonaService.findAll();
-        return ResponseEntity.ok(categorias);
+    public ResponseEntity<List<CategoriaPersonaResponseDTO>> getAllCategorias() { 
+        return ResponseEntity.ok(categoriaPersonaService.findAll());
     }
 
     @GetMapping("/nombre")
     @RequirePermission(module = "CATEGORIA_PERSONAS", permission = "READ")
-    public ResponseEntity<List<CategoriaPersonaResponseDTO>> getCategoriasByNombre(@RequestParam String nombre) {
-        List<CategoriaPersonaResponseDTO> categorias = categoriaPersonaService.findByNombre(nombre.trim());
-        return ResponseEntity.ok(categorias);
+    public ResponseEntity<List<CategoriaPersonaResponseDTO>> getCategoriasByNombre(@RequestParam String nombre) { 
+        return ResponseEntity.ok(categoriaPersonaService.findByNombre(nombre.trim()));
     }
 
     @GetMapping("/{id}")
     @RequirePermission(module = "CATEGORIA_PERSONAS", permission = "READ")
-    public ResponseEntity<CategoriaPersonaResponseDTO> getCategoriaById(@PathVariable Integer id) {
-        CategoriaPersonaResponseDTO categoria = categoriaPersonaService.findById(id);
-        return ResponseEntity.ok(categoria);
+    public ResponseEntity<CategoriaPersonaResponseDTO> getCategoriaById(@PathVariable Integer id) { 
+        return ResponseEntity.ok(categoriaPersonaService.findById(id));
     }
 
     @PostMapping
