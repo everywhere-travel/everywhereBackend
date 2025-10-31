@@ -4,7 +4,6 @@ import com.everywhere.backend.model.dto.ProveedorRequestDTO;
 import com.everywhere.backend.model.dto.ProveedorResponseDTO;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface ProveedorService {
 

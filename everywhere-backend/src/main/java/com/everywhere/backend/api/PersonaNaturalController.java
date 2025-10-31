@@ -22,72 +22,62 @@ public class PersonaNaturalController {
 
     @GetMapping
     @RequirePermission(module = "PERSONAS", permission = "READ")
-    public ResponseEntity<List<PersonaNaturalResponseDTO>> getAllPersonasNaturales() {
-        List<PersonaNaturalResponseDTO> personas = personaNaturalService.findAll();
-        return ResponseEntity.ok(personas);
+    public ResponseEntity<List<PersonaNaturalResponseDTO>> getAllPersonasNaturales() { 
+        return ResponseEntity.ok(personaNaturalService.findAll());
     }
 
     @GetMapping("/documento")
     @RequirePermission(module = "PERSONAS", permission = "READ")
-    public ResponseEntity<List<PersonaNaturalResponseDTO>> getPersonasNaturalesByDocumento(@RequestParam String documento) {
-        List<PersonaNaturalResponseDTO> personas = personaNaturalService.findByDocumento(documento.trim());
-        return ResponseEntity.ok(personas);
+    public ResponseEntity<List<PersonaNaturalResponseDTO>> getPersonasNaturalesByDocumento(@RequestParam String documento) { 
+        return ResponseEntity.ok(personaNaturalService.findByDocumento(documento.trim()));
     }
 
     @GetMapping("/nombres")
     @RequirePermission(module = "PERSONAS", permission = "READ")
-    public ResponseEntity<List<PersonaNaturalResponseDTO>> getPersonasNaturalesByNombre(@RequestParam String nombres) {
-        List<PersonaNaturalResponseDTO> personas = personaNaturalService.findByNombres(nombres.trim());
-        return ResponseEntity.ok(personas);
+    public ResponseEntity<List<PersonaNaturalResponseDTO>> getPersonasNaturalesByNombre(@RequestParam String nombres) { 
+        return ResponseEntity.ok(personaNaturalService.findByNombres(nombres.trim()));
     }
 
     @GetMapping("/apellidos-paterno")
     @RequirePermission(module = "PERSONAS", permission = "READ")
-    public ResponseEntity<List<PersonaNaturalResponseDTO>> getPersonasNaturalesByApellidoPaterno(@RequestParam String apellidos) {
-        List<PersonaNaturalResponseDTO> personas = personaNaturalService.findByApellidosPaternos(apellidos.trim());
-        return ResponseEntity.ok(personas);
+    public ResponseEntity<List<PersonaNaturalResponseDTO>> getPersonasNaturalesByApellidoPaterno(@RequestParam String apellidos) { 
+        return ResponseEntity.ok(personaNaturalService.findByApellidosPaternos(apellidos.trim()));
     } 
 
     @GetMapping("/apellidos-materno")
     @RequirePermission(module = "PERSONAS", permission = "READ")
-    public ResponseEntity<List<PersonaNaturalResponseDTO>> getPersonasNaturalesByApellidoMaterno(@RequestParam String apellidos) {
-        List<PersonaNaturalResponseDTO> personas = personaNaturalService.findByApellidosMaternos(apellidos.trim());
-        return ResponseEntity.ok(personas);
+    public ResponseEntity<List<PersonaNaturalResponseDTO>> getPersonasNaturalesByApellidoMaterno(@RequestParam String apellidos) { 
+        return ResponseEntity.ok(personaNaturalService.findByApellidosMaternos(apellidos.trim()));
     } 
 
     @GetMapping("/{id}")
     @RequirePermission(module = "PERSONAS", permission = "READ")
-    public ResponseEntity<PersonaNaturalResponseDTO> getPersonaNaturalById(@PathVariable Integer id) {
-        PersonaNaturalResponseDTO persona = personaNaturalService.findById(id);
-        return ResponseEntity.ok(persona);
+    public ResponseEntity<PersonaNaturalResponseDTO> getPersonaNaturalById(@PathVariable Integer id) { 
+        return ResponseEntity.ok(personaNaturalService.findById(id));
     }
 
     @PostMapping
     @RequirePermission(module = "PERSONAS", permission = "CREATE")
-    public ResponseEntity<PersonaNaturalResponseDTO> createPersonaNatural(@Valid @RequestBody PersonaNaturalRequestDTO personaNaturalRequestDTO) {
-        PersonaNaturalResponseDTO nuevaPersona = personaNaturalService.save(personaNaturalRequestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(nuevaPersona);
+    public ResponseEntity<PersonaNaturalResponseDTO> createPersonaNatural(@Valid @RequestBody PersonaNaturalRequestDTO personaNaturalRequestDTO) { 
+        return ResponseEntity.status(HttpStatus.CREATED).body(personaNaturalService.save(personaNaturalRequestDTO));
     }
 
     @PatchMapping("/{id}")
     @RequirePermission(module = "PERSONAS", permission = "UPDATE")
-    public ResponseEntity<PersonaNaturalResponseDTO> patchPersonaNatural(@PathVariable Integer id, @RequestBody PersonaNaturalRequestDTO personaNaturalRequestDTO) {
-        PersonaNaturalResponseDTO personaActualizada = personaNaturalService.patch(id, personaNaturalRequestDTO);
-        return ResponseEntity.ok(personaActualizada);
+    public ResponseEntity<PersonaNaturalResponseDTO> patchPersonaNatural(@PathVariable Integer id, @RequestBody PersonaNaturalRequestDTO personaNaturalRequestDTO) { 
+        return ResponseEntity.ok(personaNaturalService.patch(id, personaNaturalRequestDTO));
     }
 
     @PatchMapping("/{id}/viajero")
     @RequirePermission(module = "PERSONAS", permission = "UPDATE")
-    public ResponseEntity<PersonaNaturalResponseDTO> patchAsociarViajero(@PathVariable Integer id, @RequestBody PersonaNaturalViajeroDTO personaNaturalViajeroDTO) {
-        PersonaNaturalResponseDTO personaActualizada = personaNaturalService.asociarViajero(id, personaNaturalViajeroDTO.getViajeroId());
-        return ResponseEntity.ok(personaActualizada);
+    public ResponseEntity<PersonaNaturalResponseDTO> patchAsociarViajero(@PathVariable Integer id, @RequestBody PersonaNaturalViajeroDTO personaNaturalViajeroDTO) { 
+        return ResponseEntity.ok(personaNaturalService.asociarViajero(id, personaNaturalViajeroDTO.getViajeroId()));
     }
 
     @DeleteMapping("/{id}/viajero")
     @RequirePermission(module = "PERSONAS", permission = "UPDATE")
-    public ResponseEntity<PersonaNaturalResponseDTO> desasociarViajero(@PathVariable Integer id) {
-        PersonaNaturalResponseDTO personaActualizada = personaNaturalService.desasociarViajero(id);
-        return ResponseEntity.ok(personaActualizada);
+    public ResponseEntity<PersonaNaturalResponseDTO> desasociarViajero(@PathVariable Integer id) { 
+        return ResponseEntity.ok(personaNaturalService.desasociarViajero(id));
     }
 
     @DeleteMapping("/{id}")

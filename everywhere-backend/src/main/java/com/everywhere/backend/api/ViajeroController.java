@@ -20,44 +20,38 @@ public class ViajeroController {
 
     @GetMapping
     @RequirePermission(module = "VIAJEROS", permission = "READ")
-    public ResponseEntity<List<ViajeroResponseDTO>> getAllViajeros() {
-        List<ViajeroResponseDTO> viajeros = viajeroService.findAll();
-        return ResponseEntity.ok(viajeros);
+    public ResponseEntity<List<ViajeroResponseDTO>> getAllViajeros() { 
+        return ResponseEntity.ok(viajeroService.findAll());
     }
 
     @GetMapping("/nacionalidad")
     @RequirePermission(module = "VIAJEROS", permission = "READ")
     public ResponseEntity<List<ViajeroResponseDTO>> getViajeroByNacionalidad(@RequestParam String nacionalidad) {
-        List<ViajeroResponseDTO> viajeros = viajeroService.findByNacionalidad(nacionalidad.trim());
-        return ResponseEntity.ok(viajeros);
+        return ResponseEntity.ok(viajeroService.findByNacionalidad(nacionalidad.trim())); 
     }
 
     @GetMapping("/residencia")
     @RequirePermission(module = "VIAJEROS", permission = "READ")
-    public ResponseEntity<List<ViajeroResponseDTO>> getViajeroByResidencia(@RequestParam String residencia) {
-        List<ViajeroResponseDTO> viajeros = viajeroService.findByResidencia(residencia.trim());
-        return ResponseEntity.ok(viajeros);
+    public ResponseEntity<List<ViajeroResponseDTO>> getViajeroByResidencia(@RequestParam String residencia) { 
+        return ResponseEntity.ok(viajeroService.findByResidencia(residencia.trim()));
     }
 
     @GetMapping("/{id}")
     @RequirePermission(module = "VIAJEROS", permission = "READ")
-    public ResponseEntity<ViajeroResponseDTO> getViajeroById(@PathVariable Integer id) {
-        ViajeroResponseDTO viajero = viajeroService.findById(id);
-        return ResponseEntity.ok(viajero);
+    public ResponseEntity<ViajeroResponseDTO> getViajeroById(@PathVariable Integer id) { 
+        return ResponseEntity.ok(viajeroService.findById(id));
     }
 
     @PostMapping
     @RequirePermission(module = "VIAJEROS", permission = "CREATE")
-    public ResponseEntity<ViajeroResponseDTO> createViajero(@RequestBody ViajeroRequestDTO viajeroRequestDTO) {
-        ViajeroResponseDTO nuevoViajero = viajeroService.save(viajeroRequestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(nuevoViajero);
+    public ResponseEntity<ViajeroResponseDTO> createViajero(@RequestBody ViajeroRequestDTO viajeroRequestDTO) { 
+        return ResponseEntity.status(HttpStatus.CREATED).body(viajeroService.save(viajeroRequestDTO));
     }
 
     @PatchMapping("/{id}")
     @RequirePermission(module = "VIAJEROS", permission = "UPDATE")
-    public ResponseEntity<ViajeroResponseDTO> patch(@PathVariable Integer id, @RequestBody ViajeroRequestDTO viajeroRequestDTO) {
-        ViajeroResponseDTO viajeroActualizado = viajeroService.patch(id, viajeroRequestDTO);
-        return ResponseEntity.ok(viajeroActualizado);
+    public ResponseEntity<ViajeroResponseDTO> patch(@PathVariable Integer id, @RequestBody ViajeroRequestDTO viajeroRequestDTO) { 
+        return ResponseEntity.ok(viajeroService.patch(id, viajeroRequestDTO));
     }
 
     @DeleteMapping("/{id}")

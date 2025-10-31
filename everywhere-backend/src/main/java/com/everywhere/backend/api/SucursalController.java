@@ -21,48 +21,42 @@ public class SucursalController {
 
     @GetMapping
     @RequirePermission(module = "SUCURSALES", permission = "READ")
-    public ResponseEntity<List<SucursalResponseDTO>> getAllSucursales() {
-        List<SucursalResponseDTO> sucursales = sucursalService.findAll();
-        return ResponseEntity.ok(sucursales);
+    public ResponseEntity<List<SucursalResponseDTO>> getAllSucursales() { 
+        return ResponseEntity.ok(sucursalService.findAll());
     }
 
     @GetMapping("/{id}")
     @RequirePermission(module = "SUCURSALES", permission = "READ")
-    public ResponseEntity<SucursalResponseDTO> getSucursalById(@PathVariable Integer id) {
-        SucursalResponseDTO sucursal = sucursalService.findById(id);
-        return ResponseEntity.ok(sucursal);
+    public ResponseEntity<SucursalResponseDTO> getSucursalById(@PathVariable Integer id) { 
+        return ResponseEntity.ok(sucursalService.findById(id));
     }
 
     @GetMapping("/estado/{estado}")
     @RequirePermission(module = "SUCURSALES", permission = "READ")
-    public ResponseEntity<List<SucursalResponseDTO>> getSucursalesByEstado(@PathVariable Boolean estado) {
-        List<SucursalResponseDTO> sucursales = sucursalService.findByEstado(estado);
-        return ResponseEntity.ok(sucursales);
+    public ResponseEntity<List<SucursalResponseDTO>> getSucursalesByEstado(@PathVariable Boolean estado) { 
+        return ResponseEntity.ok(sucursalService.findByEstado(estado));
     }
 
     @PostMapping
     @RequirePermission(module = "SUCURSALES", permission = "CREATE")
-    public ResponseEntity<SucursalResponseDTO> createSucursal(@Valid @RequestBody SucursalRequestDTO sucursalRequestDTO) {
-        SucursalResponseDTO nuevaSucursal = sucursalService.save(sucursalRequestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(nuevaSucursal);
+    public ResponseEntity<SucursalResponseDTO> createSucursal(@Valid @RequestBody SucursalRequestDTO sucursalRequestDTO) { 
+        return ResponseEntity.status(HttpStatus.CREATED).body(sucursalService.save(sucursalRequestDTO));
     }
 
     @PatchMapping("/{id}")
     @RequirePermission(module = "SUCURSALES", permission = "UPDATE")
     public ResponseEntity<SucursalResponseDTO> updateSucursal(
             @PathVariable Integer id,
-            @Valid @RequestBody SucursalRequestDTO sucursalRequestDTO) {
-        SucursalResponseDTO sucursalActualizada = sucursalService.update(id, sucursalRequestDTO);
-        return ResponseEntity.ok(sucursalActualizada);
+            @Valid @RequestBody SucursalRequestDTO sucursalRequestDTO) { 
+        return ResponseEntity.ok(sucursalService.update(id, sucursalRequestDTO));
     }
 
     @PatchMapping("/{id}/estado")
     @RequirePermission(module = "SUCURSALES", permission = "UPDATE")
     public ResponseEntity<SucursalResponseDTO> cambiarEstadoSucursal(
             @PathVariable Integer id,
-            @RequestParam Boolean estado) {
-        SucursalResponseDTO sucursalActualizada = sucursalService.cambiarEstado(id, estado);
-        return ResponseEntity.ok(sucursalActualizada);
+            @RequestParam Boolean estado) { 
+        return ResponseEntity.ok(sucursalService.cambiarEstado(id, estado));
     }
 
     @DeleteMapping("/{id}")

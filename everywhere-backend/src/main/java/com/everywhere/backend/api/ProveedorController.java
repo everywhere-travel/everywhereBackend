@@ -21,34 +21,28 @@ public class ProveedorController {
 
     @GetMapping
     @RequirePermission(module = "PROVEEDORES", permission = "READ")
-    public ResponseEntity<List<ProveedorResponseDTO>> findAll() {
-        List<ProveedorResponseDTO> response = proveedorService.getAll();
-        return ResponseEntity.ok(response);
+    public ResponseEntity<List<ProveedorResponseDTO>> findAll() { 
+        return ResponseEntity.ok(proveedorService.getAll());
     }
 
     @GetMapping("/{id}")
     @RequirePermission(module = "PROVEEDORES", permission = "READ")
     public ResponseEntity<ProveedorResponseDTO> getById(@PathVariable Integer id) {
-        return proveedorService.getById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(proveedorService.getById(id));
     }
 
     @PostMapping
     @RequirePermission(module = "PROVEEDORES", permission = "CREATE")
-    public ResponseEntity<ProveedorResponseDTO> create(@RequestBody @Valid ProveedorRequestDTO proveedorRequestDTO) {
-        ProveedorResponseDTO created = proveedorService.create(proveedorRequestDTO);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+    public ResponseEntity<ProveedorResponseDTO> create(@RequestBody @Valid ProveedorRequestDTO proveedorRequestDTO) { 
+        return ResponseEntity.status(HttpStatus.CREATED).body(proveedorService.create(proveedorRequestDTO));
     }
 
     @PatchMapping("/{id}")
     @RequirePermission(module = "PROVEEDORES", permission = "UPDATE")
     public ResponseEntity<ProveedorResponseDTO> update(
             @PathVariable Integer id,
-            @RequestBody ProveedorRequestDTO proveedorRequestDTO) {
-
-        ProveedorResponseDTO updated = proveedorService.update(id, proveedorRequestDTO);
-        return ResponseEntity.ok(updated);
+            @RequestBody ProveedorRequestDTO proveedorRequestDTO) { 
+        return ResponseEntity.ok(proveedorService.update(id, proveedorRequestDTO));
     }
 
     @DeleteMapping("/{id}")
