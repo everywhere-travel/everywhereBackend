@@ -30,10 +30,11 @@ public class PersonaServiceImpl implements PersonaService {
 
     @Override
     public PersonaResponseDTO findById(Integer id) {
-        Personas persona = personaRepository.findById(id)
+        Personas persona = personaRepository.findByIdWithTelefonos(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Persona no encontrada con ID: " + id));
         return personaMapper.toResponseDTO(persona);
     }
+
 
     @Override
     public List<PersonaResponseDTO> findByEmail(String email) {
