@@ -59,11 +59,13 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     @Override
     @Transactional
     public DocumentoCobranzaResponseDTO createDocumentoCobranza(Integer cotizacionId) {
+        if (cotizacionId == null)
+            throw new IllegalArgumentException("El ID de la cotización no puede ser nulo");
+
         if (documentoCobranzaRepository.findByCotizacionId(cotizacionId).isPresent())
             throw new DataIntegrityViolationException("Ya existe un documento de cobranza para la cotización ID: " + cotizacionId);
         
         CotizacionConDetallesResponseDTO cotizacion = cotizacionService.findByIdWithDetalles(cotizacionId);
-        if (cotizacion == null) throw new ResourceNotFoundException("Cotización no encontrada con ID: " + cotizacionId);
         
         String numeroDocumento = generateNextDocumentNumber();
         DocumentoCobranza documentoCobranza = documentoCobranzaMapper.fromCotizacion(cotizacion, numeroDocumento);
@@ -105,7 +107,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
     @Override
     public List<DocumentoCobranzaResponseDTO> findAll() {
-        return documentoCobranzaRepository.findAllWithRelations().stream().map(documentoCobranzaMapper::toResponseDTO).toList();
+        return mapToResponseList(documentoCobranzaRepository.findAllWithRelations());
     }
 
     @Override
@@ -118,9 +120,10 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     @Override
     @Transactional
     public DocumentoCobranzaResponseDTO patchDocumento(Long id, DocumentoCobranzaUpdateDTO documentoCobranzaUpdateDTO) {
-        DocumentoCobranza documentoCobranza = documentoCobranzaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Documento de cobranza no encontrado con ID: " + id));
+        if (!documentoCobranzaRepository.existsById(id))
+            throw new ResourceNotFoundException("Documento de cobranza no encontrado con ID: " + id);
 
+        DocumentoCobranza documentoCobranza = documentoCobranzaRepository.findById(id).get();
         documentoCobranzaMapper.updateEntityFromUpdateDTO(documentoCobranza, documentoCobranzaUpdateDTO);
         return documentoCobranzaMapper.toResponseDTO(documentoCobranzaRepository.save(documentoCobranza));
     }
@@ -593,5 +596,9 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                 }
             }
         });
+    }
+
+    private List<DocumentoCobranzaResponseDTO> mapToResponseList(List<DocumentoCobranza> documentos) {
+        return documentos.stream().map(documentoCobranzaMapper::toResponseDTO).toList();
     }
 }

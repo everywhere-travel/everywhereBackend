@@ -1,6 +1,5 @@
 package com.everywhere.backend.service.impl;
 
-import com.everywhere.backend.exceptions.BadRequestException;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.TelefonoPersonaMapper;
 import com.everywhere.backend.model.dto.TelefonoPersonaRequestDTO;
@@ -13,7 +12,6 @@ import com.everywhere.backend.service.TelefonoPersonaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 

@@ -24,7 +24,7 @@ public class ObservacionLiquidacionServiceImpl implements ObservacionLiquidacion
 
     @Override
     public List<ObservacionLiquidacionResponseDTO> findAll() {
-        return observacionLiquidacionRepository.findAll().stream().map(observacionLiquidacionMapper::toResponseDTO).toList();
+        return mapToResponseList(observacionLiquidacionRepository.findAll());
     }
 
     @Override
@@ -37,29 +37,38 @@ public class ObservacionLiquidacionServiceImpl implements ObservacionLiquidacion
     }
 
     @Override
-    public ObservacionLiquidacionResponseDTO save(ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO) {
+    public ObservacionLiquidacionResponseDTO save(ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO) { 
+        if (observacionLiquidacionRequestDTO.getLiquidacionId() != null && 
+            !liquidacionRepository.existsById(observacionLiquidacionRequestDTO.getLiquidacionId())) {
+            throw new ResourceNotFoundException(
+                    "Liquidación no encontrada con id " + observacionLiquidacionRequestDTO.getLiquidacionId());
+        }
+
         ObservacionLiquidacion observacionLiquidacion = observacionLiquidacionMapper.toEntity(observacionLiquidacionRequestDTO);
 
         if (observacionLiquidacionRequestDTO.getLiquidacionId() != null) {
-            Liquidacion liquidacion = liquidacionRepository.findById(observacionLiquidacionRequestDTO.getLiquidacionId())
-                    .orElseThrow(() -> new ResourceNotFoundException(
-                            "Liquidación no encontrada con id " + observacionLiquidacionRequestDTO.getLiquidacionId()));
+            Liquidacion liquidacion = liquidacionRepository.findById(observacionLiquidacionRequestDTO.getLiquidacionId()).get();
             observacionLiquidacion.setLiquidacion(liquidacion);
         }
         return observacionLiquidacionMapper.toResponseDTO(observacionLiquidacionRepository.save(observacionLiquidacion));
     }
 
     @Override
-    public ObservacionLiquidacionResponseDTO update(Long id, ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO) {
-        ObservacionLiquidacion observacionLiquidacion = observacionLiquidacionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Observación de liquidación no encontrada con ID: " + id));
-
+    public ObservacionLiquidacionResponseDTO update(Long id, ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO) { 
+        if (!observacionLiquidacionRepository.existsById(id))
+            throw new ResourceNotFoundException("Observación de liquidación no encontrada con ID: " + id);
+ 
+        if (observacionLiquidacionRequestDTO.getLiquidacionId() != null && 
+            !liquidacionRepository.existsById(observacionLiquidacionRequestDTO.getLiquidacionId())) {
+            throw new ResourceNotFoundException(
+                    "Liquidación no encontrada con id " + observacionLiquidacionRequestDTO.getLiquidacionId());
+        }
+ 
+        ObservacionLiquidacion observacionLiquidacion = observacionLiquidacionRepository.findById(id).get();
         observacionLiquidacionMapper.updateEntityFromDTO(observacionLiquidacionRequestDTO, observacionLiquidacion);
 
         if (observacionLiquidacionRequestDTO.getLiquidacionId() != null) {
-            Liquidacion liquidacion = liquidacionRepository.findById(observacionLiquidacionRequestDTO.getLiquidacionId())
-                    .orElseThrow(() -> new ResourceNotFoundException(
-                            "Liquidación no encontrada con id " + observacionLiquidacionRequestDTO.getLiquidacionId()));
+            Liquidacion liquidacion = liquidacionRepository.findById(observacionLiquidacionRequestDTO.getLiquidacionId()).get();
             observacionLiquidacion.setLiquidacion(liquidacion);
         }
 
@@ -74,11 +83,11 @@ public class ObservacionLiquidacionServiceImpl implements ObservacionLiquidacion
     }
 
     @Override
-    public List<ObservacionLiquidacionResponseDTO> findByLiquidacionId(Integer liquidacionId) {
-        List<ObservacionLiquidacion> observaciones = observacionLiquidacionRepository.findByLiquidacionId(liquidacionId);
-        if (observaciones.isEmpty())
-            throw new ResourceNotFoundException("No se encontraron observaciones para la liquidación con ID: " + liquidacionId);
+    public List<ObservacionLiquidacionResponseDTO> findByLiquidacionId(Integer liquidacionId) { 
+        return mapToResponseList(observacionLiquidacionRepository.findByLiquidacionId(liquidacionId));
+    }
 
+    private List<ObservacionLiquidacionResponseDTO> mapToResponseList(List<ObservacionLiquidacion> observaciones) {
         return observaciones.stream().map(observacionLiquidacionMapper::toResponseDTO).toList();
     }
 }

@@ -1,7 +1,5 @@
-package com.everywhere.backend.controller;
+package com.everywhere.backend.model.dto;
 
-import com.everywhere.backend.model.dto.CorreoPersonaRequestDTO;
-import com.everywhere.backend.model.dto.CorreoPersonaResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.CorreoPersonaService;
 import lombok.RequiredArgsConstructor;
