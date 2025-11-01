@@ -42,12 +42,12 @@ public class LiquidacionServiceImpl implements LiquidacionService {
 
     @Override
     public List<LiquidacionResponseDTO> findAll() {
-        return liquidacionRepository.findAllWithRelations().stream().map(liquidacionMapper::toResponseDTO).toList();
+        return liquidacionRepository.findAll().stream().map(liquidacionMapper::toResponseDTO).toList();
     }
 
     @Override
     public LiquidacionResponseDTO findById(Integer id) {
-        Liquidacion liquidacion = liquidacionRepository.findByIdWithRelations(id)
+        Liquidacion liquidacion = liquidacionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Liquidación no encontrada con ID: " + id));
         return liquidacionMapper.toResponseDTO(liquidacion);
     }
@@ -108,7 +108,7 @@ public class LiquidacionServiceImpl implements LiquidacionService {
 
     @Override
     public LiquidacionConDetallesResponseDTO findByIdWithDetalles(Integer id) {
-        Liquidacion liquidacion = liquidacionRepository.findByIdWithRelations(id)
+        Liquidacion liquidacion = liquidacionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Liquidación no encontrada con ID: " + id));
 
         LiquidacionResponseDTO liquidacionResponseDTO = liquidacionMapper.toResponseDTO(liquidacion);
