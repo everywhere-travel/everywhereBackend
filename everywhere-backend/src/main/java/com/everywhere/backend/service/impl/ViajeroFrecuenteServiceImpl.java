@@ -26,17 +26,17 @@ public class ViajeroFrecuenteServiceImpl implements ViajeroFrecuenteService {
 
     @Override
     public List<ViajeroFrecuenteResponseDto> findAll() {
-        return viajeroFrecuenteRepository.findAll().stream().map(viajeroFrecuenteMapper::toResponse).toList();
+        return mapToResponseList(viajeroFrecuenteRepository.findAll());
     }
 
     @Override
     public ViajeroFrecuenteResponseDto crear(Integer viajeroId, ViajeroFrecuenteRequestDto viajeroFrecuenteRequestDto) {
-
         if (viajeroId == null) throw new IllegalArgumentException("El ID del viajero no puede ser nulo");
 
-        Viajero viajero = viajeroRepository.findById(viajeroId)
-                .orElseThrow(() -> new ResourceNotFoundException("Viajero no encontrado con id: " + viajeroId));
+        if (!viajeroRepository.existsById(viajeroId))
+            throw new ResourceNotFoundException("Viajero no encontrado con id: " + viajeroId);
 
+        Viajero viajero = viajeroRepository.findById(viajeroId).get();
         ViajeroFrecuente viajeroFrecuente = viajeroFrecuenteMapper.toEntity(viajeroFrecuenteRequestDto); 
         viajeroFrecuente.setViajero(viajero);
         return viajeroFrecuenteMapper.toResponse(viajeroFrecuenteRepository.save(viajeroFrecuente));
@@ -52,13 +52,7 @@ public class ViajeroFrecuenteServiceImpl implements ViajeroFrecuenteService {
 
     @Override
     public List<ViajeroFrecuenteResponseDto> listarPorViajero(Integer viajeroId) {
-        List<ViajeroFrecuente> viajerosFrecuentes = viajeroFrecuenteRepository.findByViajero_Id(viajeroId);
-
-        if (viajerosFrecuentes.isEmpty()) {
-            throw new ResourceNotFoundException("No se encontraron viajeros frecuentes para el viajero con id: " + viajeroId);
-        }
-
-        return viajerosFrecuentes.stream().map(viajeroFrecuenteMapper::toResponse).toList();
+        return mapToResponseList(viajeroFrecuenteRepository.findByViajero_Id(viajeroId));
     }
 
 
@@ -70,9 +64,12 @@ public class ViajeroFrecuenteServiceImpl implements ViajeroFrecuenteService {
 
     @Override
     public ViajeroFrecuenteResponseDto actualizar(Integer id, ViajeroFrecuenteRequestDto viajeroFrecuenteRequestDto) {
-        ViajeroFrecuente viajeroFrecuente = viajeroFrecuenteRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("ViajeroFrecuente no encontrado con id: " + id));
-        if (viajeroFrecuenteRepository.existsByAerolineaAndCodigo(
+        if (!viajeroFrecuenteRepository.existsById(id))
+            throw new ResourceNotFoundException("ViajeroFrecuente no encontrado con id: " + id);
+
+        ViajeroFrecuente viajeroFrecuente = viajeroFrecuenteRepository.findById(id).get();
+        
+        if (viajeroFrecuenteRepository.existsByAreolineaAndCodigo(
                 viajeroFrecuenteRequestDto.getAreolinea(),
                 viajeroFrecuenteRequestDto.getCodigo())) {
             throw new IllegalArgumentException(
@@ -82,17 +79,16 @@ public class ViajeroFrecuenteServiceImpl implements ViajeroFrecuenteService {
             );
         }
 
-
         viajeroFrecuenteMapper.updateEntityFromDto(viajeroFrecuenteRequestDto, viajeroFrecuente);
         return viajeroFrecuenteMapper.toResponse(viajeroFrecuenteRepository.save(viajeroFrecuente));
     }
 
     @Override
     public List<ViajeroFrecuenteResponseDto> buscarPorViajeroId(Integer viajeroId) {
-        List<ViajeroFrecuente> viajerosFrecuentes = viajeroFrecuenteRepository.findByViajero_Id(viajeroId);
-        if (viajerosFrecuentes.isEmpty()) {
-            throw new ResourceNotFoundException("ViajeroFrecuentes no encontrados con id: " + viajeroId);
-        }
-        return viajeroFrecuenteRepository.findByViajero_Id(viajeroId).stream().map(viajeroFrecuenteMapper::toResponse).toList();
+        return mapToResponseList(viajeroFrecuenteRepository.findByViajero_Id(viajeroId));
+    }
+
+    private List<ViajeroFrecuenteResponseDto> mapToResponseList(List<ViajeroFrecuente> viajerosFrecuentes) {
+        return viajerosFrecuentes.stream().map(viajeroFrecuenteMapper::toResponse).toList();
     }
 }

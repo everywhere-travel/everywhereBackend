@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -22,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class CarpetaServiceImpl implements CarpetaService {
 
@@ -29,6 +31,7 @@ public class CarpetaServiceImpl implements CarpetaService {
     private final CarpetaMapper carpetaMapper;
 
     @Override
+    @Transactional
     public CarpetaResponseDto create(CarpetaRequestDto carpetaRequestDto, Integer carpetaPadreId) {
         Carpeta carpeta = carpetaMapper.toEntity(carpetaRequestDto);
         
@@ -45,8 +48,7 @@ public class CarpetaServiceImpl implements CarpetaService {
         if (carpetaRepository.existsByNombreAndNivel(carpeta.getNombre(), carpeta.getNivel()))
             throw new DataIntegrityViolationException("Ya existe una carpeta con el nombre '" + carpeta.getNombre() + "' en el nivel " + carpeta.getNivel());
 
-        Carpeta carpetaSaved = carpetaRepository.save(carpeta);
-        return carpetaMapper.toResponse(carpetaSaved);
+        return carpetaMapper.toResponse(carpetaRepository.save(carpeta));
     }
 
     @Override
@@ -61,6 +63,7 @@ public class CarpetaServiceImpl implements CarpetaService {
     }
 
     @Override
+    @Transactional
     public CarpetaResponseDto update(Integer id, CarpetaRequestDto carpetaRequestDto) {
         Carpeta carpeta = carpetaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Carpeta no encontrada con ID: " + id));
@@ -70,6 +73,7 @@ public class CarpetaServiceImpl implements CarpetaService {
     }
 
     @Override
+    @Transactional
     public void delete(Integer id) {
         if (!carpetaRepository.existsById(id))
             throw new ResourceNotFoundException("Carpeta no encontrada con ID: " + id);
@@ -85,50 +89,36 @@ public class CarpetaServiceImpl implements CarpetaService {
 
     @Override
     public List<CarpetaResponseDto> findByNivel(Integer nivel) {
-        if (!carpetaRepository.existsById(nivel))
-            throw new ResourceNotFoundException("No existen carpetas en el nivel: " + nivel);
         return mapToResponseList(carpetaRepository.findByNivel(nivel));
     }
 
     @Override
-    public List<CarpetaResponseDto> findByNombre(String nombre) {
-        List<Carpeta> carpetas = carpetaRepository.findByNombreContainingIgnoreCase(nombre);
-        if (carpetas.isEmpty()) 
-            throw new ResourceNotFoundException("No existen carpetas con el nombre que contiene: " + nombre);
-        return mapToResponseList(carpetas);
+    public List<CarpetaResponseDto> findByNombre(String nombre) { 
+        return mapToResponseList(carpetaRepository.findByNombreContainingIgnoreCase(nombre));
     }
 
     @Override
     public List<CarpetaResponseDto> findByMes(int mes) {
-        int anioActual = LocalDate.now().getYear();
-        List<Carpeta> carpetas = carpetaRepository.findByAnioAndMes(anioActual, mes);
-        if (carpetas.isEmpty()) 
-            throw new ResourceNotFoundException("No existen carpetas para el mes: " + mes + " del año: " + anioActual);
-        return mapToResponseList(carpetas);
+        int anioActual = LocalDate.now().getYear(); 
+        return mapToResponseList(carpetaRepository.findByAnioAndMes(anioActual, mes));
     }
 
     @Override
     public List<CarpetaResponseDto> findByFechaCreacionBetween(LocalDate inicio, LocalDate fin) {
         LocalDateTime start = inicio.atStartOfDay();
-        LocalDateTime end = fin.plusDays(1).atStartOfDay().minusSeconds(1);
-        List<Carpeta> carpetas = carpetaRepository.findByCreadoBetweenOrderByCreadoAsc(start, end);
-        if (carpetas.isEmpty())
-            throw new ResourceNotFoundException("No existen carpetas creadas entre las fechas: " + inicio + " y " + fin);
-        return mapToResponseList(carpetas);
+        LocalDateTime end = fin.plusDays(1).atStartOfDay().minusSeconds(1); 
+        return mapToResponseList(carpetaRepository.findByCreadoBetweenOrderByCreadoAsc(start, end));
     }
 
     @Override
     public List<CarpetaResponseDto> findRecent(int limit) {
         List<Carpeta> recientes = carpetaRepository.findAll(PageRequest.of(0, limit, Sort.by("creado").descending())).getContent();
-        if (recientes.isEmpty()) throw new ResourceNotFoundException("No existen carpetas recientes.");
         return mapToResponseList(recientes);
     }
 
     @Override
-    public List<CarpetaResponseDto> findRaices() {
-        List<Carpeta> raices = carpetaRepository.findByCarpetaPadreIsNull();
-        if (raices.isEmpty()) throw new ResourceNotFoundException("No existen carpetas raíz.");
-        return mapToResponseList(raices);
+    public List<CarpetaResponseDto> findRaices() { 
+        return mapToResponseList(carpetaRepository.findByCarpetaPadreIsNull());
     }
 
     @Override

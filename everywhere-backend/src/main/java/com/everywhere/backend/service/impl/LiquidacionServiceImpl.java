@@ -54,32 +54,45 @@ public class LiquidacionServiceImpl implements LiquidacionService {
 
     @Override
     public LiquidacionResponseDTO update(Integer id, LiquidacionRequestDTO liquidacionRequestDTO) {
-        Liquidacion liquidacion = liquidacionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Liquidación no encontrada con ID: " + id));
+        if (!liquidacionRepository.existsById(id))
+            throw new ResourceNotFoundException("Liquidación no encontrada con ID: " + id);
 
+        if (liquidacionRequestDTO.getCotizacionId() != null && 
+            !cotizacionRepository.existsById(liquidacionRequestDTO.getCotizacionId()))
+            throw new ResourceNotFoundException("Cotización no encontrada con ID: " + liquidacionRequestDTO.getCotizacionId());
+        
+        if (liquidacionRequestDTO.getProductoId() != null && 
+            !productoRepository.existsById(liquidacionRequestDTO.getProductoId()))
+            throw new ResourceNotFoundException("Producto no encontrado con ID: " + liquidacionRequestDTO.getProductoId());
+
+        if (liquidacionRequestDTO.getFormaPagoId() != null && 
+            !formaPagoRepository.existsById(liquidacionRequestDTO.getFormaPagoId()))
+            throw new ResourceNotFoundException("Forma de pago no encontrada con ID: " + liquidacionRequestDTO.getFormaPagoId());
+
+        if (liquidacionRequestDTO.getCarpetaId() != null && 
+            !carpetaRepository.existsById(liquidacionRequestDTO.getCarpetaId()))
+            throw new ResourceNotFoundException("Carpeta no encontrada con ID: " + liquidacionRequestDTO.getCarpetaId());
+
+        Liquidacion liquidacion = liquidacionRepository.findById(id).get();
         liquidacionMapper.updateEntityFromRequest(liquidacion, liquidacionRequestDTO);
 
         if (liquidacionRequestDTO.getCotizacionId() != null) {
-            Cotizacion cotizacion = cotizacionRepository.findById(liquidacionRequestDTO.getCotizacionId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Cotización no encontrada con ID: " + liquidacionRequestDTO.getCotizacionId()));
+            Cotizacion cotizacion = cotizacionRepository.findById(liquidacionRequestDTO.getCotizacionId()).get();
             liquidacion.setCotizacion(cotizacion);
         }
         
         if (liquidacionRequestDTO.getProductoId() != null) {
-            Producto producto = productoRepository.findById(liquidacionRequestDTO.getProductoId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + liquidacionRequestDTO.getProductoId()));
+            Producto producto = productoRepository.findById(liquidacionRequestDTO.getProductoId()).get();
             liquidacion.setProducto(producto);
         }
 
         if (liquidacionRequestDTO.getFormaPagoId() != null) {
-            FormaPago formaPago = formaPagoRepository.findById(liquidacionRequestDTO.getFormaPagoId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Forma de pago no encontrada con ID: " + liquidacionRequestDTO.getFormaPagoId()));
+            FormaPago formaPago = formaPagoRepository.findById(liquidacionRequestDTO.getFormaPagoId()).get();
             liquidacion.setFormaPago(formaPago);
         }
 
         if (liquidacionRequestDTO.getCarpetaId() != null) {
-            Carpeta carpeta = carpetaRepository.findById(liquidacionRequestDTO.getCarpetaId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Carpeta no encontrada con ID: " + liquidacionRequestDTO.getCarpetaId()));
+            Carpeta carpeta = carpetaRepository.findById(liquidacionRequestDTO.getCarpetaId()).get();
             liquidacion.setCarpeta(carpeta);
         }
 
@@ -153,27 +166,38 @@ public class LiquidacionServiceImpl implements LiquidacionService {
 
     @Override
     public LiquidacionResponseDTO create(LiquidacionRequestDTO liquidacionRequestDTO, Integer cotizacionId) {
-        Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cotización no encontrada con ID: " + cotizacionId));
+        if (!cotizacionRepository.existsById(cotizacionId))
+            throw new ResourceNotFoundException("Cotización no encontrada con ID: " + cotizacionId);
 
+        if (liquidacionRequestDTO.getProductoId() != null && 
+            !productoRepository.existsById(liquidacionRequestDTO.getProductoId()))
+            throw new ResourceNotFoundException("Producto no encontrado con ID: " + liquidacionRequestDTO.getProductoId());
+
+        if (liquidacionRequestDTO.getFormaPagoId() != null && 
+            !formaPagoRepository.existsById(liquidacionRequestDTO.getFormaPagoId()))
+            throw new ResourceNotFoundException("Forma de pago no encontrada con ID: " + liquidacionRequestDTO.getFormaPagoId());
+
+        if (liquidacionRequestDTO.getCarpetaId() != null && 
+            !carpetaRepository.existsById(liquidacionRequestDTO.getCarpetaId()))
+            throw new ResourceNotFoundException("Carpeta no encontrada con ID: " + liquidacionRequestDTO.getCarpetaId());
+
+        Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId).get();
+        
         Liquidacion liquidacion = liquidacionMapper.toEntity(liquidacionRequestDTO);
         liquidacion.setCotizacion(cotizacion);
 
         if (liquidacionRequestDTO.getProductoId() != null) {
-            Producto producto = productoRepository.findById(liquidacionRequestDTO.getProductoId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + liquidacionRequestDTO.getProductoId()));
+            Producto producto = productoRepository.findById(liquidacionRequestDTO.getProductoId()).get();
             liquidacion.setProducto(producto);
         }
 
         if (liquidacionRequestDTO.getFormaPagoId() != null) {
-            FormaPago formaPago = formaPagoRepository.findById(liquidacionRequestDTO.getFormaPagoId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Forma de pago no encontrada con ID: " + liquidacionRequestDTO.getFormaPagoId()));
+            FormaPago formaPago = formaPagoRepository.findById(liquidacionRequestDTO.getFormaPagoId()).get();
             liquidacion.setFormaPago(formaPago);
         }
 
         if (liquidacionRequestDTO.getCarpetaId() != null) {
-            Carpeta carpeta = carpetaRepository.findById(liquidacionRequestDTO.getCarpetaId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Carpeta no encontrada con ID: " + liquidacionRequestDTO.getCarpetaId()));
+            Carpeta carpeta = carpetaRepository.findById(liquidacionRequestDTO.getCarpetaId()).get();
             liquidacion.setCarpeta(carpeta);
         }
         return liquidacionMapper.toResponseDTO(liquidacionRepository.save(liquidacion));

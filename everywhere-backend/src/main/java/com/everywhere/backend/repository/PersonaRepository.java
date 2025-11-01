@@ -22,6 +22,4 @@ public interface PersonaRepository extends JpaRepository<Personas, Integer> {
 
     @Query("SELECT p FROM Personas p LEFT JOIN FETCH p.telefonos WHERE p.id = :id")
     Optional<Personas> findByIdWithTelefonos(@Param("id") Integer id);
-
-
 }

@@ -9,7 +9,6 @@ import java.util.List;
 
 @Repository
 public interface CotizacionRepository extends JpaRepository<Cotizacion, Integer> {
-
     @Query("SELECT MAX(c.id) FROM Cotizacion c")
     Integer findMaxId();
 

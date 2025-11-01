@@ -77,18 +77,20 @@ public class PersonaJuridicaServiceImpl implements PersonaJuridicaService {
 
     @Override
     public PersonaJuridicaResponseDTO patch(Integer id, PersonaJuridicaRequestDTO personaJuridicaRequestDTO) {
-        PersonaJuridica existingPersonaJuridica = personaJuridicaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Persona jurídica no encontrada con ID: " + id));
+        // 🚀 OPTIMIZACIÓN 1: Validar existencia ANTES de buscar el objeto
+        if (!personaJuridicaRepository.existsById(id))
+            throw new ResourceNotFoundException("Persona jurídica no encontrada con ID: " + id);
 
-        // Validar que no exista otra persona con el mismo RUC
+        // 🚀 OPTIMIZACIÓN 2: Si viene RUC, validar duplicado ANTES de buscar el objeto completo
         if (personaJuridicaRequestDTO.getRuc() != null && !personaJuridicaRequestDTO.getRuc().trim().isEmpty()) { 
             String newRuc = personaJuridicaRequestDTO.getRuc().trim();
-            if (!newRuc.equalsIgnoreCase(existingPersonaJuridica.getRuc())) {
-                if (personaJuridicaRepository.findByRucIgnoreCaseAndIdNot(newRuc, id).isPresent())
-                    throw new DataIntegrityViolationException("Ya existe otra persona jurídica con el RUC: " + personaJuridicaRequestDTO.getRuc());
+            if (personaJuridicaRepository.findByRucIgnoreCaseAndIdNot(newRuc, id).isPresent()) {
+                throw new DataIntegrityViolationException("Ya existe otra persona jurídica con el RUC: " + personaJuridicaRequestDTO.getRuc());
             }
         }
 
+        // Solo ahora buscar el objeto para hacer el update
+        PersonaJuridica existingPersonaJuridica = personaJuridicaRepository.findById(id).get();
         personaJuridicaMapper.updateEntityFromDTO(personaJuridicaRequestDTO, existingPersonaJuridica); 
         return personaJuridicaMapper.toResponseDTO(personaJuridicaRepository.save(existingPersonaJuridica));
     }

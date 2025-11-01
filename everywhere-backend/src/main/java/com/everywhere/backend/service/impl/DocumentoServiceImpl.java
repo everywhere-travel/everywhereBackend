@@ -23,7 +23,7 @@ public class DocumentoServiceImpl implements DocumentoService {
 
     @Override
     public List<DocumentoResponseDto> findAll() {
-        return documentoRepository.findAll().stream().map(documentoMapper::toResponseDTO).toList();
+        return mapToResponseList(documentoRepository.findAll());
     }
 
     @Override
@@ -41,11 +41,12 @@ public class DocumentoServiceImpl implements DocumentoService {
 
     @Override
     public DocumentoResponseDto patch(int id, DocumentoRequestDto documentoRequestDto) {
-        Documento documento = documentoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Documento no encontrado con id: " + id));
+        if (!documentoRepository.existsById(id))
+            throw new ResourceNotFoundException("Documento no encontrado con id: " + id);
 
+        Documento documento = documentoRepository.findById(id).get();
         documentoMapper.updateEntityFromDto(documentoRequestDto, documento); 
-        return documentoMapper.toResponseDTO(documento);
+        return documentoMapper.toResponseDTO(documentoRepository.save(documento));
     }
 
     @Override
@@ -53,5 +54,9 @@ public class DocumentoServiceImpl implements DocumentoService {
         if (!documentoRepository.existsById(id)) 
             throw new ResourceNotFoundException("Documento no encontrado con id: " + id);
         documentoRepository.deleteById(id);
+    }
+
+    private List<DocumentoResponseDto> mapToResponseList(List<Documento> documentos) {
+        return documentos.stream().map(documentoMapper::toResponseDTO).toList();
     }
 }

@@ -23,7 +23,7 @@ public class OperadorServiceImpl implements OperadorService {
 
     @Override
     public List<OperadorResponseDTO> findAll() {
-        return operadorRepository.findAll().stream().map(operadorMapper::toResponseDTO).toList();
+        return mapToResponseList(operadorRepository.findAll());
     }
 
     @Override
@@ -51,15 +51,18 @@ public class OperadorServiceImpl implements OperadorService {
 
     @Override
     public OperadorResponseDTO update(int id, OperadorRequestDTO operadorRequestDTO) {
-        Operador operador = operadorRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Operador con id " + id + " no encontrado"));
+        if (!operadorRepository.existsById(id))
+            throw new ResourceNotFoundException("Operador con id " + id + " no encontrado");
+
+        Operador operador = operadorRepository.findById(id).get();
 
         if (operadorRequestDTO.getNombre() != null && 
             !operadorRequestDTO.getNombre().equalsIgnoreCase(operador.getNombre()) &&
-            operadorRepository.existsByNombreIgnoreCase(operadorRequestDTO.getNombre()))
-                throw new DataIntegrityViolationException("Ya existe otro operador con el nombre: " + operadorRequestDTO.getNombre());
+            operadorRepository.existsByNombreIgnoreCase(operadorRequestDTO.getNombre())) {
+            throw new DataIntegrityViolationException("Ya existe otro operador con el nombre: " + operadorRequestDTO.getNombre());
+        }
         
-            operadorMapper.updateEntityFromDTO(operadorRequestDTO, operador);
+        operadorMapper.updateEntityFromDTO(operadorRequestDTO, operador);
         return operadorMapper.toResponseDTO(operadorRepository.save(operador));
     }
 
@@ -68,5 +71,9 @@ public class OperadorServiceImpl implements OperadorService {
         if (!operadorRepository.existsById(id))
             throw new ResourceNotFoundException("Operador no encontrado con ID: " + id);
         operadorRepository.deleteById(id);
+    }
+
+    private List<OperadorResponseDTO> mapToResponseList(List<Operador> operadores) {
+        return operadores.stream().map(operadorMapper::toResponseDTO).toList();
     }
 }
