@@ -14,9 +14,6 @@ public interface CategoriaPersonaRepository extends JpaRepository<CategoriaPerso
     @Query("SELECT cp FROM CategoriaPersona cp WHERE LOWER(cp.nombre) LIKE LOWER(CONCAT('%', :nombre, '%'))")
     List<CategoriaPersona> findByNombreContainingIgnoreCase(@Param("nombre") String nombre);
     
-    // Buscar por nombre exacto
     Optional<CategoriaPersona> findByNombreIgnoreCase(String nombre);
-    
-    // Verificar si existe una categoría con el mismo nombre (para validación)
     boolean existsByNombreIgnoreCase(String nombre);
 }

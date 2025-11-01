@@ -5,8 +5,6 @@ import com.everywhere.backend.mapper.DetalleDocumentoMapper;
 import com.everywhere.backend.model.dto.DetalleDocumentoRequestDto;
 import com.everywhere.backend.model.dto.DetalleDocumentoResponseDto;
 import com.everywhere.backend.model.entity.DetalleDocumento;
-import com.everywhere.backend.model.entity.Documento;
-import com.everywhere.backend.model.entity.PersonaNatural;
 import com.everywhere.backend.repository.DetalleDocumentoRepository;
 import com.everywhere.backend.repository.DocumentoRepository;
 import com.everywhere.backend.repository.PersonaNaturalRepository;
@@ -39,15 +37,15 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
         DetalleDocumento detalleDocumento = detalleDocumentoMapper.toEntity(detalleDocumentoRequestDto);
         
         if (detalleDocumentoRequestDto.getDocumentoId() != null) {
-            Documento documento = documentoRepository.findById(detalleDocumentoRequestDto.getDocumentoId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Documento no encontrado con id: " + detalleDocumentoRequestDto.getDocumentoId()));
-            detalleDocumento.setDocumento(documento);
+            if (!documentoRepository.existsById(detalleDocumentoRequestDto.getDocumentoId()))
+                throw new ResourceNotFoundException("Documento no encontrado con id: " + detalleDocumentoRequestDto.getDocumentoId());
+            detalleDocumento.setDocumento(documentoRepository.findById(detalleDocumentoRequestDto.getDocumentoId()).get());
         }
 
         if (detalleDocumentoRequestDto.getPersonaNaturalId() != null) {
-            PersonaNatural personaNatural = personaNaturalRepository.findById(detalleDocumentoRequestDto.getPersonaNaturalId())
-                    .orElseThrow(() -> new ResourceNotFoundException("PersonaNatural no encontrado con id: " + detalleDocumentoRequestDto.getPersonaNaturalId()));
-            detalleDocumento.setPersonaNatural(personaNatural);
+            if (!personaNaturalRepository.existsById(detalleDocumentoRequestDto.getPersonaNaturalId()))
+                throw new ResourceNotFoundException("PersonaNatural no encontrado con id: " + detalleDocumentoRequestDto.getPersonaNaturalId());
+            detalleDocumento.setPersonaNatural(personaNaturalRepository.findById(detalleDocumentoRequestDto.getPersonaNaturalId()).get());
         }
 
         return detalleDocumentoMapper.toResponse(detalleDocumentoRepository.save(detalleDocumento));
@@ -56,21 +54,22 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
     @Override
     @Transactional
     public DetalleDocumentoResponseDto update(Integer id, DetalleDocumentoRequestDto detalleDocumentoRequestDto) {
-        DetalleDocumento detalleDocumento = detalleDocumentoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("DetalleDocumento no encontrado con id: " + id));
+        if (!detalleDocumentoRepository.existsById(id))
+            throw new ResourceNotFoundException("DetalleDocumento no encontrado con id: " + id);
 
+        DetalleDocumento detalleDocumento = detalleDocumentoRepository.findById(id).get();
         detalleDocumentoMapper.updateEntityFromDto(detalleDocumentoRequestDto, detalleDocumento);
 
         if (detalleDocumentoRequestDto.getDocumentoId() != null) {
-            Documento documento = documentoRepository.findById(detalleDocumentoRequestDto.getDocumentoId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Documento no encontrado con id: " + detalleDocumentoRequestDto.getDocumentoId()));
-            detalleDocumento.setDocumento(documento);
+            if (!documentoRepository.existsById(detalleDocumentoRequestDto.getDocumentoId()))
+                throw new ResourceNotFoundException("Documento no encontrado con id: " + detalleDocumentoRequestDto.getDocumentoId());
+            detalleDocumento.setDocumento(documentoRepository.findById(detalleDocumentoRequestDto.getDocumentoId()).get());
         }
 
         if (detalleDocumentoRequestDto.getPersonaNaturalId() != null) {
-            PersonaNatural personaNatural = personaNaturalRepository.findById(detalleDocumentoRequestDto.getPersonaNaturalId())
-                    .orElseThrow(() -> new ResourceNotFoundException("PersonaNatural no encontrado con id: " + detalleDocumentoRequestDto.getPersonaNaturalId()));
-            detalleDocumento.setPersonaNatural(personaNatural);
+            if (!personaNaturalRepository.existsById(detalleDocumentoRequestDto.getPersonaNaturalId()))
+                throw new ResourceNotFoundException("PersonaNatural no encontrado con id: " + detalleDocumentoRequestDto.getPersonaNaturalId());
+            detalleDocumento.setPersonaNatural(personaNaturalRepository.findById(detalleDocumentoRequestDto.getPersonaNaturalId()).get());
         }
 
         return detalleDocumentoMapper.toResponse(detalleDocumentoRepository.save(detalleDocumento));
@@ -86,20 +85,22 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
 
     @Override
     public List<DetalleDocumentoResponseDto> findAll() {
-        return detalleDocumentoRepository.findAll().stream().map(detalleDocumentoMapper::toResponse).toList();
+        return mapToResponseList(detalleDocumentoRepository.findAll());
     }
 
     @Override
     public List<DetalleDocumentoResponseDto> findByDocumentoId(Integer documentoId) {
         if (!documentoRepository.existsById(documentoId)) 
             throw new ResourceNotFoundException("Documento no encontrado con id: " + documentoId);
-        List<DetalleDocumento> detalles = detalleDocumentoRepository.findByDocumentoId(documentoId);
-        return detalles.stream().map(detalleDocumentoMapper::toResponse).toList();
+        return mapToResponseList(detalleDocumentoRepository.findByDocumentoId(documentoId));
     }
 
     @Override
     public List<DetalleDocumentoResponseDto> findByNumero(String numero) {
-        List<DetalleDocumento> detalles = detalleDocumentoRepository.findByNumeroContainingIgnoreCase(numero);
+        return mapToResponseList(detalleDocumentoRepository.findByNumeroContainingIgnoreCase(numero));
+    }
+
+    private List<DetalleDocumentoResponseDto> mapToResponseList(List<DetalleDocumento> detalles) {
         return detalles.stream().map(detalleDocumentoMapper::toResponse).toList();
     }
 }

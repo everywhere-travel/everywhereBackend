@@ -8,6 +8,5 @@ import java.util.List;
 
 @Repository
 public interface DetalleCotizacionRepository extends JpaRepository<DetalleCotizacion, Integer> {
-
     List<DetalleCotizacion> findByCotizacionId(int cotizacionId);
 }

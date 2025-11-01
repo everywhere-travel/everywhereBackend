@@ -23,7 +23,7 @@ public class SucursalServiceImpl implements SucursalService {
 
     @Override
     public List<SucursalResponseDTO> findAll() {
-        return sucursalRepository.findAll().stream().map(sucursalMapper::toResponseDTO).toList();
+        return mapToResponseList(sucursalRepository.findAll());
     }
 
     @Override
@@ -35,11 +35,7 @@ public class SucursalServiceImpl implements SucursalService {
 
     @Override
     public List<SucursalResponseDTO> findByDescripcion(String descripcion) {
-        List<Sucursal> sucursales = sucursalRepository.findByDescripcionContainingIgnoreCase(descripcion);
-        if (sucursales.isEmpty()) {
-            throw new ResourceNotFoundException("No se encontraron sucursales con la descripcion: " + descripcion);
-        }
-        return sucursales.stream().map(sucursalMapper::toResponseDTO).toList();
+        return mapToResponseList(sucursalRepository.findByDescripcionContainingIgnoreCase(descripcion));
     }
 
     @Override
@@ -51,38 +47,18 @@ public class SucursalServiceImpl implements SucursalService {
 
     @Override
     public List<SucursalResponseDTO> findByEstado(Boolean estado) {
-        List<Sucursal> sucursales = sucursalRepository.findByEstado(estado);
-        if (sucursales.isEmpty()) {
-            throw new ResourceNotFoundException("No se encontraron sucursales con el estado: " + estado);
-        }
-        return sucursales.stream().map(sucursalMapper::toResponseDTO).toList();
+        return mapToResponseList(sucursalRepository.findByEstado(estado));
     }
-
 
     @Override
     public List<SucursalResponseDTO> findByEstadoAndDescripcion(Boolean estado, String descripcion) {
-        List<Sucursal> sucursales = sucursalRepository.findByEstadoAndDescripcionContainingIgnoreCase(estado, descripcion);
-        if (sucursales.isEmpty()) {
-            throw new ResourceNotFoundException(
-                    "No se encontraron sucursales con el estado: " + estado + " y descripción que contenga: " + descripcion
-            );
-        }
-        return sucursales.stream()
-                .map(sucursalMapper::toResponseDTO)
-                .toList();
+        return mapToResponseList(sucursalRepository.findByEstadoAndDescripcionContainingIgnoreCase(estado, descripcion));
     }
 
     @Override
     public List<SucursalResponseDTO> findByDireccion(String direccion) {
-        List<Sucursal> sucursales = sucursalRepository.findByDireccionContainingIgnoreCase(direccion);
-        if (sucursales.isEmpty()) {
-            throw new ResourceNotFoundException("No se encontraron sucursales con la dirección: " + direccion);
-        }
-        return sucursales.stream()
-                .map(sucursalMapper::toResponseDTO)
-                .toList();
+        return mapToResponseList(sucursalRepository.findByDireccionContainingIgnoreCase(direccion));
     }
-
 
     @Override
     public SucursalResponseDTO findByEmail(String email) {
@@ -107,8 +83,10 @@ public class SucursalServiceImpl implements SucursalService {
 
     @Override
     public SucursalResponseDTO update(Integer id, SucursalRequestDTO sucursalRequestDTO) {
-        Sucursal existing = sucursalRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada con ID: " + id));
+        if (!sucursalRepository.existsById(id))
+            throw new ResourceNotFoundException("Sucursal no encontrada con ID: " + id);
+
+        Sucursal existing = sucursalRepository.findById(id).get();
 
         if (sucursalRequestDTO.getEmail() != null &&
                 !sucursalRequestDTO.getEmail().trim().isEmpty() &&
@@ -118,24 +96,27 @@ public class SucursalServiceImpl implements SucursalService {
         }
 
         sucursalMapper.updateEntityFromDTO(sucursalRequestDTO, existing);
-
         return sucursalMapper.toResponseDTO(sucursalRepository.save(existing));
     }
 
     @Override
     public void deleteById(Integer id) {
-        if (!sucursalRepository.existsById(id)) {
+        if (!sucursalRepository.existsById(id))
             throw new ResourceNotFoundException("Sucursal no encontrada con ID: " + id);
-        }
         sucursalRepository.deleteById(id);
     }
 
     @Override
     public SucursalResponseDTO cambiarEstado(Integer id, Boolean estado) {
-        Sucursal sucursal = sucursalRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada con ID: " + id));
+        if (!sucursalRepository.existsById(id))
+            throw new ResourceNotFoundException("Sucursal no encontrada con ID: " + id);
 
+        Sucursal sucursal = sucursalRepository.findById(id).get();
         sucursal.setEstado(estado);
         return sucursalMapper.toResponseDTO(sucursalRepository.save(sucursal));
+    }
+
+    private List<SucursalResponseDTO> mapToResponseList(List<Sucursal> sucursales) {
+        return sucursales.stream().map(sucursalMapper::toResponseDTO).toList();
     }
 }

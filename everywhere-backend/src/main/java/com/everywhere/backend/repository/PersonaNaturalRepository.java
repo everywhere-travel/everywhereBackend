@@ -11,10 +11,9 @@ import java.util.Optional;
 
 @Repository
 public interface PersonaNaturalRepository extends JpaRepository<PersonaNatural, Integer> {
-    Optional<PersonaNatural> findByDocumentoIgnoreCase(String documento); // Campo único - solo puede haber uno
+    Optional<PersonaNatural> findByDocumentoIgnoreCase(String documento);
     Optional<PersonaNatural> findByPersonasId(Integer personaId);
 
-    // Búsquedas que ignoran tildes/acentos
     @Query(value = "SELECT * FROM persona_natural WHERE UPPER(TRANSLATE(per_nat_nomb_vac, 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou')) LIKE UPPER(TRANSLATE(:nombres, 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou'))", nativeQuery = true)
     List<PersonaNatural> findByNombresIgnoreAccents(@Param("nombres") String nombres);
 

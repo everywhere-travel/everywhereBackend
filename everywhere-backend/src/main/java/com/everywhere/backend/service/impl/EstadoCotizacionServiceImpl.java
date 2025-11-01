@@ -27,9 +27,10 @@ public class EstadoCotizacionServiceImpl implements EstadoCotizacionService {
 
     @Override
     public EstadoCotizacionResponseDTO update(Integer id, EstadoCotizacionRequestDTO estadoCotizacionRequestDTO) {
-        EstadoCotizacion existing = estadoCotizacionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Estado de Cotización no encontrado con ID: " + id));
+        if (!estadoCotizacionRepository.existsById(id))
+            throw new ResourceNotFoundException("Estado de Cotización no encontrado con ID: " + id);
 
+        EstadoCotizacion existing = estadoCotizacionRepository.findById(id).get();
         estadoCotizacionMapper.updateEntityFromDTO(estadoCotizacionRequestDTO, existing); 
         return estadoCotizacionMapper.toResponseDTO(estadoCotizacionRepository.save(existing));
     }
@@ -42,7 +43,7 @@ public class EstadoCotizacionServiceImpl implements EstadoCotizacionService {
 
     @Override
     public List<EstadoCotizacionResponseDTO> getAll() {
-        return estadoCotizacionRepository.findAll().stream().map(estadoCotizacionMapper::toResponseDTO).toList();
+        return mapToResponseList(estadoCotizacionRepository.findAll());
     }
 
     @Override
@@ -50,5 +51,9 @@ public class EstadoCotizacionServiceImpl implements EstadoCotizacionService {
         if (!estadoCotizacionRepository.existsById(id))
             throw new ResourceNotFoundException("Estado de Cotización no encontrado con ID: " + id);
         estadoCotizacionRepository.deleteById(id);
+    }
+
+    private List<EstadoCotizacionResponseDTO> mapToResponseList(List<EstadoCotizacion> estadosCotizacion) {
+        return estadosCotizacion.stream().map(estadoCotizacionMapper::toResponseDTO).toList();
     }
 }
