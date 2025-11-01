@@ -82,8 +82,7 @@ public class CotizacionServiceImpl implements CotizacionService {
 
     @Override
     public List<CotizacionResponseDto> findAll() {
-        return cotizacionRepository.findAll()
-                .stream().map(cotizacionMapper::toResponse).toList();
+        return mapToResponseList(cotizacionRepository.findAll());
     }
 
     @Override
@@ -152,7 +151,10 @@ public class CotizacionServiceImpl implements CotizacionService {
 
     @Override
     public List<CotizacionResponseDto> findCotizacionesSinLiquidacion() {
-        List<Cotizacion> cotizaciones = cotizacionRepository.findCotizacionesSinLiquidacion();
+        return mapToResponseList(cotizacionRepository.findCotizacionesSinLiquidacion());
+    }
+
+    private List<CotizacionResponseDto> mapToResponseList(List<Cotizacion> cotizaciones) {
         return cotizaciones.stream().map(cotizacionMapper::toResponse).toList();
     }
 }

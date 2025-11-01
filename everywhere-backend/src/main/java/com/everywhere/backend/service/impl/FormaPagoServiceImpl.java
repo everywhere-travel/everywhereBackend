@@ -19,12 +19,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FormaPagoServiceImpl implements FormaPagoService {
 
-    private FormaPagoRepository formaPagoRepository;
-    private FormaPagoMapper formaPagoMapper;
+    private final FormaPagoRepository formaPagoRepository;
+    private final FormaPagoMapper formaPagoMapper;
 
     @Override
     public List<FormaPagoResponseDTO> findAll() {
-        return formaPagoRepository.findAll().stream().map(formaPagoMapper::toResponseDTO).toList();
+        return mapToResponseList(formaPagoRepository.findAll());
     }
 
     @Override
@@ -41,8 +41,7 @@ public class FormaPagoServiceImpl implements FormaPagoService {
 
     @Override
     public List<FormaPagoResponseDTO> findByDescripcion(String descripcion) {
-        return formaPagoRepository.findByDescripcionContainingIgnoreCase(descripcion)
-            .stream().map(formaPagoMapper::toResponseDTO).toList();
+        return mapToResponseList(formaPagoRepository.findByDescripcionContainingIgnoreCase(descripcion));
     }
 
     @Override
@@ -55,14 +54,19 @@ public class FormaPagoServiceImpl implements FormaPagoService {
 
     @Override
     public FormaPagoResponseDTO update(Integer id, FormaPagoRequestDTO formaPagoRequestDTO) {
-        FormaPago formaPago = formaPagoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Forma de pago no encontrada con ID: " + id));
+        if (!formaPagoRepository.existsById(id))
+            throw new ResourceNotFoundException("Forma de pago no encontrada con ID: " + id);
 
-        if (formaPagoRequestDTO.getCodigo() != null) {
-            if (formaPagoRepository.existsByCodigo(formaPagoRequestDTO.getCodigo()))
-                throw new DataIntegrityViolationException("Ya existe una forma de pago con el código: " + formaPagoRequestDTO.getCodigo());
+        FormaPago formaPago = formaPagoRepository.findById(id).get();
+
+        if (formaPagoRequestDTO.getCodigo() != null && 
+            !formaPagoRequestDTO.getCodigo().equals(formaPago.getCodigo()) &&
+            formaPagoRepository.existsByCodigo(formaPagoRequestDTO.getCodigo())) {
+            throw new DataIntegrityViolationException("Ya existe una forma de pago con el código: " + formaPagoRequestDTO.getCodigo());
+        }
+
+        if (formaPagoRequestDTO.getCodigo() != null)
             formaPago.setCodigo(formaPagoRequestDTO.getCodigo());
-        } 
 
         if (formaPagoRequestDTO.getDescripcion() != null && !formaPagoRequestDTO.getDescripcion().trim().isEmpty())
             formaPago.setDescripcion(formaPagoRequestDTO.getDescripcion());
@@ -75,5 +79,9 @@ public class FormaPagoServiceImpl implements FormaPagoService {
         if (!formaPagoRepository.existsById(id))
             throw new ResourceNotFoundException("Forma de pago no encontrada con ID: " + id);
         formaPagoRepository.deleteById(id);
+    }
+
+    private List<FormaPagoResponseDTO> mapToResponseList(List<FormaPago> formasPago) {
+        return formasPago.stream().map(formaPagoMapper::toResponseDTO).toList();
     }
 }

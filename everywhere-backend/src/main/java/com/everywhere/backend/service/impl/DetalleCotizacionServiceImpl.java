@@ -27,8 +27,7 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
 
     @Override
     public List<DetalleCotizacionResponseDto> findAll() {
-        return detalleCotizacionRepository.findAll()
-                .stream().map(detalleCotizacionMapper::toResponse).toList();
+        return mapToResponseList(detalleCotizacionRepository.findAll());
     }
 
     @Override
@@ -42,37 +41,35 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
         if (!cotizacionRepository.existsById(cotizacionId))
             throw new ResourceNotFoundException("Cotización no encontrada con ID: " + cotizacionId);
         
-        return detalleCotizacionRepository.findByCotizacionId(cotizacionId)
-            .stream().map(detalleCotizacionMapper::toResponse).toList();
+        return mapToResponseList(detalleCotizacionRepository.findByCotizacionId(cotizacionId));
     }
 
     @Override
     public DetalleCotizacionResponseDto create(DetalleCotizacionRequestDto detalleCotizacionRequestDto, Integer cotizacionId) {
+        if (cotizacionId == null) throw new IllegalArgumentException("El ID de la cotización es obligatorio");
         
         DetalleCotizacion detalleCotizacion = detalleCotizacionMapper.toEntity(detalleCotizacionRequestDto);
 
-        if (cotizacionId == null) throw new IllegalArgumentException("El ID de la cotización es obligatorio");
-        
-        Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cotización no encontrada con ID: " + cotizacionId));
-        detalleCotizacion.setCotizacion(cotizacion);
+        if (!cotizacionRepository.existsById(cotizacionId))
+            throw new ResourceNotFoundException("Cotización no encontrada con ID: " + cotizacionId);
+        detalleCotizacion.setCotizacion(cotizacionRepository.findById(cotizacionId).get());
 
         if (detalleCotizacionRequestDto.getCategoriaId() != null) {
-            Categoria categoria = categoriaRepository.findById(detalleCotizacionRequestDto.getCategoriaId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + detalleCotizacionRequestDto.getCategoriaId()));
-            detalleCotizacion.setCategoria(categoria);
+            if (!categoriaRepository.existsById(detalleCotizacionRequestDto.getCategoriaId()))
+                throw new ResourceNotFoundException("Categoría no encontrada con ID: " + detalleCotizacionRequestDto.getCategoriaId());
+            detalleCotizacion.setCategoria(categoriaRepository.findById(detalleCotizacionRequestDto.getCategoriaId()).get());
         }
 
         if (detalleCotizacionRequestDto.getProductoId() != null) {
-            Producto producto = productoRepository.findById(detalleCotizacionRequestDto.getProductoId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + detalleCotizacionRequestDto.getProductoId()));
-            detalleCotizacion.setProducto(producto);
+            if (!productoRepository.existsById(detalleCotizacionRequestDto.getProductoId()))
+                throw new ResourceNotFoundException("Producto no encontrado con ID: " + detalleCotizacionRequestDto.getProductoId());
+            detalleCotizacion.setProducto(productoRepository.findById(detalleCotizacionRequestDto.getProductoId()).get());
         }
 
         if (detalleCotizacionRequestDto.getProveedorId() != null) {
-            Proveedor proveedor = proveedorRepository.findById(detalleCotizacionRequestDto.getProveedorId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Proveedor no encontrado con ID: " + detalleCotizacionRequestDto.getProveedorId()));
-            detalleCotizacion.setProveedor(proveedor);
+            if (!proveedorRepository.existsById(detalleCotizacionRequestDto.getProveedorId()))
+                throw new ResourceNotFoundException("Proveedor no encontrado con ID: " + detalleCotizacionRequestDto.getProveedorId());
+            detalleCotizacion.setProveedor(proveedorRepository.findById(detalleCotizacionRequestDto.getProveedorId()).get());
         }
 
         return detalleCotizacionMapper.toResponse(detalleCotizacionRepository.save(detalleCotizacion));
@@ -80,27 +77,28 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
 
     @Override
     public DetalleCotizacionResponseDto patch(Integer id, DetalleCotizacionRequestDto detalleCotizacionRequestDto) {
-        DetalleCotizacion detalleCotizacion = detalleCotizacionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Detalle de cotización no encontrado con ID: " + id));
+        if (!detalleCotizacionRepository.existsById(id))
+            throw new ResourceNotFoundException("Detalle de cotización no encontrado con ID: " + id);
 
+        DetalleCotizacion detalleCotizacion = detalleCotizacionRepository.findById(id).get();
         detalleCotizacionMapper.updateEntityFromRequest(detalleCotizacion, detalleCotizacionRequestDto);
 
         if (detalleCotizacionRequestDto.getCategoriaId() != null) {
-            Categoria categoria = categoriaRepository.findById(detalleCotizacionRequestDto.getCategoriaId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada"));
-            detalleCotizacion.setCategoria(categoria);
+            if (!categoriaRepository.existsById(detalleCotizacionRequestDto.getCategoriaId()))
+                throw new ResourceNotFoundException("Categoría no encontrada con ID: " + detalleCotizacionRequestDto.getCategoriaId());
+            detalleCotizacion.setCategoria(categoriaRepository.findById(detalleCotizacionRequestDto.getCategoriaId()).get());
         }
 
         if (detalleCotizacionRequestDto.getProductoId() != null) {
-            Producto producto = productoRepository.findById(detalleCotizacionRequestDto.getProductoId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
-            detalleCotizacion.setProducto(producto);
+            if (!productoRepository.existsById(detalleCotizacionRequestDto.getProductoId()))
+                throw new ResourceNotFoundException("Producto no encontrado con ID: " + detalleCotizacionRequestDto.getProductoId());
+            detalleCotizacion.setProducto(productoRepository.findById(detalleCotizacionRequestDto.getProductoId()).get());
         }
 
         if (detalleCotizacionRequestDto.getProveedorId() != null) {
-            Proveedor proveedor = proveedorRepository.findById(detalleCotizacionRequestDto.getProveedorId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Proveedor no encontrado"));
-            detalleCotizacion.setProveedor(proveedor);
+            if (!proveedorRepository.existsById(detalleCotizacionRequestDto.getProveedorId()))
+                throw new ResourceNotFoundException("Proveedor no encontrado con ID: " + detalleCotizacionRequestDto.getProveedorId());
+            detalleCotizacion.setProveedor(proveedorRepository.findById(detalleCotizacionRequestDto.getProveedorId()).get());
         }
 
         return detalleCotizacionMapper.toResponse(detalleCotizacionRepository.save(detalleCotizacion));
@@ -111,5 +109,9 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
         if (!detalleCotizacionRepository.existsById(id))
             throw new ResourceNotFoundException("Detalle de cotización no encontrado con ID: " + id);
         detalleCotizacionRepository.deleteById(id);
+    }
+
+    private List<DetalleCotizacionResponseDto> mapToResponseList(List<DetalleCotizacion> detalles) {
+        return detalles.stream().map(detalleCotizacionMapper::toResponse).toList();
     }
 }

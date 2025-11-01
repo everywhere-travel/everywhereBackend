@@ -21,7 +21,7 @@ public class ViajeroServiceImpl implements ViajeroService {
 
     @Override
     public List<ViajeroResponseDTO> findAll() {
-        return viajeroRepository.findAll().stream().map(viajeroMapper::toResponseDTO).toList();
+        return mapToResponseList(viajeroRepository.findAll());
     }
 
     @Override
@@ -33,16 +33,12 @@ public class ViajeroServiceImpl implements ViajeroService {
 
     @Override
     public List<ViajeroResponseDTO> findByNacionalidad(String nacionalidad) {
-        List<Viajero> viajeros = viajeroRepository.findByNacionalidadIgnoreAccents(nacionalidad);
-        if (viajeros.isEmpty()) throw new ResourceNotFoundException("No se encontraron viajeros con nacionalidad: " + nacionalidad);
-        return viajeros.stream().map(viajeroMapper::toResponseDTO).toList();
+        return mapToResponseList(viajeroRepository.findByNacionalidadIgnoreAccents(nacionalidad));
     }
 
     @Override
     public List<ViajeroResponseDTO> findByResidencia(String residencia) {
-        List<Viajero> viajeros = viajeroRepository.findByResidenciaIgnoreAccents(residencia);
-        if (viajeros.isEmpty()) throw new ResourceNotFoundException("No se encontraron viajeros con residencia: " + residencia);
-        return viajeros.stream().map(viajeroMapper::toResponseDTO).toList();
+        return mapToResponseList(viajeroRepository.findByResidenciaIgnoreAccents(residencia));
     }
 
     @Override
@@ -53,9 +49,10 @@ public class ViajeroServiceImpl implements ViajeroService {
 
     @Override
     public ViajeroResponseDTO patch(Integer id, ViajeroRequestDTO viajeroRequestDTO) {
-        Viajero existingViajero = viajeroRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Viajero no encontrado con ID: " + id));
+        if (!viajeroRepository.existsById(id))
+            throw new ResourceNotFoundException("Viajero no encontrado con ID: " + id);
 
+        Viajero existingViajero = viajeroRepository.findById(id).get();
         viajeroMapper.updateEntityFromDTO(viajeroRequestDTO, existingViajero);
         existingViajero = viajeroRepository.save(existingViajero);
         return viajeroMapper.toResponseDTO(existingViajero);
@@ -65,5 +62,9 @@ public class ViajeroServiceImpl implements ViajeroService {
     public void deleteById(Integer id) {
         if (!viajeroRepository.existsById(id)) throw new ResourceNotFoundException("Viajero no encontrado con ID: " + id);
         viajeroRepository.deleteById(id);
+    }
+
+    private List<ViajeroResponseDTO> mapToResponseList(List<Viajero> viajeros) {
+        return viajeros.stream().map(viajeroMapper::toResponseDTO).toList();
     }
 }

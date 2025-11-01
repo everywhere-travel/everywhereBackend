@@ -52,15 +52,13 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
     public List<PersonaNaturalResponseDTO> findByDocumento(String documento) {
         Optional<PersonaNatural> personaNaturalOptional = personaNaturalRepository.findByDocumentoIgnoreCase(documento);
         if (personaNaturalOptional.isEmpty())
-            throw new ResourceNotFoundException("No se encontró persona natural con documento: " + documento);
+            return List.of();
         return List.of(personaNaturalMapper.toResponseDTO(personaNaturalOptional.get()));
     }
 
     @Override
     public List<PersonaNaturalResponseDTO> findByNombres(String nombres) {
         List<PersonaNatural> personaNaturalList = personaNaturalRepository.findByNombresIgnoreAccents(nombres);
-        if (personaNaturalList.isEmpty())
-            throw new ResourceNotFoundException("No se encontraron personas naturales con nombres: " + nombres);
         return personaNaturalList.stream().map(personaNaturalMapper::toResponseDTO).toList();
     }
 
@@ -113,23 +111,30 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
 
     @Override
     public PersonaNaturalResponseDTO patch(Integer id, PersonaNaturalRequestDTO personaNaturalRequestDTO) {
-        PersonaNatural existingPersonaNatural = personaNaturalRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Persona natural no encontrada con ID: " + id));
+        // 🚀 OPTIMIZACIÓN 1: Validar existencia ANTES de buscar el objeto
+        if (!personaNaturalRepository.existsById(id))
+            throw new ResourceNotFoundException("Persona natural no encontrada con ID: " + id);
 
-        // Validar que no exista otra persona con el mismo documento
+        // 🚀 OPTIMIZACIÓN 2: Si viene documento, validar duplicado ANTES de buscar el objeto completo
         if (personaNaturalRequestDTO.getDocumento() != null && 
             !personaNaturalRequestDTO.getDocumento().trim().isEmpty() &&
-            !personaNaturalRequestDTO.getDocumento().equalsIgnoreCase(existingPersonaNatural.getDocumento())) {
-            if (personaNaturalRepository.findByDocumentoIgnoreCaseAndIdNot(personaNaturalRequestDTO.getDocumento(), id).isPresent())
-                throw new BadRequestException("Ya existe otra persona natural con el documento: " + personaNaturalRequestDTO.getDocumento());
+            personaNaturalRepository.findByDocumentoIgnoreCaseAndIdNot(personaNaturalRequestDTO.getDocumento(), id).isPresent()) {
+            throw new BadRequestException("Ya existe otra persona natural con el documento: " + personaNaturalRequestDTO.getDocumento());
         }
 
+        // 🚀 OPTIMIZACIÓN 3: Si viene categoría, validar existencia ANTES de buscar objetos
+        if (personaNaturalRequestDTO.getCategoriaPersonaId() != null && 
+            !categoriaPersonaRepository.existsById(personaNaturalRequestDTO.getCategoriaPersonaId())) {
+            throw new ResourceNotFoundException("Categoría no encontrada con ID: " + personaNaturalRequestDTO.getCategoriaPersonaId());
+        }
+
+        // Solo ahora buscar los objetos para hacer el update
+        PersonaNatural existingPersonaNatural = personaNaturalRepository.findById(id).get();
         personaNaturalMapper.updateEntityFromDTO(personaNaturalRequestDTO, existingPersonaNatural);
         
-        // Manejar categoría explícitamente si se proporciona
+        // Manejar categoría si se proporciona
         if (personaNaturalRequestDTO.getCategoriaPersonaId() != null) {
-            CategoriaPersona categoria = categoriaPersonaRepository.findById(personaNaturalRequestDTO.getCategoriaPersonaId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + personaNaturalRequestDTO.getCategoriaPersonaId()));
+            CategoriaPersona categoria = categoriaPersonaRepository.findById(personaNaturalRequestDTO.getCategoriaPersonaId()).get();
             existingPersonaNatural.setCategoriaPersona(categoria);
         } 
         return personaNaturalMapper.toResponseDTO(personaNaturalRepository.save(existingPersonaNatural));

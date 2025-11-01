@@ -39,16 +39,12 @@ public class PersonaServiceImpl implements PersonaService {
     @Override
     public List<PersonaResponseDTO> findByEmail(String email) {
         List<Personas> personas = personaRepository.findByEmailContainingIgnoreCase(email);
-        if (personas.isEmpty())
-            throw new ResourceNotFoundException("Persona no encontrada con email: " + email);
         return personas.stream().map(personaMapper::toResponseDTO).toList();
     }
 
     @Override
     public List<PersonaResponseDTO> findByTelefono(String telefono) {
         List<Personas> personas = personaRepository.findByTelefonoContainingIgnoreCase(telefono);
-        if(personas.isEmpty())
-            throw new ResourceNotFoundException("Persona no encontrada con telefono: " + telefono);
         return personas.stream().map(personaMapper::toResponseDTO).toList();
     }
 
@@ -60,9 +56,11 @@ public class PersonaServiceImpl implements PersonaService {
 
     @Override
     public PersonaResponseDTO patch(Integer id, PersonaRequestDTO personaRequestDTO) {
-        Personas existingPersona = personaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Persona no encontrada con ID: " + id));
+        // 🚀 OPTIMIZACIÓN: Validar existencia ANTES de buscar el objeto
+        if (!personaRepository.existsById(id))
+            throw new ResourceNotFoundException("Persona no encontrada con ID: " + id);
 
+        Personas existingPersona = personaRepository.findById(id).get();
         personaMapper.updateEntityFromDTO(personaRequestDTO, existingPersona); 
         return personaMapper.toResponseDTO(personaRepository.save(existingPersona));
     }

@@ -11,7 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import java.util.List; 
+import java.util.List;
+import java.util.stream.Collectors; 
 
 @Service
 @RequiredArgsConstructor
@@ -28,11 +29,17 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     public ProductoResponseDTO update(Integer id, ProductoRequestDTO productoRequestDTO) {
-        Producto producto = productoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
-        if (productoRequestDTO.getTipo() != null && productoRepository.existsProductosByTipo(productoRequestDTO.getTipo())) {
-            throw new DataIntegrityViolationException("Ya existe  un proveedor con el tipo: " + productoRequestDTO.getTipo());
+        if (!productoRepository.existsById(id))
+            throw new ResourceNotFoundException("Producto no encontrado con ID: " + id);
+
+        Producto producto = productoRepository.findById(id).get();
+        
+        if (productoRequestDTO.getTipo() != null && 
+            productoRepository.existsProductosByTipo(productoRequestDTO.getTipo()) &&
+            !productoRequestDTO.getTipo().equals(producto.getTipo())) {
+            throw new DataIntegrityViolationException("Ya existe un producto con el tipo: " + productoRequestDTO.getTipo());
         }
+
         productoMapper.updateEntityFromDTO(productoRequestDTO, producto);
         return productoMapper.toResponseDTO(productoRepository.save(producto));
     }
@@ -46,10 +53,7 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     public List<ProductoResponseDTO> getAll() {
-        return productoRepository.findAll()
-                .stream()
-                .map(productoMapper::toResponseDTO)
-                .toList();
+        return mapToResponseList(productoRepository.findAll());
     }
 
     @Override
@@ -58,6 +62,12 @@ public class ProductoServiceImpl implements ProductoService {
             throw new ResourceNotFoundException("Producto no encontrado con ID: " + id);
         }
         productoRepository.deleteById(id);
+    }
+
+    private List<ProductoResponseDTO> mapToResponseList(List<Producto> productos) {
+        return productos.stream()
+                .map(productoMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
 }
