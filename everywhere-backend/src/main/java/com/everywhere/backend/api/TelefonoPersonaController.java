@@ -13,19 +13,19 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/personas/{personaId}/telefonos")
+@RequestMapping("/telefonos-persona")
 @RequiredArgsConstructor
 public class    TelefonoPersonaController {
 
     private final TelefonoPersonaService telefonoPersonaService;
 
-    @GetMapping
+    @GetMapping("/personas/{personaId}")
     @RequirePermission(module = "PERSONAS", permission = "READ")
-    public ResponseEntity<List<TelefonoPersonaResponseDTO>> findAll(@PathVariable Integer personaId) {
+    public ResponseEntity<List<TelefonoPersonaResponseDTO>> findByPersonaId(@PathVariable Integer personaId) {
         return ResponseEntity.ok(telefonoPersonaService.findByPersonaId(personaId));
     }
 
-    @GetMapping("/{telefonoId}")
+    @GetMapping("/personas/{personaId}/telefono/{telefonoId}")
     @RequirePermission(module = "PERSONAS", permission = "READ")
     public ResponseEntity<TelefonoPersonaResponseDTO> findById(@PathVariable Integer telefonoId) {
         return telefonoPersonaService.findById(telefonoId)
@@ -40,7 +40,7 @@ public class    TelefonoPersonaController {
         return new ResponseEntity<>(telefonoPersonaService.save(telefonoPersonaRequestDTO, personaId), HttpStatus.CREATED);
     }
 
-    @PatchMapping("/{telefonoId}")
+    @PatchMapping("/personas/{personaId}/telefono/{telefonoId}")
     @RequirePermission(module = "PERSONAS", permission = "UPDATE")
     public ResponseEntity<TelefonoPersonaResponseDTO> update(@PathVariable Integer personaId,
                                                              @PathVariable Integer telefonoId,
