@@ -34,4 +34,7 @@ public class Viajero {
     @UpdateTimestamp
     @Column(name = "via_upd_tmp")
     private LocalDateTime actualizado;
+
+    @OneToOne(mappedBy = "viajero", fetch = FetchType.LAZY)
+    private PersonaNatural personaNatural;
 }

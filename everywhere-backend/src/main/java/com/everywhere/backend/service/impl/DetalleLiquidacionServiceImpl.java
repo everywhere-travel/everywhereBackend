@@ -2,6 +2,7 @@ package com.everywhere.backend.service.impl;
 
 import com.everywhere.backend.model.dto.DetalleLiquidacionRequestDTO;
 import com.everywhere.backend.model.dto.DetalleLiquidacionResponseDTO;
+import com.everywhere.backend.model.dto.DetalleLiquidacionSinLiquidacionDTO;
 import com.everywhere.backend.model.entity.DetalleLiquidacion;
 import com.everywhere.backend.repository.DetalleLiquidacionRepository;
 import com.everywhere.backend.repository.LiquidacionRepository;
@@ -45,6 +46,11 @@ public class DetalleLiquidacionServiceImpl implements DetalleLiquidacionService 
     @Override
     public List<DetalleLiquidacionResponseDTO> findByLiquidacionId(Integer liquidacionId) {
         return mapToResponseList(detalleLiquidacionRepository.findByLiquidacionIdWithRelations(liquidacionId));
+    }
+
+    @Override
+    public List<DetalleLiquidacionSinLiquidacionDTO> findByLiquidacionIdSinLiquidacion(Integer liquidacionId) {
+        return mapToSinLiquidacionList(detalleLiquidacionRepository.findByLiquidacionIdSinLiquidacion(liquidacionId));
     }
 
     @Override
@@ -134,5 +140,9 @@ public class DetalleLiquidacionServiceImpl implements DetalleLiquidacionService 
 
     private List<DetalleLiquidacionResponseDTO> mapToResponseList(List<DetalleLiquidacion> detalles) {
         return detalles.stream().map(detalleLiquidacionMapper::toResponseDTO).toList();
+    }
+
+    private List<DetalleLiquidacionSinLiquidacionDTO> mapToSinLiquidacionList(List<DetalleLiquidacion> detalles) {
+        return detalles.stream().map(detalleLiquidacionMapper::toSinLiquidacionDTO).toList();
     }
 }
