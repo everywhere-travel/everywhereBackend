@@ -43,6 +43,12 @@ public class DetalleDocumentoController {
         return ResponseEntity.ok(detalleDocumentoService.findByNumero(numero));
     }
 
+    @GetMapping("/persona-natural/{personaNaturalId}")
+    @RequirePermission(module = "DOCUMENTOS", permission = "READ")
+    public ResponseEntity<List<DetalleDocumentoResponseDto>> findByPersonaNaturalId(@PathVariable Integer personaNaturalId) {
+        return ResponseEntity.ok(detalleDocumentoService.findByPersonaNaturalId(personaNaturalId));
+    }
+
     @PostMapping
     @RequirePermission(module = "DOCUMENTOS", permission = "CREATE")
     public ResponseEntity<DetalleDocumentoResponseDto> save(@RequestBody DetalleDocumentoRequestDto detalleDocumentoRequestDto) {
