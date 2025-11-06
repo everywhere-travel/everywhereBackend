@@ -31,7 +31,7 @@ public class CorreoPersonaController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
+    @PostMapping("/personas/{personaId}")
     @RequirePermission(module = "PERSONAS", permission = "CREATE")
     public ResponseEntity<CorreoPersonaResponseDTO> save(
             @PathVariable Integer personaId,

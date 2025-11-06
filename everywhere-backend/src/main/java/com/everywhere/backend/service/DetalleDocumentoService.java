@@ -13,4 +13,5 @@ public interface DetalleDocumentoService {
     List<DetalleDocumentoResponseDto> findAll();
     List<DetalleDocumentoResponseDto> findByDocumentoId(Integer documentoId);
     List<DetalleDocumentoResponseDto> findByNumero(String numero);
+    List<DetalleDocumentoResponseDto> findByPersonaNaturalId(Integer personaNaturalId);
 }

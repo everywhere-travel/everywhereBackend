@@ -35,6 +35,7 @@ public class Viajero {
     @Column(name = "via_upd_tmp")
     private LocalDateTime actualizado;
 
-    @OneToOne(mappedBy = "viajero", fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "per_id_int", nullable = true)
     private PersonaNatural personaNatural;
 }

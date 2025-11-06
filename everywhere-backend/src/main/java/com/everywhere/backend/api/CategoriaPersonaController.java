@@ -47,9 +47,8 @@ public class CategoriaPersonaController {
 
     @PatchMapping("/{id}")
     @RequirePermission(module = "CATEGORIA_PERSONAS", permission = "UPDATE")
-    public ResponseEntity<CategoriaPersonaResponseDTO> patchCategoria(@PathVariable Integer id, @RequestBody CategoriaPersonaRequestDTO categoriaPersonaRequestDTO) {
-        CategoriaPersonaResponseDTO categoriaActualizada = categoriaPersonaService.patch(id, categoriaPersonaRequestDTO);
-        return ResponseEntity.ok(categoriaActualizada);
+    public ResponseEntity<CategoriaPersonaResponseDTO> patchCategoria(@PathVariable Integer id, @RequestBody CategoriaPersonaRequestDTO categoriaPersonaRequestDTO) { 
+        return ResponseEntity.ok(categoriaPersonaService.patch(id, categoriaPersonaRequestDTO));
     }
 
     @DeleteMapping("/{id}")
@@ -61,29 +60,25 @@ public class CategoriaPersonaController {
 
     @PatchMapping("/persona-natural/{personaNaturalId}/asignar")
     @RequirePermission(module = "CATEGORIA_PERSONAS", permission = "UPDATE")
-    public ResponseEntity<?> asignarCategoria(@PathVariable Integer personaNaturalId, @RequestBody PersonaNaturalCategoriaDTO categoriaDTO) {
-        PersonaNaturalResponseDTO personaActualizada = categoriaPersonaService.asignarCategoria(personaNaturalId, categoriaDTO.getCategoriaId());
-        return ResponseEntity.ok(personaActualizada);
+    public ResponseEntity<?> asignarCategoria(@PathVariable Integer personaNaturalId, @RequestBody PersonaNaturalCategoriaDTO categoriaDTO) { 
+        return ResponseEntity.ok(categoriaPersonaService.asignarCategoria(personaNaturalId, categoriaDTO.getCategoriaId()));
     }
 
-    @DeleteMapping("/persona-natural/{personaNaturalId}/desasignar")
+    @PatchMapping("/persona-natural/{personaNaturalId}/desasignar")
     @RequirePermission(module = "CATEGORIA_PERSONAS", permission = "UPDATE")
-    public ResponseEntity<?> desasignarCategoria(@PathVariable Integer personaNaturalId) {
-        PersonaNaturalResponseDTO personaActualizada = categoriaPersonaService.desasignarCategoria(personaNaturalId);
-        return ResponseEntity.ok(personaActualizada);
+    public ResponseEntity<?> desasignarCategoria(@PathVariable Integer personaNaturalId) { 
+        return ResponseEntity.ok(categoriaPersonaService.desasignarCategoria(personaNaturalId));
     }
 
     @GetMapping("/categoria/{categoriaId}")
     @RequirePermission(module = "CATEGORIA_PERSONAS", permission = "READ")
-    public ResponseEntity<List<PersonaNaturalResponseDTO>> getPersonasPorCategoria(@PathVariable Integer categoriaId) {
-        List<PersonaNaturalResponseDTO> personas = categoriaPersonaService.findPersonasPorCategoria(categoriaId);
-        return ResponseEntity.ok(personas);
+    public ResponseEntity<List<PersonaNaturalResponseDTO>> getPersonasPorCategoria(@PathVariable Integer categoriaId) { 
+        return ResponseEntity.ok(categoriaPersonaService.findPersonasPorCategoria(categoriaId));
     }
 
     @GetMapping("/persona-natural/{personaNaturalId}/categoria")
     @RequirePermission(module = "CATEGORIA_PERSONAS", permission = "READ")
-    public ResponseEntity<CategoriaPersonaResponseDTO> getCategoriaDePersona(@PathVariable Integer personaNaturalId) {
-        CategoriaPersonaResponseDTO categoria = categoriaPersonaService.getCategoriaDePersona(personaNaturalId);
-        return ResponseEntity.ok(categoria);
+    public ResponseEntity<CategoriaPersonaResponseDTO> getCategoriaDePersona(@PathVariable Integer personaNaturalId) { 
+        return ResponseEntity.ok(categoriaPersonaService.getCategoriaDePersona(personaNaturalId));
     }
 }

@@ -8,4 +8,5 @@ import java.util.List;
 public interface DetalleDocumentoRepository extends JpaRepository<DetalleDocumento, Integer> {
     List<DetalleDocumento> findByDocumentoId(Integer documentoId);
     List<DetalleDocumento> findByNumeroContainingIgnoreCase(String numero);
+    List<DetalleDocumento> findByPersonaNaturalId(Integer personaNaturalId);
 }
