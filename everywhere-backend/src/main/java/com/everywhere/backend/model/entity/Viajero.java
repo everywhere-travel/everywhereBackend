@@ -34,4 +34,8 @@ public class Viajero {
     @UpdateTimestamp
     @Column(name = "via_upd_tmp")
     private LocalDateTime actualizado;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "per_id_int", nullable = true)
+    private PersonaNatural personaNatural;
 }

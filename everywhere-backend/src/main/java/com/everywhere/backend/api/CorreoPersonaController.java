@@ -1,5 +1,7 @@
-package com.everywhere.backend.model.dto;
+package com.everywhere.backend.api;
 
+import com.everywhere.backend.model.dto.CorreoPersonaRequestDTO;
+import com.everywhere.backend.model.dto.CorreoPersonaResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.CorreoPersonaService;
 import lombok.RequiredArgsConstructor;
@@ -9,13 +11,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/personas/{personaId}/correos")
+@RequestMapping("/correos-persona")
 @RequiredArgsConstructor
 public class CorreoPersonaController {
 
     private final CorreoPersonaService correoPersonaService;
 
-    @GetMapping
+    @GetMapping("/personas/{personaId}")
     @RequirePermission(module = "PERSONAS", permission = "READ")
     public ResponseEntity<List<CorreoPersonaResponseDTO>> findByPersonaId(@PathVariable Integer personaId) {
         return ResponseEntity.ok(correoPersonaService.findByPersonaId(personaId));
@@ -29,7 +31,7 @@ public class CorreoPersonaController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
+    @PostMapping("/personas/{personaId}")
     @RequirePermission(module = "PERSONAS", permission = "CREATE")
     public ResponseEntity<CorreoPersonaResponseDTO> save(
             @PathVariable Integer personaId,
@@ -37,7 +39,7 @@ public class CorreoPersonaController {
         return ResponseEntity.ok(correoPersonaService.save(correoPersonaRequestDTO, personaId));
     }
 
-    @PatchMapping("/{correoId}")
+    @PatchMapping("/personas/{personaId}/correo/{correoId}")
     @RequirePermission(module = "PERSONAS", permission = "UPDATE")
     public ResponseEntity<CorreoPersonaResponseDTO> update(
             @PathVariable Integer personaId,

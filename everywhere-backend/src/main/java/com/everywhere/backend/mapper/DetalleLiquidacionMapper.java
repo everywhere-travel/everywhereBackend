@@ -2,6 +2,7 @@ package com.everywhere.backend.mapper;
 
 import com.everywhere.backend.model.dto.DetalleLiquidacionRequestDTO;
 import com.everywhere.backend.model.dto.DetalleLiquidacionResponseDTO;
+import com.everywhere.backend.model.dto.DetalleLiquidacionSinLiquidacionDTO;
 import com.everywhere.backend.model.entity.DetalleLiquidacion;
 
 import jakarta.annotation.PostConstruct;
@@ -25,6 +26,11 @@ public class DetalleLiquidacionMapper {
     public DetalleLiquidacionResponseDTO toResponseDTO(DetalleLiquidacion detalleLiquidacion) {
         DetalleLiquidacionResponseDTO detalleLiquidacionResponseDTO = modelMapper.map(detalleLiquidacion, DetalleLiquidacionResponseDTO.class);
         return detalleLiquidacionResponseDTO;
+    }
+
+    public DetalleLiquidacionSinLiquidacionDTO toSinLiquidacionDTO(DetalleLiquidacion detalleLiquidacion) {
+        DetalleLiquidacionSinLiquidacionDTO detalleLiquidacionSinLiquidacionDTO = modelMapper.map(detalleLiquidacion, DetalleLiquidacionSinLiquidacionDTO.class);
+        return detalleLiquidacionSinLiquidacionDTO;
     }
 
     public DetalleLiquidacion toEntity(DetalleLiquidacionRequestDTO detalleLiquidacionRequestDTO) {

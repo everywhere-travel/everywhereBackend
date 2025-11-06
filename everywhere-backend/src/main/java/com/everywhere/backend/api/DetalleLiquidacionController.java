@@ -2,6 +2,7 @@ package com.everywhere.backend.api;
 
 import com.everywhere.backend.model.dto.DetalleLiquidacionRequestDTO;
 import com.everywhere.backend.model.dto.DetalleLiquidacionResponseDTO;
+import com.everywhere.backend.model.dto.DetalleLiquidacionSinLiquidacionDTO;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.DetalleLiquidacionService;
 import jakarta.validation.Valid;
@@ -34,8 +35,8 @@ public class DetalleLiquidacionController {
 
     @GetMapping("/liquidacion/{liquidacionId}")
     @RequirePermission(module = "LIQUIDACIONES", permission = "READ")
-    public ResponseEntity<List<DetalleLiquidacionResponseDTO>> getDetallesByLiquidacionId(@PathVariable Integer liquidacionId) { 
-        return ResponseEntity.ok(detalleLiquidacionService.findByLiquidacionId(liquidacionId));
+    public ResponseEntity<List<DetalleLiquidacionSinLiquidacionDTO>> getDetallesByLiquidacionId(@PathVariable Integer liquidacionId) { 
+        return ResponseEntity.ok(detalleLiquidacionService.findByLiquidacionIdSinLiquidacion(liquidacionId));
     }
 
     @PostMapping

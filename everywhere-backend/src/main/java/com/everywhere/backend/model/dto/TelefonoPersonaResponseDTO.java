@@ -14,5 +14,4 @@ public class TelefonoPersonaResponseDTO {
     private String descripcion;
     private LocalDateTime creado;
     private LocalDateTime actualizado;
-    private Integer personaId;
 }
