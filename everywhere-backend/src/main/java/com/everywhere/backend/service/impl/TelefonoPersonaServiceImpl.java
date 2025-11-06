@@ -26,14 +26,12 @@ public class TelefonoPersonaServiceImpl implements TelefonoPersonaService {
     @Override
     public List<TelefonoPersonaResponseDTO> findAll() {
         return telefonoPersonaRepository.findAll()
-                .stream()
-                .map(telefonoPersonaMapper::toResponseDTO)
-                .toList();
+                .stream().map(telefonoPersonaMapper::toResponseDTO).toList();
     }
 
     @Override
-    public Optional<TelefonoPersonaResponseDTO> findById(Integer id) {
-        return telefonoPersonaRepository.findById(id)
+    public Optional<TelefonoPersonaResponseDTO> findById(Integer telefonoId, Integer personaId) {
+        return telefonoPersonaRepository.findByIdAndPersonaId(telefonoId, personaId)
                 .map(telefonoPersonaMapper::toResponseDTO);
     }
 
@@ -59,20 +57,18 @@ public class TelefonoPersonaServiceImpl implements TelefonoPersonaService {
 
     @Override
     public TelefonoPersonaResponseDTO update(Integer personaId, TelefonoPersonaRequestDTO telefonoPersonaRequestDTO, Integer telefonoId) {
-        TelefonoPersona telefono = telefonoPersonaRepository.findById(telefonoId)
-                .orElseThrow(() -> new ResourceNotFoundException("Teléfono no encontrado con ID: " + telefonoId));
+        TelefonoPersona telefono = telefonoPersonaRepository.findByIdAndPersonaId(telefonoId, personaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Teléfono no encontrado con ID: " + telefonoId + " para la persona con ID: "+ personaId));
 
         telefonoPersonaMapper.updateEntityFromDTO(telefonoPersonaRequestDTO, telefono);
-
         return telefonoPersonaMapper.toResponseDTO(telefonoPersonaRepository.save(telefono));
     }
 
 
     @Override
-    public void deleteById(Integer id) {
-        if (!telefonoPersonaRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Teléfono no encontrado con ID: " + id);
-        }
-        telefonoPersonaRepository.deleteById(id);
+    public void deleteById(Integer telefonoId, Integer personaId) {
+        if (!telefonoPersonaRepository.existsByIdAndPersonaId(telefonoId, personaId))
+            throw new ResourceNotFoundException("Teléfono no encontrado con ID: " + telefonoId + " para la persona con ID: " + personaId);
+        telefonoPersonaRepository.deleteById(telefonoId);
     }
 }

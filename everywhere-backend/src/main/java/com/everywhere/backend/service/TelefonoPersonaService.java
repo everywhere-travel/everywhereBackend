@@ -8,9 +8,9 @@ import java.util.Optional;
 
 public interface TelefonoPersonaService {
     List<TelefonoPersonaResponseDTO> findAll();
-    Optional<TelefonoPersonaResponseDTO> findById(Integer id);
+    Optional<TelefonoPersonaResponseDTO> findById(Integer telefonoId, Integer personaId);
     List<TelefonoPersonaResponseDTO> findByPersonaId(Integer personaId);
     TelefonoPersonaResponseDTO save(TelefonoPersonaRequestDTO telefonoPersonaRequestDTO, Integer personaId);
     TelefonoPersonaResponseDTO update(Integer personaId, TelefonoPersonaRequestDTO TelefonoPersonaRequestDTO, Integer TelefonoPersonaId);
-    void deleteById(Integer id);
+    void deleteById(Integer telefonoId, Integer personaId);
 }

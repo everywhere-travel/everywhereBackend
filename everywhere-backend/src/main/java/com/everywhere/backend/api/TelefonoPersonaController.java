@@ -27,13 +27,13 @@ public class    TelefonoPersonaController {
 
     @GetMapping("/personas/{personaId}/telefono/{telefonoId}")
     @RequirePermission(module = "PERSONAS", permission = "READ")
-    public ResponseEntity<TelefonoPersonaResponseDTO> findById(@PathVariable Integer telefonoId) {
-        return telefonoPersonaService.findById(telefonoId)
+    public ResponseEntity<TelefonoPersonaResponseDTO> findById(@PathVariable Integer personaId, @PathVariable Integer telefonoId) {
+        return telefonoPersonaService.findById(telefonoId, personaId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
+    @PostMapping("/personas/{personaId}")
     @RequirePermission(module = "PERSONAS", permission = "CREATE")
     public ResponseEntity<TelefonoPersonaResponseDTO> create(@PathVariable Integer personaId,
                                                              @RequestBody @Valid TelefonoPersonaRequestDTO telefonoPersonaRequestDTO) {
@@ -48,10 +48,10 @@ public class    TelefonoPersonaController {
         return ResponseEntity.ok(telefonoPersonaService.update(personaId, telefonoPersonaRequestDTO, telefonoId));
     }
 
-    @DeleteMapping("/{telefonoId}")
+    @DeleteMapping("/personas/{personaId}/telefono/{telefonoId}")
     @RequirePermission(module = "PERSONAS", permission = "DELETE")
-    public ResponseEntity<Void> delete(@PathVariable Integer telefonoId) {
-        telefonoPersonaService.deleteById(telefonoId);
+    public ResponseEntity<Void> delete(@PathVariable Integer personaId, @PathVariable Integer telefonoId) {
+        telefonoPersonaService.deleteById(telefonoId, personaId);
         return ResponseEntity.noContent().build();
     }
 }

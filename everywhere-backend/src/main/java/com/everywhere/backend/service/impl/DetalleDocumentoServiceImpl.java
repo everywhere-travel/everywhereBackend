@@ -100,6 +100,13 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
         return mapToResponseList(detalleDocumentoRepository.findByNumeroContainingIgnoreCase(numero));
     }
 
+    @Override
+    public List<DetalleDocumentoResponseDto> findByPersonaNaturalId(Integer personaNaturalId) {
+        if (!personaNaturalRepository.existsById(personaNaturalId)) 
+            throw new ResourceNotFoundException("PersonaNatural no encontrada con id: " + personaNaturalId);
+        return mapToResponseList(detalleDocumentoRepository.findByPersonaNaturalId(personaNaturalId));
+    }
+
     private List<DetalleDocumentoResponseDto> mapToResponseList(List<DetalleDocumento> detalles) {
         return detalles.stream().map(detalleDocumentoMapper::toResponse).toList();
     }

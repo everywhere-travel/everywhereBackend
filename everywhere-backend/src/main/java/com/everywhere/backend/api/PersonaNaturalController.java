@@ -68,13 +68,13 @@ public class PersonaNaturalController {
         return ResponseEntity.ok(personaNaturalService.patch(id, personaNaturalRequestDTO));
     }
 
-    @PatchMapping("/{id}/viajero")
+    @PatchMapping("/{id}/asociar-viajero")
     @RequirePermission(module = "PERSONAS", permission = "UPDATE")
     public ResponseEntity<PersonaNaturalResponseDTO> patchAsociarViajero(@PathVariable Integer id, @RequestBody PersonaNaturalViajeroDTO personaNaturalViajeroDTO) { 
         return ResponseEntity.ok(personaNaturalService.asociarViajero(id, personaNaturalViajeroDTO.getViajeroId()));
     }
 
-    @DeleteMapping("/{id}/viajero")
+    @PatchMapping("/{id}/desasociar-viajero")
     @RequirePermission(module = "PERSONAS", permission = "UPDATE")
     public ResponseEntity<PersonaNaturalResponseDTO> desasociarViajero(@PathVariable Integer id) { 
         return ResponseEntity.ok(personaNaturalService.desasociarViajero(id));
