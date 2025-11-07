@@ -12,8 +12,9 @@ public class ModelMapperConfig {
     public ModelMapper modelMapper() {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration()
-                .setMatchingStrategy(MatchingStrategies.STRICT)
-                .setSkipNullEnabled(true);
+                .setMatchingStrategy(MatchingStrategies.LOOSE)
+                .setSkipNullEnabled(true)
+                .setAmbiguityIgnored(true);
         return modelMapper;
     }
 }
