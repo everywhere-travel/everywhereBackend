@@ -24,11 +24,13 @@ import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.LiquidacionMapper;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class LiquidacionServiceImpl implements LiquidacionService {
 
     private final LiquidacionRepository liquidacionRepository;
@@ -53,6 +55,7 @@ public class LiquidacionServiceImpl implements LiquidacionService {
     }
 
     @Override
+    @Transactional
     public LiquidacionResponseDTO update(Integer id, LiquidacionRequestDTO liquidacionRequestDTO) {
         if (!liquidacionRepository.existsById(id))
             throw new ResourceNotFoundException("Liquidación no encontrada con ID: " + id);
@@ -100,6 +103,7 @@ public class LiquidacionServiceImpl implements LiquidacionService {
     }
 
     @Override
+    @Transactional
     public void deleteById(Integer id) {
         if (!liquidacionRepository.existsById(id))
             throw new ResourceNotFoundException("Liquidación no encontrada con ID: " + id);
@@ -165,6 +169,7 @@ public class LiquidacionServiceImpl implements LiquidacionService {
     }
 
     @Override
+    @Transactional
     public LiquidacionResponseDTO create(LiquidacionRequestDTO liquidacionRequestDTO, Integer cotizacionId) {
         if (!cotizacionRepository.existsById(cotizacionId))
             throw new ResourceNotFoundException("Cotización no encontrada con ID: " + cotizacionId);
