@@ -52,6 +52,10 @@ public class DocumentoCobranza {
     @JoinColumn(name = "per_id_int")
     private Personas persona;
 
+    @ManyToOne
+    @JoinColumn(name = "dtdoc_id_int")
+    private DetalleDocumento detalleDocumento;
+
     @OneToMany(mappedBy = "documentoCobranza", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<DetalleDocumentoCobranza> detalles;

@@ -27,7 +27,9 @@ import com.everywhere.backend.mapper.DetalleDocumentoCobranzaMapper;
 import com.everywhere.backend.mapper.DocumentoCobranzaMapper;
 import com.everywhere.backend.model.entity.DocumentoCobranza;
 import com.everywhere.backend.model.entity.DetalleDocumentoCobranza;
+import com.everywhere.backend.model.entity.DetalleDocumento;
 import com.everywhere.backend.repository.DetalleDocumentoCobranzaRepository;
+import com.everywhere.backend.repository.DetalleDocumentoRepository;
 import com.everywhere.backend.repository.DocumentoCobranzaRepository;
 import com.everywhere.backend.service.CotizacionService;
 import com.everywhere.backend.service.DocumentoCobranzaService;
@@ -53,6 +55,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     private final CotizacionService cotizacionService;
     private final DocumentoCobranzaRepository documentoCobranzaRepository;
     private final DetalleDocumentoCobranzaRepository detalleDocumentoCobranzaRepository;
+    private final DetalleDocumentoRepository detalleDocumentoRepository;
     private final DocumentoCobranzaMapper documentoCobranzaMapper;
     private final DetalleDocumentoCobranzaMapper detalleDocumentoCobranzaMapper;
 
@@ -123,8 +126,18 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         if (!documentoCobranzaRepository.existsById(id))
             throw new ResourceNotFoundException("Documento de cobranza no encontrado con ID: " + id);
 
+        if (documentoCobranzaUpdateDTO.getDetalleDocumentoId() != null && 
+            !detalleDocumentoRepository.existsById(documentoCobranzaUpdateDTO.getDetalleDocumentoId()))
+            throw new ResourceNotFoundException("Detalle de documento no encontrado con ID: " + documentoCobranzaUpdateDTO.getDetalleDocumentoId());
+
         DocumentoCobranza documentoCobranza = documentoCobranzaRepository.findById(id).get();
         documentoCobranzaMapper.updateEntityFromUpdateDTO(documentoCobranza, documentoCobranzaUpdateDTO);
+
+        if (documentoCobranzaUpdateDTO.getDetalleDocumentoId() != null) {
+            DetalleDocumento detalleDocumento = detalleDocumentoRepository.findById(documentoCobranzaUpdateDTO.getDetalleDocumentoId()).get();
+            documentoCobranza.setDetalleDocumento(detalleDocumento);
+        }
+
         return documentoCobranzaMapper.toResponseDTO(documentoCobranzaRepository.save(documentoCobranza));
     }
 
@@ -374,7 +387,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         innerTable.addCell(new Cell().add(new Paragraph(nombreCliente).setFontSize(9)).setBorder(Border.NO_BORDER).setPadding(1));
 
         // Fila 3 - Solo Documento
-        innerTable.addCell(new Cell().add(new Paragraph("Documento: - " + documentoCobranzaResponseDTO.getTipoDocumentoCliente()).setBold().setFontSize(9))
+        innerTable.addCell(new Cell().add(new Paragraph("Documento - " + documentoCobranzaResponseDTO.getTipoDocumentoCliente()+":").setBold().setFontSize(9))
                 .setBorder(Border.NO_BORDER).setPadding(1));
         innerTable.addCell(new Cell().add(new Paragraph(numeroDocumento).setFontSize(9)).setBorder(Border.NO_BORDER).setPadding(1));
 
@@ -550,8 +563,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     }
 
     // 4. CUADRO DE OBSERVACIONES
-    private void addObservationsBox(Document document, DocumentoCobranzaResponseDTO documento) {
-        if (documento.getObservaciones() != null && !documento.getObservaciones().trim().isEmpty()) {
+    private void addObservationsBox(Document document, DocumentoCobranzaResponseDTO documento) { 
             document.add(new Paragraph("\n")); // Espacio antes del cuadro
 
             // Crear tabla de una sola celda para el cuadro de observaciones
@@ -568,8 +580,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
             observationsCell.add(observationsParagraph);
 
             observationsTable.addCell(observationsCell);
-            document.add(observationsTable);
-        }
+            document.add(observationsTable); 
     }
 
     // 5. PIE DE PÁGINA EN CADA HOJA
