@@ -24,6 +24,12 @@ public class DetalleDocumentoController {
     public ResponseEntity<List<DetalleDocumentoResponseDto>> findAll() {
         return ResponseEntity.ok(detalleDocumentoService.findAll());
     }
+    
+    @GetMapping("/persona/{personaId}")
+    @RequirePermission(module = "DOCUMENTOS", permission = "READ")
+    public ResponseEntity<List<DetalleDocumentoResponseDto>> findByPersonaId(@PathVariable Integer personaId) {
+        return ResponseEntity.ok(detalleDocumentoService.findByPersonaId(personaId));
+    }
 
     @GetMapping("/{id}")
     @RequirePermission(module = "DOCUMENTOS", permission = "READ")

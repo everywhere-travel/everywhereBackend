@@ -387,7 +387,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         innerTable.addCell(new Cell().add(new Paragraph(nombreCliente).setFontSize(9)).setBorder(Border.NO_BORDER).setPadding(1));
 
         // Fila 3 - Solo Documento
-        innerTable.addCell(new Cell().add(new Paragraph("Documento: - " + documentoCobranzaResponseDTO.getTipoDocumentoCliente()).setBold().setFontSize(9))
+        innerTable.addCell(new Cell().add(new Paragraph("Documento - " + documentoCobranzaResponseDTO.getTipoDocumentoCliente()+":").setBold().setFontSize(9))
                 .setBorder(Border.NO_BORDER).setPadding(1));
         innerTable.addCell(new Cell().add(new Paragraph(numeroDocumento).setFontSize(9)).setBorder(Border.NO_BORDER).setPadding(1));
 

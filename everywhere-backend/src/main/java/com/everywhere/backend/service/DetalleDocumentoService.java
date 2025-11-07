@@ -10,8 +10,9 @@ public interface DetalleDocumentoService {
     DetalleDocumentoResponseDto save(DetalleDocumentoRequestDto detalleDocumentoRequestDto);
     DetalleDocumentoResponseDto update(Integer id, DetalleDocumentoRequestDto detalleDocumentoRequestDto);
     void delete(Integer id);
+    List<DetalleDocumentoResponseDto> findByPersonaId(Integer personaId);
     List<DetalleDocumentoResponseDto> findAll();
     List<DetalleDocumentoResponseDto> findByDocumentoId(Integer documentoId);
     List<DetalleDocumentoResponseDto> findByNumero(String numero);
-    List<DetalleDocumentoResponseDto> findByPersonaNaturalId(Integer personaNaturalId);
+    List<DetalleDocumentoResponseDto> findByPersonaNaturalId(Integer personaNaturalId); 
 }

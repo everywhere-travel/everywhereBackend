@@ -93,6 +93,7 @@ public class DocumentoCobranzaMapper {
         
         if (documentoCobranza.getPersona() != null) {
             Integer personaId = documentoCobranza.getPersona().getId();
+            documentoCobranzaResponseDTO.setPersonaId(personaId);
             
             PersonaNatural personaNatural = personaNaturalRepository.findByPersonasId(personaId).orElse(null);
             if (personaNatural != null) {
