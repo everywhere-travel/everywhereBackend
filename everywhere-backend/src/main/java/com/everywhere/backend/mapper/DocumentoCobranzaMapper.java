@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
+import jakarta.annotation.PostConstruct;
+
 @Component
 @RequiredArgsConstructor
 public class DocumentoCobranzaMapper {
@@ -24,6 +26,13 @@ public class DocumentoCobranzaMapper {
     private final ModelMapper modelMapper;
     private final PersonaNaturalRepository personaNaturalRepository;
     private final PersonaJuridicaRepository personaJuridicaRepository;
+
+    @PostConstruct
+    public void configureMapping() {
+        modelMapper.typeMap(DocumentoCobranzaUpdateDTO.class, DocumentoCobranza.class).addMappings(mapper -> {
+            mapper.skip(DocumentoCobranza::setDetalleDocumento);
+        });
+    }
     
     public DocumentoCobranza toEntity(DocumentoCobranzaRequestDTO documentoCobranzaRequestDTO) {
         return modelMapper.map(documentoCobranzaRequestDTO, DocumentoCobranza.class);
@@ -76,6 +85,12 @@ public class DocumentoCobranzaMapper {
     public DocumentoCobranzaResponseDTO toResponseDTO(DocumentoCobranza documentoCobranza) {
         DocumentoCobranzaResponseDTO documentoCobranzaResponseDTO = modelMapper.map(documentoCobranza, DocumentoCobranzaResponseDTO.class);
         
+        if (documentoCobranza.getDetalleDocumento() != null) {
+            documentoCobranzaResponseDTO.setClienteDocumento(documentoCobranza.getDetalleDocumento().getNumero());
+            if (documentoCobranza.getDetalleDocumento().getDocumento() != null)
+                documentoCobranzaResponseDTO.setTipoDocumentoCliente(documentoCobranza.getDetalleDocumento().getDocumento().getTipo());
+        }
+        
         if (documentoCobranza.getPersona() != null) {
             Integer personaId = documentoCobranza.getPersona().getId();
             
@@ -84,17 +99,26 @@ public class DocumentoCobranzaMapper {
                 String nombreCompleto = personaNatural.getNombres() + " " + 
                                        personaNatural.getApellidosPaterno() + " " + personaNatural.getApellidosMaterno();
                 documentoCobranzaResponseDTO.setClienteNombre(nombreCompleto);
-                documentoCobranzaResponseDTO.setClienteDocumento(personaNatural.getDocumento());
-                documentoCobranzaResponseDTO.setTipoDocumentoCliente("DNI");
+                
+                // Si no hay detalleDocumento seleccionado, usar el campo documento de PersonaNatural (legacy)
+                if (documentoCobranza.getDetalleDocumento() == null) {
+                    documentoCobranzaResponseDTO.setClienteDocumento(personaNatural.getDocumento());
+                    documentoCobranzaResponseDTO.setTipoDocumentoCliente("DNI");
+                }
             } else {
                 PersonaJuridica personaJuridica = personaJuridicaRepository.findByPersonasId(personaId).orElse(null);
                 if (personaJuridica != null) {
                     documentoCobranzaResponseDTO.setClienteNombre(personaJuridica.getRazonSocial());
-                    documentoCobranzaResponseDTO.setClienteDocumento(personaJuridica.getRuc());
-                    documentoCobranzaResponseDTO.setTipoDocumentoCliente("RUC");
+                    
+                    // Si no hay detalleDocumento seleccionado, usar el RUC (legacy)
+                    if (documentoCobranza.getDetalleDocumento() == null) {
+                        documentoCobranzaResponseDTO.setClienteDocumento(personaJuridica.getRuc());
+                        documentoCobranzaResponseDTO.setTipoDocumentoCliente("RUC");
+                    }
                 }
             }
         }
+        
         if (documentoCobranza.getSucursal() != null)
             documentoCobranzaResponseDTO.setSucursalDescripcion(documentoCobranza.getSucursal().getDescripcion());
         if (documentoCobranza.getFormaPago() != null)

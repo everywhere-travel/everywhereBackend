@@ -7,4 +7,5 @@ public class DocumentoCobranzaUpdateDTO {
     private String fileVenta;
     private Double costoEnvio;
     private String observaciones;
+    private Integer detalleDocumentoId;
 }
