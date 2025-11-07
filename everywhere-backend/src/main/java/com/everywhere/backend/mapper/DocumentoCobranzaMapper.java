@@ -110,12 +110,9 @@ public class DocumentoCobranzaMapper {
                 PersonaJuridica personaJuridica = personaJuridicaRepository.findByPersonasId(personaId).orElse(null);
                 if (personaJuridica != null) {
                     documentoCobranzaResponseDTO.setClienteNombre(personaJuridica.getRazonSocial());
-                    
-                    // Si no hay detalleDocumento seleccionado, usar el RUC (legacy)
-                    if (documentoCobranza.getDetalleDocumento() == null) {
-                        documentoCobranzaResponseDTO.setClienteDocumento(personaJuridica.getRuc());
-                        documentoCobranzaResponseDTO.setTipoDocumentoCliente("RUC");
-                    }
+                    // Siempre usar el RUC de PersonaJuridica, independiente del detalleDocumento
+                    documentoCobranzaResponseDTO.setClienteDocumento(personaJuridica.getRuc());
+                    documentoCobranzaResponseDTO.setTipoDocumentoCliente("RUC");
                 }
             }
         }

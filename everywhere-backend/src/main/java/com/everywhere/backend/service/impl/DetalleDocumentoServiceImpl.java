@@ -19,7 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
 
-    private final PersonaNaturalRepository personaNaturalRepository; 
+    private final PersonaNaturalRepository personaNaturalRepository;
     private final DocumentoRepository documentoRepository;
     private final DetalleDocumentoRepository detalleDocumentoRepository;
     private final DetalleDocumentoMapper detalleDocumentoMapper;
@@ -105,9 +105,9 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
         if (!personaNaturalRepository.existsById(personaNaturalId)) 
             throw new ResourceNotFoundException("PersonaNatural no encontrada con id: " + personaNaturalId);
         return mapToResponseList(detalleDocumentoRepository.findByPersonaNaturalId(personaNaturalId));
-    } 
+    }
 
-    @Override
+     @Override
     public List<DetalleDocumentoResponseDto> findByPersonaId(Integer personaId) {
         if (personaNaturalRepository.findByPersonasId(personaId).isEmpty())
             throw new ResourceNotFoundException("PersonaNatural no encontrada con personaId: " + personaId);
