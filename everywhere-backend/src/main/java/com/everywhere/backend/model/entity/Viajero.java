@@ -36,6 +36,6 @@ public class Viajero {
     private LocalDateTime actualizado;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "per_id_int", nullable = true)
+    @JoinColumn(name = "per_nat_id_int", nullable = true)
     private PersonaNatural personaNatural;
 }
