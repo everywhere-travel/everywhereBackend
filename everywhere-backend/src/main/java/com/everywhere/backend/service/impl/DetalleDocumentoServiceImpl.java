@@ -5,6 +5,7 @@ import com.everywhere.backend.mapper.DetalleDocumentoMapper;
 import com.everywhere.backend.model.dto.DetalleDocumentoRequestDto;
 import com.everywhere.backend.model.dto.DetalleDocumentoResponseDto;
 import com.everywhere.backend.model.entity.DetalleDocumento;
+import com.everywhere.backend.model.entity.PersonaNatural;
 import com.everywhere.backend.repository.DetalleDocumentoRepository;
 import com.everywhere.backend.repository.DocumentoRepository;
 import com.everywhere.backend.repository.PersonaNaturalRepository;
@@ -109,9 +110,9 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
 
      @Override
     public List<DetalleDocumentoResponseDto> findByPersonaId(Integer personaId) {
-        if (personaNaturalRepository.findByPersonasId(personaId).isEmpty())
-            throw new ResourceNotFoundException("PersonaNatural no encontrada con personaId: " + personaId);
-        return mapToResponseList(detalleDocumentoRepository.findByPersonaNaturalId(personaId));
+        PersonaNatural personaNatural = personaNaturalRepository.findByPersonasId(personaId)
+            .orElseThrow(() -> new ResourceNotFoundException("PersonaNatural no encontrada con personaId: " + personaId));
+        return mapToResponseList(detalleDocumentoRepository.findByPersonaNaturalId(personaNatural.getId()));
     }
 
     private List<DetalleDocumentoResponseDto> mapToResponseList(List<DetalleDocumento> detalles) {

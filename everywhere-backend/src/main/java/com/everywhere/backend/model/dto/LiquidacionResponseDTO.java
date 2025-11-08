@@ -1,11 +1,9 @@
 package com.everywhere.backend.model.dto;
  
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties; 
 import lombok.Data;
-
-import java.beans.Transient;
+ 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
