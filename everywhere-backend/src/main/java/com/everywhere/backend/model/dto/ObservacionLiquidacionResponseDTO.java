@@ -1,6 +1,5 @@
 package com.everywhere.backend.model.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
