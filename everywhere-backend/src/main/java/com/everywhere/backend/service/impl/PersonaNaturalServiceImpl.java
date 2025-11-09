@@ -17,6 +17,9 @@ import com.everywhere.backend.exceptions.BadRequestException;
 import com.everywhere.backend.mapper.PersonaNaturalMapper;
 import com.everywhere.backend.mapper.PersonaMapper;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,11 +40,13 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
     private final PersonaMapper personaMapper;
 
     @Override
+    @Cacheable(value = "personasNaturales")
     public List<PersonaNaturalResponseDTO> findAll() {
         return personaNaturalRepository.findAll().stream().map(personaNaturalMapper::toResponseDTO).toList();
     }
 
     @Override
+    @Cacheable(value = "personaNatural", key = "#id")
     public PersonaNaturalResponseDTO findById(Integer id) {
         PersonaNatural personaNatural = personaNaturalRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Persona natural no encontrada con ID: " + id));
@@ -79,6 +84,7 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
     }
 
     @Override
+    @CacheEvict(value = "personasNaturales", allEntries = true)
     public PersonaNaturalResponseDTO save(PersonaNaturalRequestDTO personaNaturalRequestDTO) {
         // Validar que no exista ya una persona con el mismo documento
         if (personaNaturalRequestDTO.getDocumento() != null && !personaNaturalRequestDTO.getDocumento().trim().isEmpty()) {
@@ -110,6 +116,8 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
     }
 
     @Override
+    @CachePut(value = "personaNatural", key = "#id")
+    @CacheEvict(value = "personasNaturales", allEntries = true)
     public PersonaNaturalResponseDTO patch(Integer id, PersonaNaturalRequestDTO personaNaturalRequestDTO) {
         // 🚀 OPTIMIZACIÓN 1: Validar existencia ANTES de buscar el objeto
         if (!personaNaturalRepository.existsById(id))
@@ -141,6 +149,7 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
     }
 
     @Override
+    @CacheEvict(value = {"personaNatural", "personasNaturales"}, key = "#id", allEntries = true)
     public void deleteById(Integer id) {
         if (!personaNaturalRepository.existsById(id))
             throw new ResourceNotFoundException("Persona natural no encontrada con ID: " + id);

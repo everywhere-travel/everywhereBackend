@@ -10,6 +10,11 @@ import com.everywhere.backend.repository.DocumentoCobranzaRepository;
 import com.everywhere.backend.repository.ProductoRepository;
 import com.everywhere.backend.service.DetalleDocumentoCobranzaService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +23,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@CacheConfig(cacheNames = "detallesDocumentoCobranza")
 public class DetalleDocumentoCobranzaServiceImpl implements DetalleDocumentoCobranzaService {
 
     private final DetalleDocumentoCobranzaRepository detalleDocumentoCobranzaRepository;
@@ -26,11 +32,13 @@ public class DetalleDocumentoCobranzaServiceImpl implements DetalleDocumentoCobr
     private final DetalleDocumentoCobranzaMapper detalleDocumentoCobranzaMapper;
 
     @Override
+    @Cacheable
     public List<DetalleDocumentoCobranzaResponseDTO> findAll() {
         return mapToResponseList(detalleDocumentoCobranzaRepository.findAllWithRelations());
     }
 
     @Override
+    @Cacheable(value = "detalleDocumentoCobranzaById", key = "#id")
     public DetalleDocumentoCobranzaResponseDTO findById(Long id) {
         DetalleDocumentoCobranza detalle = detalleDocumentoCobranzaRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Detalle no encontrado con ID: " + id));
@@ -38,6 +46,7 @@ public class DetalleDocumentoCobranzaServiceImpl implements DetalleDocumentoCobr
     }
 
     @Override
+    @Cacheable(value = "detallesDocumentoCobranzaPorDocumentoId", key = "#documentoId")
     public List<DetalleDocumentoCobranzaResponseDTO> findByDocumentoCobranzaId(Long documentoId) {
         if (!documentoCobranzaRepository.existsById(documentoId))
             throw new ResourceNotFoundException("Documento de cobranza no encontrado con ID: " + documentoId);
@@ -46,6 +55,14 @@ public class DetalleDocumentoCobranzaServiceImpl implements DetalleDocumentoCobr
 
     @Override
     @Transactional
+    @CachePut(value = "detalleDocumentoCobranzaById", key = "#result.id")
+    @CacheEvict(
+        value = { 
+            "detallesDocumentoCobranza", "detallesDocumentoCobranzaPorDocumentoId",
+            "documentosCobranza", "documentoCobranzaById", "documentoCobranzaByNumero", "documentoCobranzaByCotizacionId"
+        },
+        allEntries = true
+    )
     public DetalleDocumentoCobranzaResponseDTO save(DetalleDocumentoCobranzaRequestDTO detalleDocumentoCobranzaRequestDTO) {
         if (!documentoCobranzaRepository.existsById(detalleDocumentoCobranzaRequestDTO.getDocumentoCobranzaId()))
             throw new ResourceNotFoundException("Documento de cobranza no encontrado con ID: " + detalleDocumentoCobranzaRequestDTO.getDocumentoCobranzaId());
@@ -62,6 +79,14 @@ public class DetalleDocumentoCobranzaServiceImpl implements DetalleDocumentoCobr
 
     @Override
     @Transactional
+    @CachePut(value = "detalleDocumentoCobranzaById", key = "#id")
+    @CacheEvict(
+        value = {
+            "detallesDocumentoCobranza", "detallesDocumentoCobranzaPorDocumentoId",
+            "documentosCobranza", "documentoCobranzaById", "documentoCobranzaByNumero", "documentoCobranzaByCotizacionId"
+        },
+        allEntries = true
+    )
     public DetalleDocumentoCobranzaResponseDTO patch(Long id, DetalleDocumentoCobranzaRequestDTO detalleDocumentoCobranzaRequestDTO) {
         if (!detalleDocumentoCobranzaRepository.existsById(id))
             throw new ResourceNotFoundException("Detalle no encontrado con ID: " + id);
@@ -86,6 +111,13 @@ public class DetalleDocumentoCobranzaServiceImpl implements DetalleDocumentoCobr
 
     @Override
     @Transactional
+    @CacheEvict(
+        value = { 
+            "detallesDocumentoCobranza", "detalleDocumentoCobranzaById", "detallesDocumentoCobranzaPorDocumentoId",
+            "documentosCobranza", "documentoCobranzaById", "documentoCobranzaByNumero", "documentoCobranzaByCotizacionId"
+        }, 
+        allEntries = true
+    )
     public void deleteById(Long id) {
         if (!detalleDocumentoCobranzaRepository.existsById(id)) 
             throw new ResourceNotFoundException("Detalle no encontrado con ID: " + id);

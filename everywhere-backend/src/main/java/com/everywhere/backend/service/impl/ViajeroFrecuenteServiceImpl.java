@@ -12,12 +12,19 @@ import com.everywhere.backend.service.ViajeroFrecuenteService;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
+@CacheConfig(cacheNames = "viajerosFrecuentes")
 public class ViajeroFrecuenteServiceImpl implements ViajeroFrecuenteService {
 
     private final ViajeroFrecuenteRepository viajeroFrecuenteRepository;
@@ -25,11 +32,18 @@ public class ViajeroFrecuenteServiceImpl implements ViajeroFrecuenteService {
     private final ViajeroFrecuenteMapper viajeroFrecuenteMapper;
 
     @Override
+    @Cacheable
     public List<ViajeroFrecuenteResponseDto> findAll() {
         return mapToResponseList(viajeroFrecuenteRepository.findAll());
     }
 
     @Override
+    @Transactional
+    @CachePut(value = "viajeroFrecuenteById", key = "#result.id")
+    @CacheEvict(
+        value = {"viajerosFrecuentes", "viajerosFrecuentesByViajeroId"}, 
+        allEntries = true
+    )
     public ViajeroFrecuenteResponseDto crear(Integer viajeroId, ViajeroFrecuenteRequestDto viajeroFrecuenteRequestDto) {
         if (viajeroId == null) throw new IllegalArgumentException("El ID del viajero no puede ser nulo");
 
@@ -43,6 +57,7 @@ public class ViajeroFrecuenteServiceImpl implements ViajeroFrecuenteService {
     }
 
     @Override
+    @Cacheable(value = "viajeroFrecuenteById", key = "#id")
     public ViajeroFrecuenteResponseDto buscarPorId(Integer id) {
         ViajeroFrecuente viajeroFrecuente = viajeroFrecuenteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("ViajeroFrecuente no encontrado con id: " + id));
@@ -51,18 +66,30 @@ public class ViajeroFrecuenteServiceImpl implements ViajeroFrecuenteService {
     }
 
     @Override
+    @Cacheable(value = "viajerosFrecuentesByViajeroId", key = "#viajeroId")
     public List<ViajeroFrecuenteResponseDto> listarPorViajero(Integer viajeroId) {
         return mapToResponseList(viajeroFrecuenteRepository.findByViajero_Id(viajeroId));
     }
 
 
     @Override
+    @Transactional
+    @CacheEvict(
+        value = {"viajerosFrecuentes", "viajeroFrecuenteById", "viajerosFrecuentesByViajeroId"}, 
+        allEntries = true
+    )
     public void eliminar(Integer id) {
         if (!viajeroFrecuenteRepository.existsById(id)) throw new ResourceNotFoundException("ViajeroFrecuente no encontrado con id: " + id);
         viajeroFrecuenteRepository.deleteById(id);
     }
 
     @Override
+    @Transactional
+    @CachePut(value = "viajeroFrecuenteById", key = "#id")
+    @CacheEvict(
+        value = {"viajerosFrecuentes", "viajerosFrecuentesByViajeroId"}, 
+        allEntries = true
+    )
     public ViajeroFrecuenteResponseDto actualizar(Integer id, ViajeroFrecuenteRequestDto viajeroFrecuenteRequestDto) {
         if (!viajeroFrecuenteRepository.existsById(id))
             throw new ResourceNotFoundException("ViajeroFrecuente no encontrado con id: " + id);
@@ -84,6 +111,7 @@ public class ViajeroFrecuenteServiceImpl implements ViajeroFrecuenteService {
     }
 
     @Override
+    @Cacheable(value = "viajerosFrecuentesByViajeroId", key = "#viajeroId")
     public List<ViajeroFrecuenteResponseDto> buscarPorViajeroId(Integer viajeroId) {
         return mapToResponseList(viajeroFrecuenteRepository.findByViajero_Id(viajeroId));
     }

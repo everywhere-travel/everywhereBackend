@@ -12,6 +12,9 @@ import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.PersonaJuridicaMapper;
 import com.everywhere.backend.mapper.PersonaMapper;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor; 
@@ -28,11 +31,13 @@ public class PersonaJuridicaServiceImpl implements PersonaJuridicaService {
     private final PersonaMapper personaMapper;
 
     @Override
+    @Cacheable(value = "personasJuridicas")
     public List<PersonaJuridicaResponseDTO> findAll() {
         return personaJuridicaRepository.findAll().stream().map(personaJuridicaMapper::toResponseDTO).toList();
     }
 
     @Override
+    @Cacheable(value = "personaJuridica", key = "#id")
     public PersonaJuridicaResponseDTO findById(Integer id) {
         PersonaJuridica personaJuridica = personaJuridicaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Persona jurídica no encontrada con ID: " + id));
@@ -56,6 +61,7 @@ public class PersonaJuridicaServiceImpl implements PersonaJuridicaService {
     }
 
     @Override
+    @CacheEvict(value = "personasJuridicas", allEntries = true)
     public PersonaJuridicaResponseDTO save(PersonaJuridicaRequestDTO personaJuridicaRequestDTO) {
         // Validar que no exista ya una persona con el mismo RUC
         if (personaJuridicaRequestDTO.getRuc() != null && !personaJuridicaRequestDTO.getRuc().trim().isEmpty()) { 
@@ -76,12 +82,12 @@ public class PersonaJuridicaServiceImpl implements PersonaJuridicaService {
     }
 
     @Override
+    @CachePut(value = "personaJuridica", key = "#id")
+    @CacheEvict(value = "personasJuridicas", allEntries = true)
     public PersonaJuridicaResponseDTO patch(Integer id, PersonaJuridicaRequestDTO personaJuridicaRequestDTO) {
-        // 🚀 OPTIMIZACIÓN 1: Validar existencia ANTES de buscar el objeto
         if (!personaJuridicaRepository.existsById(id))
             throw new ResourceNotFoundException("Persona jurídica no encontrada con ID: " + id);
 
-        // 🚀 OPTIMIZACIÓN 2: Si viene RUC, validar duplicado ANTES de buscar el objeto completo
         if (personaJuridicaRequestDTO.getRuc() != null && !personaJuridicaRequestDTO.getRuc().trim().isEmpty()) { 
             String newRuc = personaJuridicaRequestDTO.getRuc().trim();
             if (personaJuridicaRepository.findByRucIgnoreCaseAndIdNot(newRuc, id).isPresent()) {
@@ -96,6 +102,7 @@ public class PersonaJuridicaServiceImpl implements PersonaJuridicaService {
     }
 
     @Override
+    @CacheEvict(value = {"personaJuridica", "personasJuridicas"}, key = "#id", allEntries = true)
     public void deleteById(Integer id) {
         if (!personaJuridicaRepository.existsById(id))
             throw new ResourceNotFoundException("Persona jurídica no encontrada con ID: " + id);

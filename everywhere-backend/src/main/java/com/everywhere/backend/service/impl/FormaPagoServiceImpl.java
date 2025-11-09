@@ -9,42 +9,61 @@ import com.everywhere.backend.service.FormaPagoService;
 
 import lombok.RequiredArgsConstructor;
 
-import com.everywhere.backend.exceptions.ResourceNotFoundException; 
+import com.everywhere.backend.exceptions.ResourceNotFoundException;
+
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
+@CacheConfig(cacheNames = "formasPago")
 public class FormaPagoServiceImpl implements FormaPagoService {
 
     private final FormaPagoRepository formaPagoRepository;
     private final FormaPagoMapper formaPagoMapper;
 
     @Override
+    @Cacheable
     public List<FormaPagoResponseDTO> findAll() {
         return mapToResponseList(formaPagoRepository.findAll());
     }
 
     @Override
+    @Cacheable(value = "formaPagoById", key = "#id")
     public FormaPagoResponseDTO findById(Integer id) {
         return formaPagoRepository.findById(id).map(formaPagoMapper::toResponseDTO)
             .orElseThrow(() -> new ResourceNotFoundException("Forma de pago no encontrada con ID: " + id));
     }
 
     @Override
+    @Cacheable(value = "formaPagoByCodigo", key = "#codigo")
     public FormaPagoResponseDTO findByCodigo(Integer codigo) {
         return formaPagoRepository.findByCodigo(codigo).map(formaPagoMapper::toResponseDTO)
             .orElseThrow(() -> new ResourceNotFoundException("Forma de pago no encontrada con código: " + codigo));
     }
 
     @Override
+    @Cacheable(value = "formasPagoByDescripcion", key = "#descripcion")
     public List<FormaPagoResponseDTO> findByDescripcion(String descripcion) {
         return mapToResponseList(formaPagoRepository.findByDescripcionContainingIgnoreCase(descripcion));
     }
 
     @Override
+    @Transactional
+    @CacheEvict(
+        value = {
+            "formasPago", "formaPagoById", "formaPagoByCodigo", "formasPagoByDescripcion",
+            "cotizaciones", "cotizacionById", "cotizacionConDetalles", "cotizacionesSinLiquidacion",
+            "liquidaciones", "liquidacion", "liquidacionConDetalles"
+        }, allEntries = true)
     public FormaPagoResponseDTO save(FormaPagoRequestDTO formaPagoRequestDTO) {
         if (formaPagoRepository.existsByCodigo(formaPagoRequestDTO.getCodigo()))
             throw new DataIntegrityViolationException("Ya existe una forma de pago con el código: " + formaPagoRequestDTO.getCodigo());
@@ -53,6 +72,14 @@ public class FormaPagoServiceImpl implements FormaPagoService {
     }
 
     @Override
+    @Transactional
+    @CachePut(value = "formaPagoById", key = "#id")
+    @CacheEvict(
+        value = {
+            "formasPago", "formaPagoByCodigo", "formasPagoByDescripcion",
+            "cotizaciones", "cotizacionById", "cotizacionConDetalles", "cotizacionesSinLiquidacion",
+            "liquidaciones", "liquidacion", "liquidacionConDetalles"
+        }, allEntries = true)
     public FormaPagoResponseDTO update(Integer id, FormaPagoRequestDTO formaPagoRequestDTO) {
         if (!formaPagoRepository.existsById(id))
             throw new ResourceNotFoundException("Forma de pago no encontrada con ID: " + id);
@@ -75,6 +102,13 @@ public class FormaPagoServiceImpl implements FormaPagoService {
     }
 
     @Override
+    @Transactional
+    @CacheEvict(
+        value = {
+            "formasPago", "formaPagoById", "formaPagoByCodigo", "formasPagoByDescripcion",
+            "cotizaciones", "cotizacionById", "cotizacionConDetalles", "cotizacionesSinLiquidacion",
+            "liquidaciones", "liquidacion", "liquidacionConDetalles"
+    }, allEntries = true)
     public void deleteById(Integer id) {
         if (!formaPagoRepository.existsById(id))
             throw new ResourceNotFoundException("Forma de pago no encontrada con ID: " + id);

@@ -14,6 +14,9 @@ import com.everywhere.backend.service.NaturalJuridicoService;
 import com.everywhere.backend.exceptions.ResourceNotFoundException; 
 import com.everywhere.backend.mapper.NaturalJuridicoMapper;
 
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +28,8 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
+@CacheConfig(cacheNames = "naturalJuridico")
 public class NaturalJuridicoServiceImpl implements NaturalJuridicoService {
 
     private final NaturalJuridicoRepository naturalJuridicoRepository;
@@ -34,6 +39,11 @@ public class NaturalJuridicoServiceImpl implements NaturalJuridicoService {
 
     @Override
     @Transactional
+    @CacheEvict(
+        value = { 
+            "naturalJuridico", "naturalJuridicoById", "naturalJuridicoByPersonaNaturalId", "naturalJuridicoByPersonaJuridicaId",
+            "personaDisplay"
+        }, allEntries = true)
     public List<NaturalJuridicoResponseDTO> crearRelaciones(NaturalJuridicoRequestDTO naturalJuridicoRequestDTO) {
         if (!personaNaturalRepository.existsById(naturalJuridicoRequestDTO.getPersonaNaturalId()))
             throw new ResourceNotFoundException("Persona natural no encontrada con ID: " + naturalJuridicoRequestDTO.getPersonaNaturalId());
@@ -66,6 +76,7 @@ public class NaturalJuridicoServiceImpl implements NaturalJuridicoService {
     }
 
     @Override
+    @Cacheable(value = "naturalJuridicoByPersonaNaturalId", key = "#personaNaturalId")
     public List<NaturalJuridicoResponseDTO> findByPersonaNaturalId(Integer personaNaturalId) {
         if (!personaNaturalRepository.existsById(personaNaturalId))
             throw new ResourceNotFoundException("Persona natural no encontrada con ID: " + personaNaturalId); 
@@ -73,6 +84,7 @@ public class NaturalJuridicoServiceImpl implements NaturalJuridicoService {
     }
 
     @Override
+    @Cacheable(value = "naturalJuridicoByPersonaJuridicaId", key = "#personaJuridicaId")
     public List<NaturalJuridicoResponseDTO> findByPersonaJuridicaId(Integer personaJuridicaId) {
         if (!personaJuridicaRepository.existsById(personaJuridicaId))
             throw new ResourceNotFoundException("Persona jurídica no encontrada con ID: " + personaJuridicaId);
@@ -80,6 +92,7 @@ public class NaturalJuridicoServiceImpl implements NaturalJuridicoService {
     }
 
     @Override
+    @Cacheable(value = "naturalJuridicoById", key = "#id")
     public NaturalJuridicoResponseDTO findById(Integer id) {
         NaturalJuridico naturalJuridico = naturalJuridicoRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Relación no encontrada con ID: " + id));
@@ -88,6 +101,11 @@ public class NaturalJuridicoServiceImpl implements NaturalJuridicoService {
 
     @Override
     @Transactional
+    @CacheEvict(
+        value = { 
+            "naturalJuridico", "naturalJuridicoById", "naturalJuridicoByPersonaNaturalId", "naturalJuridicoByPersonaJuridicaId",
+            "personaDisplay"
+        }, allEntries = true)
     public void deleteById(Integer id) {
         if (!naturalJuridicoRepository.existsById(id)) 
             throw new ResourceNotFoundException("Relación no encontrada con ID: " + id);
@@ -96,6 +114,11 @@ public class NaturalJuridicoServiceImpl implements NaturalJuridicoService {
 
     @Override
     @Transactional
+    @CacheEvict(
+        value = { 
+            "naturalJuridico", "naturalJuridicoById", "naturalJuridicoByPersonaNaturalId", "naturalJuridicoByPersonaJuridicaId",
+            "personaDisplay"
+        }, allEntries = true)
     public void deleteByPersonas(Integer personaNaturalId, Integer personaJuridicaId) {
         Optional<NaturalJuridico> naturalJuridicoOptional = naturalJuridicoRepository.findByPersonaNaturalIdAndPersonaJuridicaId(personaNaturalId, personaJuridicaId);
         if (naturalJuridicoOptional.isEmpty())
@@ -104,12 +127,18 @@ public class NaturalJuridicoServiceImpl implements NaturalJuridicoService {
     }
 
     @Override
+    @Cacheable
     public List<NaturalJuridicoResponseDTO> findAll() { 
         return mapToResponseList(naturalJuridicoRepository.findAll());
     }
 
     @Override
     @Transactional
+    @CacheEvict(
+        value = { 
+            "naturalJuridico", "naturalJuridicoById", "naturalJuridicoByPersonaNaturalId", "naturalJuridicoByPersonaJuridicaId",
+            "personaDisplay"
+        }, allEntries = true)
     public List<NaturalJuridicoResponseDTO> patchRelacionesPersonaNatural(Integer personaNaturalId, NaturalJuridicoPatchDTO naturalJuridicoPatchDTO) {
         if (!personaNaturalRepository.existsById(personaNaturalId))
             throw new ResourceNotFoundException("Persona natural no encontrada con ID: " + personaNaturalId);

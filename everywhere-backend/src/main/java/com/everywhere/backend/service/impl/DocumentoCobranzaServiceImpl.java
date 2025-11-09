@@ -35,6 +35,10 @@ import com.everywhere.backend.service.CotizacionService;
 import com.everywhere.backend.service.DocumentoCobranzaService;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +54,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@CacheConfig(cacheNames = "documentosCobranza")
 public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
     private final CotizacionService cotizacionService;
@@ -61,6 +66,14 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
     @Override
     @Transactional
+    @CachePut(value = "documentoCobranzaById", key = "#result.id")
+    @CacheEvict(
+        value = {
+            "documentosCobranza", "documentoCobranzaByNumero", "documentoCobranzaByCotizacionId",
+            "detallesDocumentoCobranza", "detalleDocumentoCobranzaById", "detallesDocumentoCobranzaPorDocumentoId"
+        },
+        allEntries = true
+    )
     public DocumentoCobranzaResponseDTO createDocumentoCobranza(Integer cotizacionId) {
         if (cotizacionId == null)
             throw new IllegalArgumentException("El ID de la cotización no puede ser nulo");
@@ -95,6 +108,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     }
 
     @Override
+    @Cacheable(value = "documentoCobranzaById", key = "#id")
     public DocumentoCobranzaResponseDTO findById(Long id) {
         DocumentoCobranza documentoCobranza = documentoCobranzaRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Documento de cobranza no encontrado con ID: " + id));
@@ -102,6 +116,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     }
 
     @Override
+    @Cacheable(value = "documentoCobranzaByNumero", key = "#numero")
     public DocumentoCobranzaResponseDTO findByNumero(String numero) {
         DocumentoCobranza documentoCobranza = documentoCobranzaRepository.findByNumero(numero)
                 .orElseThrow(() -> new ResourceNotFoundException("Documento de cobranza no encontrado con número: " + numero));
@@ -109,11 +124,13 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     }
 
     @Override
+    @Cacheable
     public List<DocumentoCobranzaResponseDTO> findAll() {
         return mapToResponseList(documentoCobranzaRepository.findAllWithRelations());
     }
 
     @Override
+    @Cacheable(value = "documentoCobranzaByCotizacionId", key = "#cotizacionId")
     public DocumentoCobranzaResponseDTO findByCotizacionId(Integer cotizacionId) {
         DocumentoCobranza documentoCobranza = documentoCobranzaRepository.findByCotizacionId(cotizacionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Documento de cobranza no encontrado para cotización ID: " + cotizacionId));
@@ -122,6 +139,11 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
     @Override
     @Transactional
+    @CachePut(value = "documentoCobranzaById", key = "#id")
+    @CacheEvict(
+        value = {"documentosCobranza", "documentoCobranzaByNumero", "documentoCobranzaByCotizacionId"},
+        allEntries = true
+    )
     public DocumentoCobranzaResponseDTO patchDocumento(Long id, DocumentoCobranzaUpdateDTO documentoCobranzaUpdateDTO) {
         if (!documentoCobranzaRepository.existsById(id))
             throw new ResourceNotFoundException("Documento de cobranza no encontrado con ID: " + id);
