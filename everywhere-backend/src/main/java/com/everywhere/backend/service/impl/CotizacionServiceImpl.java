@@ -10,13 +10,20 @@ import com.everywhere.backend.service.DetalleCotizacionService;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable; 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
+@CacheConfig(cacheNames = "cotizaciones")
 public class CotizacionServiceImpl implements CotizacionService {
 
     private final CotizacionRepository cotizacionRepository;
@@ -30,6 +37,10 @@ public class CotizacionServiceImpl implements CotizacionService {
     private final DetalleCotizacionService detalleCotizacionService; 
 
     @Override
+    @Transactional
+    @CacheEvict(
+        value = {"cotizaciones", "cotizacionesSinLiquidacion"},
+        allEntries = true)
     public CotizacionResponseDto create(CotizacionRequestDto cotizacionRequestDto, Integer personaId) {
 
         Cotizacion cotizacion = cotizacionMapper.toEntity(cotizacionRequestDto);
@@ -75,17 +86,24 @@ public class CotizacionServiceImpl implements CotizacionService {
     }
 
     @Override
+    @Cacheable(value = "cotizacionById", key = "#id")
     public CotizacionResponseDto findById(Integer id) {
         return cotizacionRepository.findById(id).map(cotizacionMapper::toResponse)
             .orElseThrow(()-> new ResourceNotFoundException("Cotización no encontrada con ID: " + id));
     }
 
     @Override
+    @Cacheable
     public List<CotizacionResponseDto> findAll() {
         return mapToResponseList(cotizacionRepository.findAll());
     }
 
     @Override
+    @Transactional
+    @CachePut(value = "cotizacionById", key = "#id")
+    @CacheEvict(
+        value = {"cotizaciones", "cotizacionesSinLiquidacion", "cotizacionConDetalles"},
+        allEntries = true)
     public CotizacionResponseDto update(Integer id, CotizacionRequestDto cotizacionRequestDto) {
         Cotizacion cotizacion = cotizacionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cotización no encontrada con ID: " + id));
@@ -126,6 +144,10 @@ public class CotizacionServiceImpl implements CotizacionService {
     }
 
     @Override
+    @Transactional
+    @CacheEvict(
+        value = {"cotizaciones", "cotizacionById", "cotizacionesSinLiquidacion", "cotizacionConDetalles"},
+        allEntries = true)
     public void delete(Integer id) {
         if (!cotizacionRepository.existsById(id))
             throw new ResourceNotFoundException("Cotización no encontrada con ID: " + id);
@@ -139,6 +161,7 @@ public class CotizacionServiceImpl implements CotizacionService {
     }
 
     @Override
+    @Cacheable(value = "cotizacionConDetalles", key = "#id")
     public CotizacionConDetallesResponseDTO findByIdWithDetalles(Integer id) {
         Cotizacion cotizacion = cotizacionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cotización no encontrada con ID: " + id));
@@ -150,6 +173,7 @@ public class CotizacionServiceImpl implements CotizacionService {
     }
 
     @Override
+    @Cacheable("cotizacionesSinLiquidacion")
     public List<CotizacionResponseDto> findCotizacionesSinLiquidacion() {
         return mapToResponseList(cotizacionRepository.findCotizacionesSinLiquidacion());
     }

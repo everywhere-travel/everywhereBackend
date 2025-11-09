@@ -7,15 +7,21 @@ import com.everywhere.backend.model.dto.DetalleCotizacionResponseDto;
 import com.everywhere.backend.model.entity.*;
 import com.everywhere.backend.repository.*;
 import com.everywhere.backend.service.DetalleCotizacionService;
-
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;  
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
+@CacheConfig(cacheNames = "detallesCotizacion")
 public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
 
     private final DetalleCotizacionRepository detalleCotizacionRepository;
@@ -26,17 +32,20 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
     private final DetalleCotizacionMapper detalleCotizacionMapper;
 
     @Override
+    @Cacheable
     public List<DetalleCotizacionResponseDto> findAll() {
         return mapToResponseList(detalleCotizacionRepository.findAll());
     }
 
     @Override
+    @Cacheable(value = "detalleCotizacionById", key = "#id")
     public DetalleCotizacionResponseDto findById(Integer id) {
         return detalleCotizacionRepository.findById(id).map(detalleCotizacionMapper::toResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Detalle de cotización no encontrado con ID: " + id));
     }
 
     @Override
+    @Cacheable(value = "detallesPorCotizacionId", key = "#cotizacionId")
     public List<DetalleCotizacionResponseDto> findByCotizacionId(Integer cotizacionId) {
         if (!cotizacionRepository.existsById(cotizacionId))
             throw new ResourceNotFoundException("Cotización no encontrada con ID: " + cotizacionId);
@@ -45,6 +54,10 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
     }
 
     @Override
+    @Transactional
+    @CacheEvict(
+        value = {"detallesCotizacion", "detallesPorCotizacionId", "cotizacionConDetalles"},
+        allEntries = true)
     public DetalleCotizacionResponseDto create(DetalleCotizacionRequestDto detalleCotizacionRequestDto, Integer cotizacionId) {
         if (cotizacionId == null) throw new IllegalArgumentException("El ID de la cotización es obligatorio");
         
@@ -76,6 +89,11 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
     }
 
     @Override
+    @Transactional
+    @CachePut(value = "detalleCotizacionById", key = "#id")
+    @CacheEvict(
+        value = {"detallesCotizacion", "detallesPorCotizacionId", "cotizacionConDetalles"},
+        allEntries = true)
     public DetalleCotizacionResponseDto patch(Integer id, DetalleCotizacionRequestDto detalleCotizacionRequestDto) {
         if (!detalleCotizacionRepository.existsById(id))
             throw new ResourceNotFoundException("Detalle de cotización no encontrado con ID: " + id);
@@ -105,6 +123,10 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
     }
 
     @Override
+    @Transactional
+    @CacheEvict(
+        value = {"detallesCotizacion", "detalleCotizacionById", "detallesPorCotizacionId", "cotizacionConDetalles"},
+        allEntries = true)
     public void delete(Integer id) {
         if (!detalleCotizacionRepository.existsById(id))
             throw new ResourceNotFoundException("Detalle de cotización no encontrado con ID: " + id);

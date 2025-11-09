@@ -9,13 +9,21 @@ import com.everywhere.backend.repository.CorreoPersonaRepository;
 import com.everywhere.backend.repository.PersonaRepository;
 import com.everywhere.backend.service.CorreoPersonaService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@CacheConfig(cacheNames = "correosPersona")
+@Transactional(readOnly = true)
 public class CorreoPersonaServiceImpl implements CorreoPersonaService {
 
     private final CorreoPersonaRepository correoPersonaRepository;
@@ -23,6 +31,7 @@ public class CorreoPersonaServiceImpl implements CorreoPersonaService {
     private final PersonaRepository personaRepository;
 
     @Override
+    @Cacheable
     public List<CorreoPersonaResponseDTO> findAll() {
         return correoPersonaRepository.findAll()
                 .stream()
@@ -31,12 +40,14 @@ public class CorreoPersonaServiceImpl implements CorreoPersonaService {
     }
 
     @Override
+    @Cacheable(value = "correoPersonaById", key = "#id")
     public Optional<CorreoPersonaResponseDTO> findById(Integer id) {
         return correoPersonaRepository.findById(id)
                 .map(correoPersonaMapper::toResponseDTO);
     }
 
     @Override
+    @Cacheable(value = "correosPersonaByPersonaId", key = "#personaId")
     public List<CorreoPersonaResponseDTO> findByPersonaId(Integer personaId) {
         return correoPersonaRepository.findByPersonaId(personaId)
                 .stream()
@@ -45,6 +56,23 @@ public class CorreoPersonaServiceImpl implements CorreoPersonaService {
     }
 
     @Override
+    @Transactional
+    @CachePut(value = "correoPersonaById", key = "#result.id")
+    @CacheEvict(
+        value = { 
+            "correosPersona", "correosPersonaByPersonaId", 
+            "personas", "personaById", "personasByEmail", "personasByTelefono", "personaDisplay",
+            "cotizaciones", "cotizacionById", "cotizacionConDetalles", "cotizacionesSinLiquidacion",
+            "personasNaturales", "personaNaturalById",
+            "categoriasPersona", "categoriaPersonaById", "categoriasPersonaByNombre", "personasPorCategoria", "categoriaDePersona",
+            "detallesDocumento", "detalleDocumentoById", "detallesDocumentoByDocumentoId", "detallesDocumentoByNumero", 
+            "detallesDocumentoByPersonaNaturalId", "detallesDocumentoByPersonaId",
+            "viajeros", "viajeroById", "viajerosByNacionalidad", "viajerosByResidencia",
+            "viajerosFrecuentes", "viajeroFrecuenteById", "viajerosFrecuentesByViajeroId",
+            "telefonosPersona", "telefonoPersonaById", "telefonosPersonaByPersonaId"
+        },
+        allEntries = true
+    )
     public CorreoPersonaResponseDTO save(CorreoPersonaRequestDTO correoPersonaRequestDTO, Integer personaId) {
                 boolean existeCorreo = correoPersonaRepository.existsByEmail(correoPersonaRequestDTO.getEmail());
         if (existeCorreo) {
@@ -62,6 +90,23 @@ public class CorreoPersonaServiceImpl implements CorreoPersonaService {
 
 
     @Override
+    @Transactional
+    @CachePut(value = "correoPersonaById", key = "#correoPersonaId")
+    @CacheEvict(
+        value = { 
+            "correosPersona", "correosPersonaByPersonaId", 
+            "personas", "personaById", "personasByEmail", "personasByTelefono", "personaDisplay",
+            "cotizaciones", "cotizacionById", "cotizacionConDetalles", "cotizacionesSinLiquidacion",
+            "personasNaturales", "personaNaturalById",
+            "categoriasPersona", "categoriaPersonaById", "categoriasPersonaByNombre", "personasPorCategoria", "categoriaDePersona",
+            "detallesDocumento", "detalleDocumentoById", "detallesDocumentoByDocumentoId", "detallesDocumentoByNumero", 
+            "detallesDocumentoByPersonaNaturalId", "detallesDocumentoByPersonaId",
+            "viajeros", "viajeroById", "viajerosByNacionalidad", "viajerosByResidencia",
+            "viajerosFrecuentes", "viajeroFrecuenteById", "viajerosFrecuentesByViajeroId",
+            "telefonosPersona", "telefonoPersonaById", "telefonosPersonaByPersonaId"
+        },
+        allEntries = true
+    )
     public CorreoPersonaResponseDTO update(Integer personaId, CorreoPersonaRequestDTO correoPersonaRequestDTO, Integer correoPersonaId) {
         CorreoPersona correo = correoPersonaRepository.findById(correoPersonaId)
                 .orElseThrow(() -> new RuntimeException("Correo no encontrado con ID: " + correoPersonaId));
@@ -76,6 +121,22 @@ public class CorreoPersonaServiceImpl implements CorreoPersonaService {
 
 
     @Override
+    @Transactional
+    @CacheEvict(
+        value = { 
+            "correosPersona", "correoPersonaById", "correosPersonaByPersonaId",
+            "personas", "personaById", "personasByEmail", "personasByTelefono", "personaDisplay",
+            "cotizaciones", "cotizacionById", "cotizacionConDetalles", "cotizacionesSinLiquidacion",
+            "personasNaturales", "personaNaturalById",
+            "categoriasPersona", "categoriaPersonaById", "categoriasPersonaByNombre", "personasPorCategoria", "categoriaDePersona",
+            "detallesDocumento", "detalleDocumentoById", "detallesDocumentoByDocumentoId", "detallesDocumentoByNumero", 
+            "detallesDocumentoByPersonaNaturalId", "detallesDocumentoByPersonaId",
+            "viajeros", "viajeroById", "viajerosByNacionalidad", "viajerosByResidencia",
+            "viajerosFrecuentes", "viajeroFrecuenteById", "viajerosFrecuentesByViajeroId",
+            "telefonosPersona", "telefonoPersonaById", "telefonosPersonaByPersonaId"
+        }, 
+        allEntries = true
+    )
     public void deleteById(Integer id) {
         if (!correoPersonaRepository.existsById(id)) {
             throw new RuntimeException("Correo no encontrado con ID: " + id);

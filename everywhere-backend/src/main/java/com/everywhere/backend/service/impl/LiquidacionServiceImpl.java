@@ -22,6 +22,11 @@ import com.everywhere.backend.service.DetalleLiquidacionService;
 import com.everywhere.backend.service.ObservacionLiquidacionService;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.LiquidacionMapper;
+
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +35,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@CacheConfig(cacheNames = "liquidaciones")
 @Transactional(readOnly = true)
 public class LiquidacionServiceImpl implements LiquidacionService {
 
@@ -43,11 +49,13 @@ public class LiquidacionServiceImpl implements LiquidacionService {
     private final ProductoRepository productoRepository;
 
     @Override
+    @Cacheable
     public List<LiquidacionResponseDTO> findAll() {
         return liquidacionRepository.findAll().stream().map(liquidacionMapper::toResponseDTO).toList();
     }
 
     @Override
+    @Cacheable(value = "liquidacion", key = "#id")
     public LiquidacionResponseDTO findById(Integer id) {
         Liquidacion liquidacion = liquidacionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Liquidación no encontrada con ID: " + id));
@@ -56,6 +64,14 @@ public class LiquidacionServiceImpl implements LiquidacionService {
 
     @Override
     @Transactional
+    @CachePut(value = "liquidacion", key = "#id")
+    @CacheEvict(
+        value = {
+            "liquidaciones",
+            "liquidacionConDetalles",
+            "cotizacionesSinLiquidacion"
+        }, 
+        allEntries = true)
     public LiquidacionResponseDTO update(Integer id, LiquidacionRequestDTO liquidacionRequestDTO) {
         if (!liquidacionRepository.existsById(id))
             throw new ResourceNotFoundException("Liquidación no encontrada con ID: " + id);
@@ -104,6 +120,14 @@ public class LiquidacionServiceImpl implements LiquidacionService {
 
     @Override
     @Transactional
+    @CacheEvict(
+        value = {
+            "liquidaciones", 
+            "liquidacion", 
+            "liquidacionConDetalles",
+            "cotizacionesSinLiquidacion"
+        }, 
+        allEntries = true)
     public void deleteById(Integer id) {
         if (!liquidacionRepository.existsById(id))
             throw new ResourceNotFoundException("Liquidación no encontrada con ID: " + id);
@@ -111,6 +135,7 @@ public class LiquidacionServiceImpl implements LiquidacionService {
     }
 
     @Override
+    @Cacheable(value = "liquidacionConDetalles", key = "#id")
     public LiquidacionConDetallesResponseDTO findByIdWithDetalles(Integer id) {
         Liquidacion liquidacion = liquidacionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Liquidación no encontrada con ID: " + id));
@@ -170,6 +195,9 @@ public class LiquidacionServiceImpl implements LiquidacionService {
 
     @Override
     @Transactional
+    @CacheEvict(
+        value = {"liquidaciones", "cotizacionesSinLiquidacion"}, 
+        allEntries = true)
     public LiquidacionResponseDTO create(LiquidacionRequestDTO liquidacionRequestDTO, Integer cotizacionId) {
         if (!cotizacionRepository.existsById(cotizacionId))
             throw new ResourceNotFoundException("Cotización no encontrada con ID: " + cotizacionId);

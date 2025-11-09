@@ -8,26 +8,54 @@ import com.everywhere.backend.model.entity.Producto;
 import com.everywhere.backend.repository.ProductoRepository;
 import com.everywhere.backend.service.ProductoService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors; 
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
+@CacheConfig(cacheNames = "productos")
 public class ProductoServiceImpl implements ProductoService {
 
     private final ProductoRepository productoRepository;
     private final ProductoMapper productoMapper;
 
     @Override
+    @Transactional
+        @CacheEvict(value = {
+            "productos",
+            "productoById",
+            "detallesPorCotizacionId",
+            "detalleCotizacionById",
+            "detallesCotizacion",
+            "liquidacionConDetalles",
+            "liquidacion"
+            }, 
+            allEntries = true)
     public ProductoResponseDTO create(ProductoRequestDTO productoRequestDTO) {
         Producto producto = productoMapper.toEntity(productoRequestDTO);
         return productoMapper.toResponseDTO(productoRepository.save(producto));
     }
 
     @Override
+    @Transactional
+    @CachePut(value = "productoById", key = "#id")
+    @CacheEvict(value = {
+            "productos",
+            "cotizacionConDetalles", "detallesPorCotizacionId", "detalleCotizacionById","detallesCotizacion",
+            "liquidaciones", "liquidacion", "liquidacionConDetalles", 
+            "detallesLiquidacion", "detalleLiquidacionById", "detallesPorLiquidacionId", "detallesSinLiquidacionPorId"
+            },
+            allEntries = true)
     public ProductoResponseDTO update(Integer id, ProductoRequestDTO productoRequestDTO) {
         if (!productoRepository.existsById(id))
             throw new ResourceNotFoundException("Producto no encontrado con ID: " + id);
@@ -45,6 +73,7 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
+    @Cacheable(value = "productoById", key = "#id")
     public ProductoResponseDTO getById(Integer id) {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
@@ -52,11 +81,21 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
+    @Cacheable
     public List<ProductoResponseDTO> getAll() {
         return mapToResponseList(productoRepository.findAll());
     }
 
     @Override
+    @Transactional
+        @CacheEvict(
+            value = {
+            "productos", "productoById",
+            "cotizacionConDetalles", "detallesCotizacion", "detalleCotizacionById", "detallesPorCotizacionId",
+            "liquidaciones", "liquidacion", "liquidacionConDetalles", 
+            "detallesLiquidacion", "detalleLiquidacionById", "detallesPorLiquidacionId", "detallesSinLiquidacionPorId"
+            },
+            allEntries = true)
     public void delete(Integer id) {
         if (!productoRepository.existsById(id)) {
             throw new ResourceNotFoundException("Producto no encontrado con ID: " + id);

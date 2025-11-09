@@ -11,6 +11,11 @@ import com.everywhere.backend.repository.DocumentoRepository;
 import com.everywhere.backend.repository.PersonaNaturalRepository;
 import com.everywhere.backend.service.DetalleDocumentoService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +23,8 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@CacheConfig(cacheNames = "detallesDocumento")
+@Transactional(readOnly = true)
 public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
 
     private final PersonaNaturalRepository personaNaturalRepository;
@@ -26,6 +33,7 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
     private final DetalleDocumentoMapper detalleDocumentoMapper;
 
     @Override
+    @Cacheable(value = "detalleDocumentoById", key = "#id")
     public DetalleDocumentoResponseDto findById(Integer id) {
         DetalleDocumento detalle = detalleDocumentoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("DetalleDocumento no encontrado con id: " + id));
@@ -34,6 +42,14 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
 
     @Override
     @Transactional
+    @CachePut(value = "detalleDocumentoById", key = "#result.id")
+    @CacheEvict(
+        value = {
+            "detallesDocumento", "detallesDocumentoByDocumentoId", "detallesDocumentoByNumero",
+            "detallesDocumentoByPersonaNaturalId", "detallesDocumentoByPersonaId"
+        },
+        allEntries = true
+    )
     public DetalleDocumentoResponseDto save(DetalleDocumentoRequestDto detalleDocumentoRequestDto) {
         DetalleDocumento detalleDocumento = detalleDocumentoMapper.toEntity(detalleDocumentoRequestDto);
         
@@ -54,6 +70,14 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
 
     @Override
     @Transactional
+    @CachePut(value = "detalleDocumentoById", key = "#id")
+    @CacheEvict(
+        value = {
+            "detallesDocumento", "detallesDocumentoByDocumentoId", "detallesDocumentoByNumero",
+            "detallesDocumentoByPersonaNaturalId", "detallesDocumentoByPersonaId"
+        },
+        allEntries = true
+    )
     public DetalleDocumentoResponseDto update(Integer id, DetalleDocumentoRequestDto detalleDocumentoRequestDto) {
         if (!detalleDocumentoRepository.existsById(id))
             throw new ResourceNotFoundException("DetalleDocumento no encontrado con id: " + id);
@@ -78,6 +102,13 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
 
     @Override
     @Transactional
+    @CacheEvict(
+        value = {
+            "detallesDocumento", "detalleDocumentoById", "detallesDocumentoByDocumentoId", "detallesDocumentoByNumero",
+            "detallesDocumentoByPersonaNaturalId", "detallesDocumentoByPersonaId"
+        }, 
+        allEntries = true
+    )
     public void delete(Integer id) {
         if (!detalleDocumentoRepository.existsById(id)) 
             throw new ResourceNotFoundException("DetalleDocumento no encontrado con id: " + id);
@@ -85,11 +116,13 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
     }
 
     @Override
+    @Cacheable
     public List<DetalleDocumentoResponseDto> findAll() {
         return mapToResponseList(detalleDocumentoRepository.findAll());
     }
 
     @Override
+    @Cacheable(value = "detallesDocumentoByDocumentoId", key = "#documentoId")
     public List<DetalleDocumentoResponseDto> findByDocumentoId(Integer documentoId) {
         if (!documentoRepository.existsById(documentoId)) 
             throw new ResourceNotFoundException("Documento no encontrado con id: " + documentoId);
@@ -97,18 +130,21 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
     }
 
     @Override
+    @Cacheable(value = "detallesDocumentoByNumero", key = "#numero")
     public List<DetalleDocumentoResponseDto> findByNumero(String numero) {
         return mapToResponseList(detalleDocumentoRepository.findByNumeroContainingIgnoreCase(numero));
     }
 
     @Override
+    @Cacheable(value = "detallesDocumentoByPersonaNaturalId", key = "#personaNaturalId")
     public List<DetalleDocumentoResponseDto> findByPersonaNaturalId(Integer personaNaturalId) {
         if (!personaNaturalRepository.existsById(personaNaturalId)) 
             throw new ResourceNotFoundException("PersonaNatural no encontrada con id: " + personaNaturalId);
         return mapToResponseList(detalleDocumentoRepository.findByPersonaNaturalId(personaNaturalId));
     }
 
-     @Override
+    @Override
+    @Cacheable(value = "detallesDocumentoByPersonaId", key = "#personaId")
     public List<DetalleDocumentoResponseDto> findByPersonaId(Integer personaId) {
         PersonaNatural personaNatural = personaNaturalRepository.findByPersonasId(personaId)
             .orElseThrow(() -> new ResourceNotFoundException("PersonaNatural no encontrada con personaId: " + personaId));

@@ -1,5 +1,9 @@
 package com.everywhere.backend.service.impl;
 
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +25,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@CacheConfig(cacheNames = "categoriasPersona")
 public class CategoriaPersonaServiceImpl implements CategoriaPersonaService {
     
     private final CategoriaPersonaRepository categoriaPersonaRepository;
@@ -29,11 +34,13 @@ public class CategoriaPersonaServiceImpl implements CategoriaPersonaService {
     private final PersonaNaturalMapper personaNaturalMapper;
 
     @Override
+    @Cacheable
     public List<CategoriaPersonaResponseDTO> findAll() {
         return mapToResponseList(categoriaPersonaRepository.findAll());
     }
 
     @Override
+    @Cacheable(value = "categoriaPersonaById", key = "#id")
     public CategoriaPersonaResponseDTO findById(Integer id) {
         CategoriaPersona categoria = categoriaPersonaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría de persona no encontrada con ID: " + id));
@@ -41,12 +48,18 @@ public class CategoriaPersonaServiceImpl implements CategoriaPersonaService {
     }
 
     @Override
+    @Cacheable(value = "categoriasPersonaByNombre", key = "#nombre")
     public List<CategoriaPersonaResponseDTO> findByNombre(String nombre) { 
         return mapToResponseList(categoriaPersonaRepository.findByNombreContainingIgnoreCase(nombre));
     }
 
     @Override
     @Transactional
+    @CachePut(value = "categoriaPersonaById", key = "#result.id")
+    @CacheEvict(
+        value = {"categoriasPersona", "categoriasPersonaByNombre"}, 
+        allEntries = true
+    )
     public CategoriaPersonaResponseDTO save(CategoriaPersonaRequestDTO categoriaPersonaRequestDTO) {
         if (categoriaPersonaRepository.existsByNombreIgnoreCase(categoriaPersonaRequestDTO.getNombre()))
             throw new DataIntegrityViolationException("Ya existe una categoría con el nombre: " + categoriaPersonaRequestDTO.getNombre());
@@ -56,6 +69,15 @@ public class CategoriaPersonaServiceImpl implements CategoriaPersonaService {
 
     @Override
     @Transactional
+    @CachePut(value = "categoriaPersonaById", key = "#id")
+    @CacheEvict(
+        value = { 
+            "categoriasPersona", "categoriasPersonaByNombre", "personasPorCategoria", "categoriaDePersona",
+            "personasNaturales", "personaNaturalById",
+            "detallesDocumentoByPersonaNaturalId", "detallesDocumentoByPersonaId"
+        }, 
+        allEntries = true
+    )
     public CategoriaPersonaResponseDTO patch(Integer id, CategoriaPersonaRequestDTO categoriaPersonaRequestDTO) {
         if (!categoriaPersonaRepository.existsById(id))
             throw new ResourceNotFoundException("Categoría de persona no encontrada con ID: " + id);
@@ -74,6 +96,14 @@ public class CategoriaPersonaServiceImpl implements CategoriaPersonaService {
 
     @Override
     @Transactional
+    @CacheEvict(
+        value = { 
+            "categoriasPersona", "categoriaPersonaById", "categoriasPersonaByNombre", "personasPorCategoria", "categoriaDePersona",
+            "personasNaturales", "personaNaturalById",
+            "detallesDocumentoByPersonaNaturalId", "detallesDocumentoByPersonaId"
+        }, 
+        allEntries = true
+    )
     public void deleteById(Integer id) {
         if (!categoriaPersonaRepository.existsById(id))
             throw new ResourceNotFoundException("Categoría de persona no encontrada con ID: " + id);
@@ -82,6 +112,14 @@ public class CategoriaPersonaServiceImpl implements CategoriaPersonaService {
 
     @Override
     @Transactional
+    @CacheEvict(
+        value = { 
+            "personasPorCategoria", "categoriaDePersona", 
+            "personasNaturales", "personaNaturalById", 
+            "detallesDocumentoByPersonaNaturalId", "detallesDocumentoByPersonaId"
+        }, 
+        allEntries = true
+    )
     public PersonaNaturalResponseDTO asignarCategoria(Integer personaNaturalId, Integer categoriaId) {
         if (!personaNaturalRepository.existsById(personaNaturalId))
             throw new ResourceNotFoundException("Persona natural no encontrada con ID: " + personaNaturalId);
@@ -98,6 +136,14 @@ public class CategoriaPersonaServiceImpl implements CategoriaPersonaService {
 
     @Override
     @Transactional
+    @CacheEvict(
+        value = {
+            "personasPorCategoria", "categoriaDePersona",
+            "personasNaturales", "personaNaturalById",
+            "detallesDocumentoByPersonaNaturalId", "detallesDocumentoByPersonaId"
+        }, 
+        allEntries = true
+    )
     public PersonaNaturalResponseDTO desasignarCategoria(Integer personaNaturalId) {
         if (!personaNaturalRepository.existsById(personaNaturalId))
             throw new ResourceNotFoundException("Persona natural no encontrada con ID: " + personaNaturalId);
@@ -108,6 +154,7 @@ public class CategoriaPersonaServiceImpl implements CategoriaPersonaService {
     }
 
     @Override
+    @Cacheable(value = "personasPorCategoria", key = "#categoriaId")
     public List<PersonaNaturalResponseDTO> findPersonasPorCategoria(Integer categoriaId) {
         if (!categoriaPersonaRepository.existsById(categoriaId))
             throw new ResourceNotFoundException("Categoría no encontrada con ID: " + categoriaId);
@@ -117,6 +164,7 @@ public class CategoriaPersonaServiceImpl implements CategoriaPersonaService {
     }
 
     @Override
+    @Cacheable(value = "categoriaDePersona", key = "#personaNaturalId")
     public CategoriaPersonaResponseDTO getCategoriaDePersona(Integer personaNaturalId) { 
         if (!personaNaturalRepository.existsById(personaNaturalId))
             throw new ResourceNotFoundException("Persona natural no encontrada con ID: " + personaNaturalId);

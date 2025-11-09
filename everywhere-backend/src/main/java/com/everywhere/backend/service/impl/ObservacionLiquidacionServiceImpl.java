@@ -10,12 +10,20 @@ import com.everywhere.backend.repository.LiquidacionRepository;
 import com.everywhere.backend.repository.ObservacionLiquidacionRepository;
 import com.everywhere.backend.service.ObservacionLiquidacionService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
+@CacheConfig(cacheNames = "observacionesLiquidacion")
 public class ObservacionLiquidacionServiceImpl implements ObservacionLiquidacionService {
 
     private final ObservacionLiquidacionRepository observacionLiquidacionRepository;
@@ -23,11 +31,13 @@ public class ObservacionLiquidacionServiceImpl implements ObservacionLiquidacion
     private final LiquidacionRepository liquidacionRepository;
 
     @Override
+    @Cacheable
     public List<ObservacionLiquidacionResponseDTO> findAll() {
         return mapToResponseList(observacionLiquidacionRepository.findAll());
     }
 
     @Override
+    @Cacheable(value = "observacionLiquidacionById", key = "#id")
     public ObservacionLiquidacionResponseDTO findById(Long id) {
         ObservacionLiquidacion observacionLiquidacion = observacionLiquidacionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -37,6 +47,14 @@ public class ObservacionLiquidacionServiceImpl implements ObservacionLiquidacion
     }
 
     @Override
+    @Transactional
+    @CacheEvict(
+        value = {
+            "observacionesLiquidacion",
+            "observacionesByLiquidacionId",
+            "liquidacionConDetalles"
+        },
+        allEntries = true)
     public ObservacionLiquidacionResponseDTO save(ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO) { 
         if (observacionLiquidacionRequestDTO.getLiquidacionId() != null && 
             !liquidacionRepository.existsById(observacionLiquidacionRequestDTO.getLiquidacionId())) {
@@ -54,6 +72,15 @@ public class ObservacionLiquidacionServiceImpl implements ObservacionLiquidacion
     }
 
     @Override
+    @Transactional
+    @CachePut(value = "observacionLiquidacionById", key = "#id")
+    @CacheEvict(
+        value = {
+            "observacionesLiquidacion",
+            "observacionesByLiquidacionId",
+            "liquidacionConDetalles"
+        },
+        allEntries = true)
     public ObservacionLiquidacionResponseDTO update(Long id, ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO) { 
         if (!observacionLiquidacionRepository.existsById(id))
             throw new ResourceNotFoundException("Observación de liquidación no encontrada con ID: " + id);
@@ -76,6 +103,15 @@ public class ObservacionLiquidacionServiceImpl implements ObservacionLiquidacion
     }
 
     @Override
+    @Transactional
+    @CacheEvict(
+        value = {
+            "observacionesLiquidacion",
+            "observacionLiquidacionById",
+            "observacionesByLiquidacionId",
+            "liquidacionConDetalles"
+        },
+        allEntries = true)
     public void deleteById(Long id) {
         if (!observacionLiquidacionRepository.existsById(id))
             throw new ResourceNotFoundException("No existe una observación de liquidación con ID: " + id);
@@ -83,6 +119,7 @@ public class ObservacionLiquidacionServiceImpl implements ObservacionLiquidacion
     }
 
     @Override
+    @Cacheable(value = "observacionesByLiquidacionId", key = "#liquidacionId")
     public List<ObservacionLiquidacionResponseDTO> findByLiquidacionId(Integer liquidacionId) { 
         return mapToResponseList(observacionLiquidacionRepository.findByLiquidacionId(liquidacionId));
     }

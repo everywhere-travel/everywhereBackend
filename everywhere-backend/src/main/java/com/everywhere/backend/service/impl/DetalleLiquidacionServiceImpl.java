@@ -13,13 +13,22 @@ import com.everywhere.backend.repository.ViajeroRepository;
 import com.everywhere.backend.service.DetalleLiquidacionService;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.DetalleLiquidacionMapper;
+
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@CacheConfig(cacheNames = "detallesLiquidacion")
+@Transactional(readOnly = true)
 public class DetalleLiquidacionServiceImpl implements DetalleLiquidacionService {
 
     private final DetalleLiquidacionRepository detalleLiquidacionRepository;
@@ -32,11 +41,13 @@ public class DetalleLiquidacionServiceImpl implements DetalleLiquidacionService 
 
 
     @Override
+    @Cacheable
     public List<DetalleLiquidacionResponseDTO> findAll() {
         return mapToResponseList(detalleLiquidacionRepository.findAllWithRelations());
     }
 
     @Override
+    @Cacheable(value = "detalleLiquidacionById", key = "#id")
     public DetalleLiquidacionResponseDTO findById(Integer id) {
         DetalleLiquidacion detalleLiquidacion = detalleLiquidacionRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Detalle de liquidación no encontrado con ID: " + id));
@@ -44,16 +55,27 @@ public class DetalleLiquidacionServiceImpl implements DetalleLiquidacionService 
     }
 
     @Override
+    @Cacheable(value = "detallesPorLiquidacionId", key = "#liquidacionId")
     public List<DetalleLiquidacionResponseDTO> findByLiquidacionId(Integer liquidacionId) {
         return mapToResponseList(detalleLiquidacionRepository.findByLiquidacionIdWithRelations(liquidacionId));
     }
 
     @Override
+    @Cacheable(value = "detallesSinLiquidacionPorId", key = "#liquidacionId")
     public List<DetalleLiquidacionSinLiquidacionDTO> findByLiquidacionIdSinLiquidacion(Integer liquidacionId) {
         return mapToSinLiquidacionList(detalleLiquidacionRepository.findByLiquidacionIdSinLiquidacion(liquidacionId));
     }
 
     @Override
+    @Transactional
+    @CacheEvict(
+        value = {
+            "detallesLiquidacion",
+            "detallesPorLiquidacionId",
+            "detallesSinLiquidacionPorId",
+            "liquidacionConDetalles"
+        },
+        allEntries = true)
     public DetalleLiquidacionResponseDTO save(DetalleLiquidacionRequestDTO detalleLiquidacionRequestDTO) {
         DetalleLiquidacion detalleLiquidacion = detalleLiquidacionMapper.toEntity(detalleLiquidacionRequestDTO);
 
@@ -91,6 +113,16 @@ public class DetalleLiquidacionServiceImpl implements DetalleLiquidacionService 
     }
 
     @Override
+    @Transactional
+    @CachePut(value = "detalleLiquidacionById", key = "#id")
+    @CacheEvict(
+        value = {
+            "detallesLiquidacion",
+            "detallesPorLiquidacionId",
+            "detallesSinLiquidacionPorId",
+            "liquidacionConDetalles"
+        },
+        allEntries = true)
     public DetalleLiquidacionResponseDTO update(Integer id, DetalleLiquidacionRequestDTO detalleLiquidacionRequestDTO) {
         if (!detalleLiquidacionRepository.existsById(id))
             throw new ResourceNotFoundException("Detalle de liquidación no encontrado con ID: " + id);
@@ -132,6 +164,16 @@ public class DetalleLiquidacionServiceImpl implements DetalleLiquidacionService 
     }
 
     @Override
+    @Transactional
+    @CacheEvict(
+        value = {
+            "detallesLiquidacion",
+            "detalleLiquidacionById",
+            "detallesPorLiquidacionId",
+            "detallesSinLiquidacionPorId",
+            "liquidacionConDetalles"
+        },
+        allEntries = true)
     public void deleteById(Integer id) {
         if (!detalleLiquidacionRepository.existsById(id)) 
             throw new ResourceNotFoundException("Detalle de liquidación no encontrado con ID: " + id);
