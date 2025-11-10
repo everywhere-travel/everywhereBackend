@@ -33,7 +33,7 @@ public class ProveedorController {
 
     @PostMapping
     @RequirePermission(module = "PROVEEDORES", permission = "CREATE")
-    public ResponseEntity<ProveedorResponseDTO> create(@RequestBody @Valid ProveedorRequestDTO proveedorRequestDTO) { 
+    public ResponseEntity<ProveedorResponseDTO> create(@RequestBody  ProveedorRequestDTO proveedorRequestDTO) {
         return ResponseEntity.status(HttpStatus.CREATED).body(proveedorService.create(proveedorRequestDTO));
     }
 
