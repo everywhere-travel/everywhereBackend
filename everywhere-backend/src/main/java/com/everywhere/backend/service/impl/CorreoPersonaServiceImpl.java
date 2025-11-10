@@ -47,9 +47,6 @@ public class CorreoPersonaServiceImpl implements CorreoPersonaService {
     @Override
     public CorreoPersonaResponseDTO save(CorreoPersonaRequestDTO correoPersonaRequestDTO, Integer personaId) {
                 boolean existeCorreo = correoPersonaRepository.existsByEmail(correoPersonaRequestDTO.getEmail());
-        if (existeCorreo) {
-            throw new IllegalArgumentException("El correo electrónico ya está registrado");
-        }
 
         Personas persona = personaRepository.findById(personaId)
                 .orElseThrow(() -> new RuntimeException("Persona no encontrada con ID: " + personaId));

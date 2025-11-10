@@ -1,10 +1,14 @@
 package com.everywhere.backend.service.impl;
 
+import com.everywhere.backend.exceptions.ConflictException;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.ProductoMapper;
 import com.everywhere.backend.model.dto.ProductoRequestDTO;
 import com.everywhere.backend.model.dto.ProductoResponseDTO;
+import com.everywhere.backend.model.entity.DetalleLiquidacion;
 import com.everywhere.backend.model.entity.Producto;
+import com.everywhere.backend.repository.DetalleCotizacionRepository;
+import com.everywhere.backend.repository.DetalleLiquidacionRepository;
 import com.everywhere.backend.repository.ProductoRepository;
 import com.everywhere.backend.service.ProductoService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +24,8 @@ public class ProductoServiceImpl implements ProductoService {
 
     private final ProductoRepository productoRepository;
     private final ProductoMapper productoMapper;
+    private final DetalleCotizacionRepository detalleCotizacionRepository;
+    private final DetalleLiquidacionRepository detalleLiquidacionRepository;
 
     @Override
     public ProductoResponseDTO create(ProductoRequestDTO productoRequestDTO) {
@@ -61,6 +67,23 @@ public class ProductoServiceImpl implements ProductoService {
         if (!productoRepository.existsById(id)) {
             throw new ResourceNotFoundException("Producto no encontrado con ID: " + id);
         }
+
+        long cotizacionesCount = detalleCotizacionRepository.countByProductoId(id);
+        if (cotizacionesCount > 0) {
+            throw new ConflictException(
+                    "No se puede eliminar este producto porque tiene " + cotizacionesCount + " cotización(es) asociada(s).",
+                    "/api/v1/producto/" + id
+            );
+        }
+
+        long liquidacionesCount = detalleLiquidacionRepository.countByProductoId(id);
+        if (liquidacionesCount > 0) {
+            throw new ConflictException(
+                    "No se puede eliminar este producto porque tiene " + liquidacionesCount + " liquidación(es) asociada(s).",
+                    "/api/v1/producto/" + id
+            );
+        }
+
         productoRepository.deleteById(id);
     }
 

@@ -1,10 +1,13 @@
 package com.everywhere.backend.service.impl;
 
+import com.everywhere.backend.exceptions.ConflictException;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.ProveedorMapper;
 import com.everywhere.backend.model.dto.ProveedorRequestDTO;
 import com.everywhere.backend.model.dto.ProveedorResponseDTO;
 import com.everywhere.backend.model.entity.Proveedor;
+import com.everywhere.backend.repository.DetalleCotizacionRepository;
+import com.everywhere.backend.repository.DetalleLiquidacionRepository;
 import com.everywhere.backend.repository.ProveedorRepository;
 import com.everywhere.backend.service.ProveedorService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +22,8 @@ public class ProveedorServiceImpl implements ProveedorService {
 
     private final ProveedorRepository proveedorRepository;
     private final ProveedorMapper proveedorMapper;
+    private final DetalleCotizacionRepository detalleCotizacionRepository;
+    private final DetalleLiquidacionRepository detalleLiquidacionRepository;
 
     @Override
     public ProveedorResponseDTO create(ProveedorRequestDTO proveedorRequestDTO) {
@@ -60,8 +65,27 @@ public class ProveedorServiceImpl implements ProveedorService {
 
     @Override
     public void delete(Integer id) {
-        if (!proveedorRepository.existsById(id))
+        if (!proveedorRepository.existsById(id)) {
             throw new ResourceNotFoundException("Proveedor no encontrado con ID: " + id);
+        }
+
+        long cotizacionesCount = detalleCotizacionRepository.countByProveedorId(id);
+        if (cotizacionesCount > 0) {
+            throw new ConflictException(
+                    "No se puede eliminar este proveedor porque tiene " + cotizacionesCount + " cotización(es) asociada(s).",
+                    "/api/v1/proveedores/" + id
+            );
+        }
+
+        long liquidacionesCount = detalleLiquidacionRepository.countByProveedorId(id);
+        if (liquidacionesCount > 0) {
+            throw new ConflictException(
+                    "No se puede eliminar este proveedor porque tiene " + liquidacionesCount + " liquidación(es) asociada(s).",
+                    "/api/v1/proveedores/" + id
+            );
+        }
+
+
         proveedorRepository.deleteById(id);
     }
 

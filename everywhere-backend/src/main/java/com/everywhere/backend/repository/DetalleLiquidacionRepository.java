@@ -46,4 +46,11 @@ public interface DetalleLiquidacionRepository extends JpaRepository<DetalleLiqui
            "LEFT JOIN FETCH d.operador " +
            "WHERE d.liquidacion.id = :liquidacionId")
     List<DetalleLiquidacion> findByLiquidacionIdSinLiquidacion(@Param("liquidacionId") Integer liquidacionId);
+
+    @Query("SELECT COUNT(dl) FROM DetalleLiquidacion dl WHERE dl.producto.id = :productoId")
+    long countByProductoId(@Param("productoId") Integer productoId);
+
+    @Query("SELECT COUNT(dl) FROM DetalleLiquidacion dl WHERE dl.proveedor.id = :proveedorId")
+    long countByProveedorId(@Param("proveedorId") Integer proveedorId);
+
 }
