@@ -1,9 +1,11 @@
 package com.everywhere.backend.service.impl;
 
+import com.everywhere.backend.exceptions.ConflictException;
 import com.everywhere.backend.mapper.FormaPagoMapper;
 import com.everywhere.backend.model.dto.FormaPagoRequestDTO;
 import com.everywhere.backend.model.dto.FormaPagoResponseDTO;
 import com.everywhere.backend.model.entity.FormaPago;
+import com.everywhere.backend.repository.CotizacionRepository;
 import com.everywhere.backend.repository.FormaPagoRepository;
 import com.everywhere.backend.service.FormaPagoService;
 
@@ -21,6 +23,7 @@ public class FormaPagoServiceImpl implements FormaPagoService {
 
     private final FormaPagoRepository formaPagoRepository;
     private final FormaPagoMapper formaPagoMapper;
+    private final CotizacionRepository cotizacionRepository;
 
     @Override
     public List<FormaPagoResponseDTO> findAll() {
@@ -76,8 +79,18 @@ public class FormaPagoServiceImpl implements FormaPagoService {
 
     @Override
     public void deleteById(Integer id) {
-        if (!formaPagoRepository.existsById(id))
+        if (!formaPagoRepository.existsById(id)) {
             throw new ResourceNotFoundException("Forma de pago no encontrada con ID: " + id);
+        }
+
+        long cotizacionesCount = cotizacionRepository.countByFormaPagoId(id);
+        if (cotizacionesCount > 0) {
+            throw new ConflictException(
+                    "No se puede eliminar esta forma de pago porque tiene " + cotizacionesCount + " cotización(es) asociada(s).",
+                    "/api/v1/formas-pago/" + id
+            );
+        }
+
         formaPagoRepository.deleteById(id);
     }
 

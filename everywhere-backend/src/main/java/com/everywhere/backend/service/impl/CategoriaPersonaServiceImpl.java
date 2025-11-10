@@ -1,5 +1,6 @@
 package com.everywhere.backend.service.impl;
 
+import com.everywhere.backend.exceptions.ConflictException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,6 +78,15 @@ public class CategoriaPersonaServiceImpl implements CategoriaPersonaService {
     public void deleteById(Integer id) {
         if (!categoriaPersonaRepository.existsById(id))
             throw new ResourceNotFoundException("Categoría de persona no encontrada con ID: " + id);
+
+        long personasNaturalesCount = personaNaturalRepository.countByCategoriaPersonaId(id);
+        if (personasNaturalesCount > 0) {
+            throw new ConflictException(
+                    "No se puede eliminar esta categoría porque tiene " + personasNaturalesCount + " persona(s) natural(es) asociada(s).",
+                    "/api/v1/categorias-persona/" + id
+            );
+        }
+
         categoriaPersonaRepository.deleteById(id);
     }
 

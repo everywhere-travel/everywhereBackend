@@ -1,5 +1,6 @@
 package com.everywhere.backend.service.impl;
 
+import com.everywhere.backend.exceptions.BadRequestException;
 import com.everywhere.backend.mapper.CotizacionMapper;
 import com.everywhere.backend.model.dto.*;
 import com.everywhere.backend.model.entity.*;
@@ -129,7 +130,14 @@ public class CotizacionServiceImpl implements CotizacionService {
     public void delete(Integer id) {
         if (!cotizacionRepository.existsById(id))
             throw new ResourceNotFoundException("Cotización no encontrada con ID: " + id);
-        cotizacionRepository.deleteById(id);
+
+        try {
+            cotizacionRepository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new BadRequestException("No se puede eliminar esta cotización porque tiene dependencias asociadas (detalles de cotización, documentos u otros registros). Elimine primero las dependencias relacionadas.");
+        } catch (Exception e) {
+            throw new BadRequestException("Error al eliminar la cotización: " + e.getMessage());
+        }
     }
 
     private String generateCodigoCotizacion() {

@@ -2,6 +2,7 @@ package com.everywhere.backend.api;
 
 import com.everywhere.backend.model.dto.DetalleDocumentoResponseDto;
 import com.everywhere.backend.model.dto.DetalleDocumentoRequestDto;
+import com.everywhere.backend.model.dto.DetalleDocumentoSearchDto;
 import com.everywhere.backend.service.DetalleDocumentoService;
 import com.everywhere.backend.security.RequirePermission;
 import lombok.RequiredArgsConstructor;
@@ -72,5 +73,12 @@ public class DetalleDocumentoController {
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         detalleDocumentoService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/persona-natural/documento-prefijo")
+    @RequirePermission(module = "DOCUMENTOS", permission = "READ")
+    public ResponseEntity<List<DetalleDocumentoSearchDto>> findByPersonaNaturalDocumentoPrefix(
+            @RequestParam(name = "prefijo") String prefijo) {
+        return ResponseEntity.ok(detalleDocumentoService.findByPersonaNaturalDocumentoPrefix(prefijo));
     }
 }
