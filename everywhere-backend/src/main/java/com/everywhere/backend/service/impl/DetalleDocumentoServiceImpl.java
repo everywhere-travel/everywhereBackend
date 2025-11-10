@@ -4,6 +4,7 @@ import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.DetalleDocumentoMapper;
 import com.everywhere.backend.model.dto.DetalleDocumentoRequestDto;
 import com.everywhere.backend.model.dto.DetalleDocumentoResponseDto;
+import com.everywhere.backend.model.dto.DetalleDocumentoSearchDto;
 import com.everywhere.backend.model.entity.DetalleDocumento;
 import com.everywhere.backend.model.entity.PersonaNatural;
 import com.everywhere.backend.repository.DetalleDocumentoRepository;
@@ -14,7 +15,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,19 +38,29 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
     @Override
     @Transactional
     public DetalleDocumentoResponseDto save(DetalleDocumentoRequestDto detalleDocumentoRequestDto) {
-        DetalleDocumento detalleDocumento = detalleDocumentoMapper.toEntity(detalleDocumentoRequestDto);
-        
+        // Crear entidad manualmente sin usar el mapper para documento y personaNatural
+        DetalleDocumento detalleDocumento = new DetalleDocumento();
+        detalleDocumento.setNumero(detalleDocumentoRequestDto.getNumero());
+        detalleDocumento.setFechaEmision(detalleDocumentoRequestDto.getFechaEmision());
+        detalleDocumento.setFechaVencimiento(detalleDocumentoRequestDto.getFechaVencimiento());
+        detalleDocumento.setOrigen(detalleDocumentoRequestDto.getOrigen());
+
+        // Mapear Documento
         if (detalleDocumentoRequestDto.getDocumentoId() != null) {
             if (!documentoRepository.existsById(detalleDocumentoRequestDto.getDocumentoId()))
                 throw new ResourceNotFoundException("Documento no encontrado con id: " + detalleDocumentoRequestDto.getDocumentoId());
             detalleDocumento.setDocumento(documentoRepository.findById(detalleDocumentoRequestDto.getDocumentoId()).get());
         }
 
+        // Mapear PersonaNatural y Viajero
         if (detalleDocumentoRequestDto.getPersonaNaturalId() != null) {
             if (!personaNaturalRepository.existsById(detalleDocumentoRequestDto.getPersonaNaturalId()))
                 throw new ResourceNotFoundException("PersonaNatural no encontrado con id: " + detalleDocumentoRequestDto.getPersonaNaturalId());
-            detalleDocumento.setPersonaNatural(personaNaturalRepository.findById(detalleDocumentoRequestDto.getPersonaNaturalId()).get());
-        }
+
+            PersonaNatural personaNatural = personaNaturalRepository.findById(detalleDocumentoRequestDto.getPersonaNaturalId()).get();
+            detalleDocumento.setPersonaNatural(personaNatural);
+
+                    }
 
         return detalleDocumentoMapper.toResponse(detalleDocumentoRepository.save(detalleDocumento));
     }
@@ -59,18 +72,27 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
             throw new ResourceNotFoundException("DetalleDocumento no encontrado con id: " + id);
 
         DetalleDocumento detalleDocumento = detalleDocumentoRepository.findById(id).get();
-        detalleDocumentoMapper.updateEntityFromDto(detalleDocumentoRequestDto, detalleDocumento);
 
+        // Actualizar campos simples
+        detalleDocumento.setNumero(detalleDocumentoRequestDto.getNumero());
+        detalleDocumento.setFechaEmision(detalleDocumentoRequestDto.getFechaEmision());
+        detalleDocumento.setFechaVencimiento(detalleDocumentoRequestDto.getFechaVencimiento());
+        detalleDocumento.setOrigen(detalleDocumentoRequestDto.getOrigen());
+
+        // Mapear Documento
         if (detalleDocumentoRequestDto.getDocumentoId() != null) {
             if (!documentoRepository.existsById(detalleDocumentoRequestDto.getDocumentoId()))
                 throw new ResourceNotFoundException("Documento no encontrado con id: " + detalleDocumentoRequestDto.getDocumentoId());
             detalleDocumento.setDocumento(documentoRepository.findById(detalleDocumentoRequestDto.getDocumentoId()).get());
         }
 
+        // Mapear PersonaNatural y Viajero
         if (detalleDocumentoRequestDto.getPersonaNaturalId() != null) {
             if (!personaNaturalRepository.existsById(detalleDocumentoRequestDto.getPersonaNaturalId()))
                 throw new ResourceNotFoundException("PersonaNatural no encontrado con id: " + detalleDocumentoRequestDto.getPersonaNaturalId());
-            detalleDocumento.setPersonaNatural(personaNaturalRepository.findById(detalleDocumentoRequestDto.getPersonaNaturalId()).get());
+
+            PersonaNatural personaNatural = personaNaturalRepository.findById(detalleDocumentoRequestDto.getPersonaNaturalId()).get();
+            detalleDocumento.setPersonaNatural(personaNatural);
         }
 
         return detalleDocumentoMapper.toResponse(detalleDocumentoRepository.save(detalleDocumento));
@@ -117,5 +139,23 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
 
     private List<DetalleDocumentoResponseDto> mapToResponseList(List<DetalleDocumento> detalles) {
         return detalles.stream().map(detalleDocumentoMapper::toResponse).toList();
+    }
+
+    @Override
+    public List<DetalleDocumentoSearchDto> findByPersonaNaturalDocumentoPrefix(String prefijo) {
+        if (prefijo == null || prefijo.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<DetalleDocumento> detalles = detalleDocumentoRepository.findByNumeroStartingWithIgnoreCase(prefijo.trim());
+        return detalles.stream()
+                .map(detalle -> DetalleDocumentoSearchDto.builder()
+                        .numero(detalle.getNumero())
+                        .personasId(detalle.getPersonaNatural() != null ? detalle.getPersonaNatural().getPersonas().getId() : null)
+                        .nombres(detalle.getPersonaNatural() != null ? detalle.getPersonaNatural().getNombres() : null)
+                        .apellidosPaterno(detalle.getPersonaNatural() != null ? detalle.getPersonaNatural().getApellidosPaterno() : null)
+                        .apellidosMaterno(detalle.getPersonaNatural() != null ? detalle.getPersonaNatural().getApellidosMaterno() : null)
+                        .sexo(detalle.getPersonaNatural() != null ? detalle.getPersonaNatural().getSexo() : null)
+                        .build())
+                .collect(Collectors.toList());
     }
 }

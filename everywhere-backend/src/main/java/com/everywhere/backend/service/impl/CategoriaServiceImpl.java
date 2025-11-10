@@ -1,11 +1,14 @@
 package com.everywhere.backend.service.impl;
 
+import com.everywhere.backend.exceptions.ConflictException;
 import com.everywhere.backend.model.dto.CategoriaRequestDto;
 import com.everywhere.backend.model.dto.CategoriaResponseDto;
-import com.everywhere.backend.model.entity.Categoria; 
+import com.everywhere.backend.model.entity.Categoria;
+import com.everywhere.backend.model.entity.DetalleCotizacion;
 import com.everywhere.backend.repository.CategoriaRepository;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.CategoriaMapper;
+import com.everywhere.backend.repository.DetalleCotizacionRepository;
 import com.everywhere.backend.service.CategoriaService;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,13 +25,20 @@ public class CategoriaServiceImpl implements CategoriaService {
 
 	private final CategoriaRepository categoriaRepository;
 	private final CategoriaMapper categoriaMapper;
+    private final DetalleCotizacionRepository detalleCotizacionRepository;
 
 	@Override
 	public List<CategoriaResponseDto> findAll() {
 		return mapToResponseList(categoriaRepository.findAll());
 	}
 
-	@Override
+    private List<CategoriaResponseDto> mapToResponseList(List<Categoria> categorias) {
+        return categorias.stream()
+                .map(categoriaMapper::toResponseDto)
+                .toList();
+    }
+
+    @Override
 	public CategoriaResponseDto findById(int id) {
 		Categoria categoria = categoriaRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Categoria no encontrada"));
@@ -61,15 +71,20 @@ public class CategoriaServiceImpl implements CategoriaService {
 		return categoriaMapper.toResponseDto(categoriaRepository.save(categoriaRepository.findById(id).get()));
 	}
 
-	@Override
-	@Transactional
-	public void delete(int id) {
-		if (!categoriaRepository.existsById(id))
-			throw new ResourceNotFoundException("Categoria no encontrada con ID: " + id);
-		categoriaRepository.deleteById(id);
-	}
+    @Override
+    @Transactional
+    public void delete(int id) {
+        if (!categoriaRepository.existsById(id))
+            throw new ResourceNotFoundException("Categoria no encontrada con ID: " + id);
 
-	private List<CategoriaResponseDto> mapToResponseList(List<Categoria> categorias) {
-        return categorias.stream().map(categoriaMapper::toResponseDto).toList();
+        long detallesCount = detalleCotizacionRepository.countByCategoriaId(id);
+        if (detallesCount > 0) {
+            throw new ConflictException(
+                    "No se puede eliminar esta categoría porque tiene " + detallesCount + " detalle(s) de cotización asociado(s).",
+                    "/api/v1/categorias/" + id
+            );
+        }
+
+        categoriaRepository.deleteById(id);
     }
 }

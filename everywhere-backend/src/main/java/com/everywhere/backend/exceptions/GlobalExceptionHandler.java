@@ -127,4 +127,13 @@ public class GlobalExceptionHandler {
         problemDetail.setInstance(URI.create(request.getDescription(false).replace("uri=", "")));
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problemDetail);
     }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ProblemDetail> handleConflictException(ConflictException ex, WebRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problemDetail.setTitle("Conflict");
+        problemDetail.setType(URI.create("about:blank"));
+        problemDetail.setInstance(URI.create(ex.getInstance() != null ? ex.getInstance() : request.getDescription(false).replace("uri=", "")));
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(problemDetail);
+    }
 }
