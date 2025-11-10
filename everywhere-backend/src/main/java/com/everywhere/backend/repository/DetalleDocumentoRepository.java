@@ -9,4 +9,5 @@ public interface DetalleDocumentoRepository extends JpaRepository<DetalleDocumen
     List<DetalleDocumento> findByDocumentoId(Integer documentoId);
     List<DetalleDocumento> findByNumeroContainingIgnoreCase(String numero);
     List<DetalleDocumento> findByPersonaNaturalId(Integer personaNaturalId);
+    List<DetalleDocumento> findByNumeroStartingWithIgnoreCase(String numero);
 }
