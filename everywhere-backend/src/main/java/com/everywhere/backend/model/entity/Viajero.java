@@ -1,5 +1,7 @@
 package com.everywhere.backend.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
@@ -35,7 +37,7 @@ public class Viajero {
     @Column(name = "via_upd_tmp")
     private LocalDateTime actualizado;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "per_id_int", nullable = true)
+    @OneToOne(mappedBy = "viajero", fetch = FetchType.LAZY)
+    @JsonBackReference("viajero-personaNatural")
     private PersonaNatural personaNatural;
 }

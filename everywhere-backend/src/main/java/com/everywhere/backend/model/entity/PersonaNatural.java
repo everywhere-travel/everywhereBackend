@@ -1,5 +1,8 @@
 package com.everywhere.backend.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -51,6 +54,7 @@ public class PersonaNatural {
 
     @OneToOne
     @JoinColumn(name = "via_id_int")
+    @JsonManagedReference("viajero-personaNatural")
     private Viajero viajero;
 
     @ManyToOne(fetch = FetchType.LAZY)
