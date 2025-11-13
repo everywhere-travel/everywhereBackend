@@ -43,7 +43,6 @@ public class DocumentoCobranzaMapper {
         DocumentoCobranza documentoCobranza = new DocumentoCobranza();
         
         documentoCobranza.setNumero(numeroDocumento);
-        documentoCobranza.setObservaciones(cotizacionConDetallesResponseDTO.getObservacion());
         documentoCobranza.setMoneda(cotizacionConDetallesResponseDTO.getMoneda());
 
         Cotizacion cotizacionEntity = new Cotizacion();
