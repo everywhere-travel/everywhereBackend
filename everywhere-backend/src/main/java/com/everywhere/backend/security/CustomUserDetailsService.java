@@ -1,5 +1,6 @@
 package com.everywhere.backend.security;
 
+import com.everywhere.backend.exceptions.UnauthorizedAccessException;
 import com.everywhere.backend.model.entity.User;
 import com.everywhere.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,10 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email).orElseThrow(() ->
                 new UsernameNotFoundException("Usuario no encontrado con el email : "+email));
+
+        if (user.getRole() == null) {
+            throw new UnauthorizedAccessException("El usuario no tiene un rol asignado. Contacte al administrador.");
+        }
 
         GrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().getName());
 

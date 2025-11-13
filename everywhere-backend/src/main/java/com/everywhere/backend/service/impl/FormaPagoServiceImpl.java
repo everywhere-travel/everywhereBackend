@@ -49,8 +49,6 @@ public class FormaPagoServiceImpl implements FormaPagoService {
 
     @Override
     public FormaPagoResponseDTO save(FormaPagoRequestDTO formaPagoRequestDTO) {
-        if (formaPagoRepository.existsByCodigo(formaPagoRequestDTO.getCodigo()))
-            throw new DataIntegrityViolationException("Ya existe una forma de pago con el código: " + formaPagoRequestDTO.getCodigo());
         FormaPago formaPago = formaPagoMapper.toEntity(formaPagoRequestDTO);
         return formaPagoMapper.toResponseDTO(formaPagoRepository.save(formaPago));
     }

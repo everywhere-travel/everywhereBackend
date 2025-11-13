@@ -30,6 +30,33 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problemDetail);
     }
 
+    @ExceptionHandler(UnauthorizedAccessException.class)
+    public ResponseEntity<ProblemDetail> handleUnauthorizedAccessException(UnauthorizedAccessException ex, WebRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+        problemDetail.setTitle("Acceso no autorizado");
+        problemDetail.setType(URI.create("about:blank"));
+        problemDetail.setInstance(URI.create(request.getDescription(false).replace("uri=", "")));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problemDetail);
+    }
+
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<ProblemDetail> handleNullPointerException(NullPointerException ex, WebRequest request) {
+        String detail;
+        if (ex.getMessage() != null && ex.getMessage().contains("user") && ex.getMessage().contains("getRole")) {
+            detail = "Usuario no autenticado correctamente. Por favor, vuelva a iniciar sesión.";
+        } else if (ex.getMessage() != null && ex.getMessage().contains("user")) {
+            detail = "Error de autenticación. El usuario no está disponible en el contexto de seguridad.";
+        } else {
+            detail = "Ocurrió un error interno. Por favor, contacte al administrador del sistema.";
+        }
+        
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, detail);
+        problemDetail.setTitle("Error interno");
+        problemDetail.setType(URI.create("about:blank"));
+        problemDetail.setInstance(URI.create(request.getDescription(false).replace("uri=", "")));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problemDetail);
+    }
+
     @ExceptionHandler({ ResourceNotFoundException.class, EntityNotFoundException.class })
     public ResponseEntity<ProblemDetail> handleNotFoundException(Exception ex, WebRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
