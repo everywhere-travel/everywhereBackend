@@ -19,6 +19,14 @@ public class UserMapper {
 
     // Convierte User entity a AuthResponseDTO (respuesta de login con JWT)
     public AuthResponseDTO toAuthResponseDTO(User user, String token) {
+        if (user == null) {
+            throw new IllegalArgumentException("El usuario no puede ser nulo");
+        }
+        
+        if (user.getRole() == null) {
+            throw new IllegalArgumentException("El usuario no tiene un rol asignado");
+        }
+
         AuthResponseDTO authResponseDTO = new AuthResponseDTO();
 
         authResponseDTO.setId(user.getId());
