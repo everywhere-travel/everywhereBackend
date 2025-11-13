@@ -14,6 +14,13 @@ public class ModelMapperConfig {
         modelMapper.getConfiguration()
                 .setMatchingStrategy(MatchingStrategies.STRICT)
                 .setSkipNullEnabled(true);
+        
+        // Conversor para convertir String a mayúsculas
+        modelMapper.addConverter(context -> {
+            String source = context.getSource();
+            return source == null ? null : source.toUpperCase();
+        }, String.class, String.class);
+        
         return modelMapper;
     }
 }

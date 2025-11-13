@@ -48,15 +48,23 @@ public class ViajeroServiceImpl implements ViajeroService {
     @Override
     public ViajeroResponseDTO save(ViajeroRequestDTO viajeroRequestDTO) {
         Viajero viajero = viajeroMapper.toEntity(viajeroRequestDTO);
-        
-        // Si viene personaNaturalId, buscar y asignar PersonaNatural
+        // Si viene personaNaturalId, buscar la PersonaNatural y enlazarla
         if (viajeroRequestDTO.getPersonaNaturalId() != null) {
             PersonaNatural personaNatural = personaNaturalRepository.findById(viajeroRequestDTO.getPersonaNaturalId())
                     .orElseThrow(() -> new DataIntegrityViolationException("PersonaNatural no encontrada con ID: " + viajeroRequestDTO.getPersonaNaturalId()));
-            viajero.setPersonaNatural(personaNatural);
-            personaNatural.setViajero(viajero); // Asignar Viajero a PersonaNatural (lado propietario)
+
+            // Guardar primero el viajero (aún sin asignar en la persona)
+            Viajero savedViajero = viajeroRepository.save(viajero);
+
+            // Ahora asignar la referencia en la entidad propietaria (PersonaNatural) y guardar
+            personaNatural.setViajero(savedViajero);
+            personaNaturalRepository.save(personaNatural);
+
+            // Asegurar que el DTO resultante refleje ambas relaciones
+            savedViajero.setPersonaNatural(personaNatural);
+            return viajeroMapper.toResponseDTO(savedViajero);
         }
-        
+
         Viajero savedViajero = viajeroRepository.save(viajero);
         return viajeroMapper.toResponseDTO(savedViajero);
     }
