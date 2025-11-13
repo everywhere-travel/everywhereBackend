@@ -8,6 +8,8 @@ public class ProveedorResponseDTO {
 
     private Integer id;
     private String nombre;
+    private String nombreJuridico;
+    private Integer ruc;
     private LocalDateTime creado;
     private LocalDateTime actualizado;
 }

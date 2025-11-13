@@ -7,7 +7,7 @@ import java.util.List;
 public interface CategoriaService {
 	List<CategoriaResponseDto> findAll();
 	CategoriaResponseDto findById(int id);
-	CategoriaResponseDto create(CategoriaRequestDto dto);
-	CategoriaResponseDto update(int id, CategoriaRequestDto dto);
+	CategoriaResponseDto create(CategoriaRequestDto categoriaRequestDto);
+	CategoriaResponseDto patch(int id, CategoriaRequestDto categoriaRequestDto);
 	void delete(int id);
 }

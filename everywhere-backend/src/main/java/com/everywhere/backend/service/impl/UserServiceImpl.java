@@ -1,6 +1,6 @@
 package com.everywhere.backend.service.impl;
 
-import com.everywhere.backend.exceptions.ResourceNotFoundException;
+import com.everywhere.backend.exceptions.UserNotFoundException;
 import io.jsonwebtoken.Claims;
 import com.everywhere.backend.mapper.UserMapper;
 import com.everywhere.backend.model.dto.*;
@@ -33,20 +33,12 @@ public class UserServiceImpl implements UserService {
     public AuthResponseDTO login(LoginDTO loginDTO) {
         // Autenticar usuario
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginDTO.getEmail(),
-                        loginDTO.getPassword()
-                )
-        );
+                new UsernamePasswordAuthenticationToken( loginDTO.getEmail(), loginDTO.getPassword()));
 
         // Obtener datos del usuario autenticado
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        User user = userPrincipal.getUser();
-
-        // Generar token JWT
-        String token = tokenProvider.createAccessToken(authentication);
-
-        // Retornar respuesta con token
+        User user = userPrincipal.getUser(); // Generar token JWT
+        String token = tokenProvider.createAccessToken(authentication); // Retornar respuesta con token
         return userMapper.toAuthResponseDTO(user, token);
     }
 
@@ -57,13 +49,13 @@ public class UserServiceImpl implements UserService {
         if (authentication != null && authentication.isAuthenticated()) {
             String token = (String) authentication.getCredentials();
 
-            // Extraer email del token
             Claims claims = tokenProvider.getJwtParser().parseClaimsJws(token).getBody();
             String email = claims.getSubject();
 
-            // Buscar usuario por email
-            User user = userRepository.findByEmail(email).orElse(null);
-            return user != null ? user.getId() : null;
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado con email: " + email));
+
+            return user.getId();
         }
         return null;
     }
@@ -71,8 +63,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public User getUserbyId(Integer userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + userId));
+        return userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("Usuario no encontrado con ID: " + userId));
     }
 
     @Override
@@ -87,5 +78,4 @@ public class UserServiceImpl implements UserService {
         User user = getUserbyId(userId);
         return userMapper.toUserBasicDTO(user);
     }
-
 }

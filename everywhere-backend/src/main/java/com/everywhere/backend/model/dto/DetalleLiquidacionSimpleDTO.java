@@ -22,7 +22,7 @@ public class DetalleLiquidacionSimpleDTO {
 
     // Solo las relaciones del detalle (SIN la liquidación)
     private ViajeroResponseDTO viajero;
-    private ProductoResponse producto;
+    private ProductoResponseDTO producto;
     private ProveedorResponseDTO proveedor;
     private OperadorResponseDTO operador;
 }

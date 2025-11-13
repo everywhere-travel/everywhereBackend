@@ -1,20 +1,19 @@
 package com.everywhere.backend.service;
 
-import com.everywhere.backend.model.dto.EstadoCotizacionRequestDto;
-import com.everywhere.backend.model.dto.EstadoCotizacionResponseDto;
+import com.everywhere.backend.model.dto.EstadoCotizacionRequestDTO;
+import com.everywhere.backend.model.dto.EstadoCotizacionResponseDTO;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.List; 
 
 public interface EstadoCotizacionService {
 
-    EstadoCotizacionResponseDto create(EstadoCotizacionRequestDto dto);
+    EstadoCotizacionResponseDTO create(EstadoCotizacionRequestDTO dto);
 
-    EstadoCotizacionResponseDto update(Integer id, EstadoCotizacionRequestDto dto);
+    EstadoCotizacionResponseDTO update(Integer id, EstadoCotizacionRequestDTO dto);
 
-    Optional<EstadoCotizacionResponseDto> getById(Integer id);
+    EstadoCotizacionResponseDTO getById(Integer id);
 
-    List<EstadoCotizacionResponseDto> getAll();
+    List<EstadoCotizacionResponseDTO> getAll();
 
     void delete(Integer id);
 }

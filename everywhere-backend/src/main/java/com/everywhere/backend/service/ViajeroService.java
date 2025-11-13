@@ -9,10 +9,9 @@ public interface ViajeroService {
 
     List<ViajeroResponseDTO> findAll();
     ViajeroResponseDTO findById(Integer id);
-    List<ViajeroResponseDTO> findByNombres(String nombres);
     List<ViajeroResponseDTO> findByNacionalidad(String nacionalidad);
     List<ViajeroResponseDTO> findByResidencia(String residencia);
     ViajeroResponseDTO save(ViajeroRequestDTO viajeroRequestDTO);
-    ViajeroResponseDTO update(Integer id, ViajeroRequestDTO viajeroRequestDTO);
+    ViajeroResponseDTO patch(Integer id, ViajeroRequestDTO viajeroRequestDTO);
     void deleteById(Integer id);
 }

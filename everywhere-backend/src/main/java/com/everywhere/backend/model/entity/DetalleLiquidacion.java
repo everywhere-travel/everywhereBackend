@@ -47,11 +47,11 @@ public class DetalleLiquidacion {
     private BigDecimal pagoPaxPEN;
 
     @CreationTimestamp
-    @Column(name = "dtliq_fec_cre_tmp")
+    @Column(name = "dtliq_fec_cre_tmp", updatable = false)
     private LocalDateTime creado;
 
     @UpdateTimestamp
-    @Column(name = "dtliq_fec_upd_tmp", updatable = true)
+    @Column(name = "dtliq_fec_upd_tmp")
     private LocalDateTime actualizado;
 
     @ManyToOne

@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 @Data
 @Entity
 @Table(name = "persona_juridica")
@@ -20,9 +23,11 @@ public class PersonaJuridica {
     @Column(name = "per_jurd_razSocial_vac")
     private String razonSocial;
 
-    @Column(name = "per_jurd_cre_tmp", nullable = false)
+    @CreationTimestamp
+    @Column(name = "per_jurd_cre_tmp", updatable = false)
     private LocalDateTime creado;
 
+    @UpdateTimestamp
     @Column(name = "per_jurd_upd_tmp")
     private LocalDateTime actualizado;
 

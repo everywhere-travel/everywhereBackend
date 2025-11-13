@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface ViajeroFrecuenteRepository extends JpaRepository<ViajeroFrecuente, Integer> {
     List<ViajeroFrecuente> findByViajero_Id(Integer viajeroId);
-
+    boolean existsByAreolineaAndCodigo(String areolinea, String codigo);
 }

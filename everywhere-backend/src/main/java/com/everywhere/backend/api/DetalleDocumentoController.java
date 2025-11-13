@@ -2,9 +2,13 @@ package com.everywhere.backend.api;
 
 import com.everywhere.backend.model.dto.DetalleDocumentoResponseDto;
 import com.everywhere.backend.model.dto.DetalleDocumentoRequestDto;
+import com.everywhere.backend.model.dto.DetalleDocumentoSearchDto;
 import com.everywhere.backend.service.DetalleDocumentoService;
 import com.everywhere.backend.security.RequirePermission;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,52 +22,63 @@ public class DetalleDocumentoController {
 
     @GetMapping
     @RequirePermission(module = "DOCUMENTOS", permission = "READ")
-    public List<DetalleDocumentoResponseDto> findAll() {
-        return detalleDocumentoService.findAll();
+    public ResponseEntity<List<DetalleDocumentoResponseDto>> findAll() {
+        return ResponseEntity.ok(detalleDocumentoService.findAll());
+    }
+    
+    @GetMapping("/persona/{personaId}")
+    @RequirePermission(module = "DOCUMENTOS", permission = "READ")
+    public ResponseEntity<List<DetalleDocumentoResponseDto>> findByPersonaId(@PathVariable Integer personaId) {
+        return ResponseEntity.ok(detalleDocumentoService.findByPersonaId(personaId));
     }
 
     @GetMapping("/{id}")
     @RequirePermission(module = "DOCUMENTOS", permission = "READ")
-    public DetalleDocumentoResponseDto findById(@PathVariable Integer id) {
-        return detalleDocumentoService.findById(id);
-    }
-
-    @GetMapping("/viajero/{viajeroId}")
-    @RequirePermission(module = "DOCUMENTOS", permission = "READ")
-    public List<DetalleDocumentoResponseDto> findByViajero(@PathVariable Integer viajeroId) {
-        return detalleDocumentoService.findByViajeroId(viajeroId);
+    public ResponseEntity<DetalleDocumentoResponseDto> findById(@PathVariable Integer id) {
+        return ResponseEntity.ok(detalleDocumentoService.findById(id));
     }
 
     @GetMapping("/documento/{documentoId}")
     @RequirePermission(module = "DOCUMENTOS", permission = "READ")
-    public List<DetalleDocumentoResponseDto> findByDocumentoId(@PathVariable Integer documentoId) {
-        return detalleDocumentoService.findByDocumentoId(documentoId);
+    public ResponseEntity<List<DetalleDocumentoResponseDto>> findByDocumentoId(@PathVariable Integer documentoId) {
+        return ResponseEntity.ok(detalleDocumentoService.findByDocumentoId(documentoId));
     }
 
     @GetMapping("/numero/{numero}")
     @RequirePermission(module = "DOCUMENTOS", permission = "READ")
-    public List<DetalleDocumentoResponseDto> findByNumero(@PathVariable String numero) {
-        return detalleDocumentoService.findByNumero(numero);
+    public ResponseEntity<List<DetalleDocumentoResponseDto>> findByNumero(@PathVariable String numero) {
+        return ResponseEntity.ok(detalleDocumentoService.findByNumero(numero));
+    }
+
+    @GetMapping("/persona-natural/{personaNaturalId}")
+    @RequirePermission(module = "DOCUMENTOS", permission = "READ")
+    public ResponseEntity<List<DetalleDocumentoResponseDto>> findByPersonaNaturalId(@PathVariable Integer personaNaturalId) {
+        return ResponseEntity.ok(detalleDocumentoService.findByPersonaNaturalId(personaNaturalId));
     }
 
     @PostMapping
     @RequirePermission(module = "DOCUMENTOS", permission = "CREATE")
-    public DetalleDocumentoResponseDto save(@RequestBody DetalleDocumentoRequestDto dto) {
-        return detalleDocumentoService.save(dto);
+    public ResponseEntity<DetalleDocumentoResponseDto> save(@RequestBody DetalleDocumentoRequestDto detalleDocumentoRequestDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(detalleDocumentoService.save(detalleDocumentoRequestDto));
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @RequirePermission(module = "DOCUMENTOS", permission = "UPDATE")
-    public DetalleDocumentoResponseDto update(
-            @PathVariable Integer id,
-            @RequestBody DetalleDocumentoRequestDto dto
-    ) {
-        return detalleDocumentoService.update(id, dto);
+    public ResponseEntity<DetalleDocumentoResponseDto> update(@PathVariable Integer id, @RequestBody DetalleDocumentoRequestDto detalleDocumentoRequestDto) {
+        return ResponseEntity.ok(detalleDocumentoService.update(id, detalleDocumentoRequestDto));
     }
 
     @DeleteMapping("/{id}")
     @RequirePermission(module = "VIAJEROS", permission = "DELETE")
-    public void delete(@PathVariable Integer id) {
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
         detalleDocumentoService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/persona-natural/documento-prefijo")
+    @RequirePermission(module = "DOCUMENTOS", permission = "READ")
+    public ResponseEntity<List<DetalleDocumentoSearchDto>> findByPersonaNaturalDocumentoPrefix(
+            @RequestParam(name = "prefijo") String prefijo) {
+        return ResponseEntity.ok(detalleDocumentoService.findByPersonaNaturalDocumentoPrefix(prefijo));
     }
 }

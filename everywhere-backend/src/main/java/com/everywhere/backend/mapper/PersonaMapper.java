@@ -6,59 +6,59 @@ import com.everywhere.backend.model.dto.PersonaDisplayDto;
 import com.everywhere.backend.model.entity.PersonaJuridica;
 import com.everywhere.backend.model.entity.PersonaNatural;
 import com.everywhere.backend.model.entity.Personas;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
-import lombok.RequiredArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class PersonaMapper {
 
     private final ModelMapper modelMapper;
+    private final TelefonoPersonaMapper telefonoPersonaMapper;
 
     public PersonaResponseDTO toResponseDTO(Personas persona) {
-        return modelMapper.map(persona, PersonaResponseDTO.class);
+        PersonaResponseDTO personaResponseDTO = modelMapper.map(persona, PersonaResponseDTO.class);
+
+        if (persona.getTelefonos() != null) {
+            personaResponseDTO.setTelefonos(
+                    persona.getTelefonos().stream()
+                            .map(telefonoPersonaMapper::toResponseDTO)
+                            .collect(Collectors.toList())
+            );
+        }
+
+        return personaResponseDTO;
     }
 
-    public Personas toEntity(PersonaRequestDTO dto) {
-        return modelMapper.map(dto, Personas.class);
+    public Personas toEntity(PersonaRequestDTO personaRequestDTO) {
+        return modelMapper.map(personaRequestDTO, Personas.class);
     }
 
-    public void updateEntityFromDTO(PersonaRequestDTO dto, Personas entity) {
-        // Solo mapea campos no nulos
-        if (dto.getEmail() != null) {
-            entity.setEmail(dto.getEmail());
-        }
-        if (dto.getTelefono() != null) {
-            entity.setTelefono(dto.getTelefono());
-        }
-        if (dto.getDireccion() != null) {
-            entity.setDireccion(dto.getDireccion());
-        }
-        if (dto.getObservacion() != null) {
-            entity.setObservacion(dto.getObservacion());
-        }
-        entity.setActualizado(LocalDateTime.now());
+    public void updateEntityFromDTO(PersonaRequestDTO personaRequestDTO, Personas personas) {
+        modelMapper.map(personaRequestDTO, personas);
     }
 
-    public PersonaDisplayDto toDisplayDTO(PersonaNatural natural) {
-        String nombreCompleto = natural.getNombres() + " " + natural.getApellidos();
+    public PersonaDisplayDto toDisplayDTO(PersonaNatural personaNatural) {
+        String nombreCompleto = personaNatural.getNombres() + " " +
+                personaNatural.getApellidosPaterno() + " " +
+                personaNatural.getApellidosMaterno();
         return new PersonaDisplayDto(
-                natural.getId(),
+                personaNatural.getId(),
                 "NATURAL",
-                String.valueOf(natural.getDocumento()),
+                String.valueOf(personaNatural.getDocumento()),
                 nombreCompleto
         );
     }
 
-    public PersonaDisplayDto toDisplayDTO(PersonaJuridica juridica) {
+    public PersonaDisplayDto toDisplayDTO(PersonaJuridica personaJuridica) {
         return new PersonaDisplayDto(
-                juridica.getId(),
+                personaJuridica.getId(),
                 "JURIDICA",
-                String.valueOf(juridica.getRuc()),
-                juridica.getRazonSocial()
+                String.valueOf(personaJuridica.getRuc()),
+                personaJuridica.getRazonSocial()
         );
     }
 }

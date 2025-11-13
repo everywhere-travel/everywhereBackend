@@ -7,8 +7,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 @Service
 public interface UserService {
-
-    //Autenticar el login
     AuthResponseDTO login(LoginDTO loginDTO);
     Integer getAuthenticatedUserIdFromJWT();
 
@@ -16,4 +14,3 @@ public interface UserService {
     List<User> getAllUsers();
     UserBasicDTO getUserBasicInfo(Integer userId);
 }
-

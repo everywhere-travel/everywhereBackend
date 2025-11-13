@@ -3,64 +3,38 @@ package com.everywhere.backend.mapper;
 import com.everywhere.backend.model.dto.DetalleDocumentoRequestDto;
 import com.everywhere.backend.model.dto.DetalleDocumentoResponseDto;
 import com.everywhere.backend.model.entity.DetalleDocumento; 
-import com.everywhere.backend.repository.DocumentoRepository;
-import com.everywhere.backend.repository.ViajeroRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class DetalleDocumentoMapper {
+    
+    private final ModelMapper modelMapper;
 
-    private final DocumentoMapper documentoMapper;
-    private final ViajeroMapper viajeroMapper;
-
-    private final DocumentoRepository documentoRepository;
-    private final ViajeroRepository viajeroRepository;
-
-    public DetalleDocumento toEntity(DetalleDocumentoRequestDto dto) {
-        DetalleDocumento detalle = new DetalleDocumento();
-        updateEntityFromDto(dto, detalle);
-        return detalle;
+    @PostConstruct
+    public void configureMappings() {
+        modelMapper.typeMap(DetalleDocumentoRequestDto.class, DetalleDocumento.class).addMappings(mapper -> {
+            mapper.skip(DetalleDocumento::setDocumento);
+            mapper.skip(DetalleDocumento::setPersonaNatural);
+        });
     }
 
-    public DetalleDocumentoResponseDto toDto(DetalleDocumento detalle) {
-        DetalleDocumentoResponseDto dto = new DetalleDocumentoResponseDto();
-        dto.setId(detalle.getId());
-        dto.setNumero(detalle.getNumero());
-        dto.setFechaEmision(detalle.getFechaEmision().toString());
-        dto.setFechaVencimiento(detalle.getFechaVencimiento().toString());
-        dto.setOrigen(detalle.getOrigen());
-
-        dto.setDocumento(detalle.getDocumento() != null
-                ? documentoMapper.toDto(detalle.getDocumento())
-                : null);
-
-        dto.setViajero(detalle.getViajero() != null
-                ? viajeroMapper.toResponseDTO(detalle.getViajero())
-                : null);
-
-        return dto;
+    public DetalleDocumento toEntity(DetalleDocumentoRequestDto detalleDocumentoRequestDto) {
+        DetalleDocumento detalleDocumento = modelMapper.map(detalleDocumentoRequestDto, DetalleDocumento.class);
+        return detalleDocumento;
     }
 
-    public void updateEntityFromDto(DetalleDocumentoRequestDto dto, DetalleDocumento detalle) {
-        detalle.setNumero(dto.getNumero());
-        detalle.setFechaEmision(LocalDate.parse(dto.getFechaEmision()));
-        detalle.setFechaVencimiento(LocalDate.parse(dto.getFechaVencimiento()));
-        detalle.setOrigen(dto.getOrigen());
+    public DetalleDocumentoResponseDto toResponse(DetalleDocumento detalleDocumento) {
+        DetalleDocumentoResponseDto detalleDocumentoResponseDto = modelMapper.map(detalleDocumento, DetalleDocumentoResponseDto.class);
+        return detalleDocumentoResponseDto;
+    }
 
-        // ✅ Traer Documento completo desde la BD
-        if (dto.getDocumentoId() != null) {
-            documentoRepository.findById(dto.getDocumentoId())
-                    .ifPresent(detalle::setDocumento);
-        }
-
-        // ✅ Traer Viajero completo desde la BD
-        if (dto.getViajeroId() != null) {
-            viajeroRepository.findById(dto.getViajeroId())
-                    .ifPresent(detalle::setViajero);
-        }
+    public void updateEntityFromDto(DetalleDocumentoRequestDto detalleDocumentoRequestDto, DetalleDocumento detalleDocumento) {
+        modelMapper.map(detalleDocumentoRequestDto, detalleDocumento);
     }
 }

@@ -1,54 +1,79 @@
 package com.everywhere.backend.service.impl;
 
+import com.everywhere.backend.exceptions.ResourceNotFoundException;
+import com.everywhere.backend.mapper.OperadorMapper;
+import com.everywhere.backend.model.dto.OperadorRequestDTO;
+import com.everywhere.backend.model.dto.OperadorResponseDTO;
 import com.everywhere.backend.model.entity.Operador;
 import com.everywhere.backend.repository.OperadorRepository;
 import com.everywhere.backend.service.OperadorService;
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class OperadorServiceImpl implements OperadorService {
 
     private final OperadorRepository operadorRepository;
+    private final OperadorMapper operadorMapper;
 
-    public OperadorServiceImpl(OperadorRepository operadorRepository) {
-        this.operadorRepository = operadorRepository;
+    @Override
+    public List<OperadorResponseDTO> findAll() {
+        return mapToResponseList(operadorRepository.findAll());
     }
 
     @Override
-    public List<Operador> findAll() {
-        return operadorRepository.findAll();
+    public OperadorResponseDTO findById(int id) {
+        Operador operador = operadorRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Operador no encontrado con ID: " + id));
+        return operadorMapper.toResponseDTO(operador);
     }
 
     @Override
-    public Optional<Operador> findByNombre(String nombre) {
-        return operadorRepository.findByNombre(nombre);
+    public OperadorResponseDTO findByNombre(String nombre) {
+        Operador operador = operadorRepository.findByNombre(nombre)
+                .orElseThrow(() -> new ResourceNotFoundException("Operador no encontrado con nombre: " + nombre));
+
+        return operadorMapper.toResponseDTO(operador);
     }
 
     @Override
-    public Optional<Operador> findById(int id) {
-        return operadorRepository.findById(id);
+    public OperadorResponseDTO save(OperadorRequestDTO operadorRequestDTO) {
+        if (operadorRepository.existsByNombreIgnoreCase(operadorRequestDTO.getNombre()))
+            throw new DataIntegrityViolationException("Ya existe un operador con el nombre: " + operadorRequestDTO.getNombre());
+        Operador operador = operadorMapper.toEntity(operadorRequestDTO);
+        return operadorMapper.toResponseDTO(operadorRepository.save(operador));
     }
 
     @Override
-    public Operador save(Operador operador) {
-        return operadorRepository.save(operador);
-    }
+    public OperadorResponseDTO update(int id, OperadorRequestDTO operadorRequestDTO) {
+        if (!operadorRepository.existsById(id))
+            throw new ResourceNotFoundException("Operador con id " + id + " no encontrado");
 
-    @Override
-    public Operador update(Operador operador) {
-        Optional<Operador> optional = operadorRepository.findById(operador.getId());
-        if (optional.isEmpty()) {
-            throw new RuntimeException("Operador con id " + operador.getId() + " no encontrado");
+        Operador operador = operadorRepository.findById(id).get();
+
+        if (operadorRequestDTO.getNombre() != null && 
+            !operadorRequestDTO.getNombre().equalsIgnoreCase(operador.getNombre()) &&
+            operadorRepository.existsByNombreIgnoreCase(operadorRequestDTO.getNombre())) {
+            throw new DataIntegrityViolationException("Ya existe otro operador con el nombre: " + operadorRequestDTO.getNombre());
         }
-        return operadorRepository.save(operador);
+        
+        operadorMapper.updateEntityFromDTO(operadorRequestDTO, operador);
+        return operadorMapper.toResponseDTO(operadorRepository.save(operador));
     }
 
     @Override
     public void deleteById(int id) {
+        if (!operadorRepository.existsById(id))
+            throw new ResourceNotFoundException("Operador no encontrado con ID: " + id);
         operadorRepository.deleteById(id);
     }
-}
 
+    private List<OperadorResponseDTO> mapToResponseList(List<Operador> operadores) {
+        return operadores.stream().map(operadorMapper::toResponseDTO).toList();
+    }
+}
