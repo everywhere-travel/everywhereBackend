@@ -28,9 +28,9 @@ public class PersonaNaturalMapper {
     }
 
     public void updateEntityFromDTO(PersonaNaturalRequestDTO personaNaturalRequestDTO, PersonaNatural personaNatural) {
-        modelMapper.map(personaNaturalRequestDTO, personaNatural); 
+        modelMapper.map(personaNaturalRequestDTO, personaNatural);
         
-        if (personaNaturalRequestDTO.getPersona() != null && personaNatural.getPersonas() != null) // Actualizar persona base si existe
+        if (personaNaturalRequestDTO.getPersona() != null && personaNatural.getPersonas() != null)
             personaMapper.updateEntityFromDTO(personaNaturalRequestDTO.getPersona(), personaNatural.getPersonas());
     }
 }
