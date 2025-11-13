@@ -9,8 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface FormaPagoRepository extends JpaRepository<FormaPago, Integer> {
-    Optional<FormaPago> findByCodigo(Integer codigo);
-    Optional<FormaPago> findById(Integer id);
+    Optional<FormaPago> findByCodigo(Integer codigo); 
     boolean existsByCodigo(Integer codigo);
     List<FormaPago> findByDescripcionContainingIgnoreCase(String descripcion);
     Optional<FormaPago> findByDescripcionIgnoreCase(String descripcion);

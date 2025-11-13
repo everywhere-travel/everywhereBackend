@@ -1,79 +1,60 @@
 package com.everywhere.backend.api;
 
-import com.everywhere.backend.mapper.OperadorMapper;
-import com.everywhere.backend.model.dto.OperadorRequestDto;
+import com.everywhere.backend.model.dto.OperadorRequestDTO;
 import com.everywhere.backend.model.dto.OperadorResponseDTO;
-import com.everywhere.backend.model.entity.Operador; 
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.OperadorService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/operadores")
+@RequiredArgsConstructor
 public class OperadorController {
 
-    private OperadorService operadorService;
-
-    public OperadorController(OperadorService operadorService) {
-        this.operadorService = operadorService;
-    }
+    private final OperadorService operadorService;
 
     @GetMapping
     @RequirePermission(module = "OPERADOR", permission = "READ")
-    public ResponseEntity<List<OperadorResponseDTO>> findAll() {
-        List<OperadorResponseDTO> response = operadorService.findAll()
-                .stream()
-                .map(OperadorMapper::toResponse)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(response);
+    public ResponseEntity<List<OperadorResponseDTO>> findAll() { 
+        return ResponseEntity.ok(operadorService.findAll());
     }
 
     @GetMapping("/{id}")
     @RequirePermission(module = "OPERADOR", permission = "READ")
     public ResponseEntity<OperadorResponseDTO> getById(@PathVariable Integer id) {
-        return operadorService.findById(id)
-                .map(OperadorMapper::toResponse)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(operadorService.findById(id));
+    }
+
+    @GetMapping("/nombre")
+    public ResponseEntity<OperadorResponseDTO> getByNombre(@RequestParam String nombre) {
+        return ResponseEntity.ok(operadorService.findByNombre(nombre));
     }
 
     @PostMapping
     @RequirePermission(module = "OPERADOR", permission = "CREATE")
-    public ResponseEntity<OperadorResponseDTO> create(@RequestBody OperadorRequestDto dto) {
-        Operador operador = OperadorMapper.toEntity(dto);
-        Operador nuevoOperador = operadorService.save(operador);
-        return new ResponseEntity<>(OperadorMapper.toResponse(nuevoOperador), HttpStatus.CREATED);
+    public ResponseEntity<OperadorResponseDTO> create(@RequestBody OperadorRequestDTO operadorRequestDTO) { 
+        return ResponseEntity.status(HttpStatus.CREATED).body(operadorService.save(operadorRequestDTO));
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @RequirePermission(module = "OPERADOR", permission = "UPDATE")
-    public ResponseEntity<OperadorResponseDTO> update(
+    public ResponseEntity<OperadorResponseDTO> partialUpdate(
             @PathVariable Integer id,
-            @RequestBody OperadorRequestDto dto) {
-
-        return operadorService.findById(id)
-                .map(existing -> {
-                    existing.setNombre(dto.getNombre());
-
-                    Operador updated = operadorService.update(existing);
-
-                    return ResponseEntity.ok(OperadorMapper.toResponse(updated));
-                })
-                .orElse(ResponseEntity.notFound().build());
+            @RequestBody OperadorRequestDTO dto) {
+            return ResponseEntity.ok(operadorService.update(id, dto));
     }
-
 
     @DeleteMapping("/{id}")
     @RequirePermission(module = "OPERADOR", permission = "DELETE")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        if (operadorService.findById(id).isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
         operadorService.deleteById(id);
         return ResponseEntity.noContent().build();
     }

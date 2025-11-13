@@ -11,19 +11,20 @@ import java.util.Optional;
 
 @Repository
 public interface PersonaNaturalRepository extends JpaRepository<PersonaNatural, Integer> {
-    // Campo único - solo puede haber uno
     Optional<PersonaNatural> findByDocumentoIgnoreCase(String documento);
+    Optional<PersonaNatural> findByPersonasId(Integer personaId);
 
-    // Búsquedas que ignoran tildes/acentos
     @Query(value = "SELECT * FROM persona_natural WHERE UPPER(TRANSLATE(per_nat_nomb_vac, 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou')) LIKE UPPER(TRANSLATE(:nombres, 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou'))", nativeQuery = true)
     List<PersonaNatural> findByNombresIgnoreAccents(@Param("nombres") String nombres);
 
-    @Query(value = "SELECT * FROM persona_natural WHERE UPPER(TRANSLATE(per_nat_apell_vac, 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou')) LIKE UPPER(TRANSLATE(:apellidos, 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou'))", nativeQuery = true)
-    List<PersonaNatural> findByApellidosIgnoreAccents(@Param("apellidos") String apellidos);
+    @Query(value = "SELECT * FROM persona_natural WHERE UPPER(TRANSLATE(per_nat_apell_pat_vac, 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou')) LIKE UPPER(TRANSLATE(:apellidosPaterno, 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou'))", nativeQuery = true)
+    List<PersonaNatural> findByApellidosPaternoIgnoreAccents(@Param("apellidosPaterno") String apellidosPaterno);
 
-    // Métodos originales mantenidos para compatibilidad
-    List<PersonaNatural> findByNombresIgnoreCase(String nombres);
-    List<PersonaNatural> findByApellidosIgnoreCase(String apellidos);
-    Optional<PersonaNatural> findByPersonasId(Integer personaId);
+    @Query(value = "SELECT * FROM persona_natural WHERE UPPER(TRANSLATE(per_nat_apell_mat_vac, 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou')) LIKE UPPER(TRANSLATE(:apellidosMaterno, 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou'))", nativeQuery = true)
+    List<PersonaNatural> findByApellidosMaternoIgnoreAccents(@Param("apellidosMaterno") String apellidosMaterno);
 
+    List<PersonaNatural> findByCategoriaPersonaId(Integer categoriaId);
+    Optional<PersonaNatural> findByDocumentoIgnoreCaseAndIdNot(String documento, Integer id);
+    @Query("SELECT COUNT(pn) FROM PersonaNatural pn WHERE pn.categoriaPersona.id = :categoriaId")
+    long countByCategoriaPersonaId(@Param("categoriaId") Integer categoriaId);
 }

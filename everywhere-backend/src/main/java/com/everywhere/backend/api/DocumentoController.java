@@ -4,18 +4,21 @@ import com.everywhere.backend.model.dto.DocumentoRequestDto;
 import com.everywhere.backend.model.dto.DocumentoResponseDto;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.DocumentoService;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/documentos")
 public class DocumentoController {
 
-    @Autowired
-    private DocumentoService documentoService;
+    private final DocumentoService documentoService;
 
     @GetMapping
     @RequirePermission(module = "DOCUMENTOS", permission = "CREATE")
@@ -31,14 +34,14 @@ public class DocumentoController {
 
     @PostMapping
     @RequirePermission(module = "DOCUMENTOS", permission = "CREATE")
-    public ResponseEntity<DocumentoResponseDto> create(@RequestBody DocumentoRequestDto dto) {
-        return ResponseEntity.ok(documentoService.create(dto));
+    public ResponseEntity<DocumentoResponseDto> create(@RequestBody DocumentoRequestDto documentoRequestDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(documentoService.create(documentoRequestDto));
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @RequirePermission(module = "DOCUMENTOS", permission = "UPDATE")
-    public ResponseEntity<DocumentoResponseDto> update(@PathVariable int id, @RequestBody DocumentoRequestDto dto) {
-        return ResponseEntity.ok(documentoService.update(id, dto));
+    public ResponseEntity<DocumentoResponseDto> update(@PathVariable int id, @RequestBody DocumentoRequestDto documentoRequestDto) {
+        return ResponseEntity.ok(documentoService.patch(id, documentoRequestDto));
     }
 
     @DeleteMapping("/{id}")

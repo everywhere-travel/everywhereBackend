@@ -1,10 +1,12 @@
 package com.everywhere.backend.api;
 
-import com.everywhere.backend.model.dto.EstadoCotizacionRequestDto;
-import com.everywhere.backend.model.dto.EstadoCotizacionResponseDto;
+import com.everywhere.backend.model.dto.EstadoCotizacionRequestDTO;
+import com.everywhere.backend.model.dto.EstadoCotizacionResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.EstadoCotizacionService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,39 +19,32 @@ public class EstadosCotizacionController {
 
     private final EstadoCotizacionService estadoCotizacionService;
 
-    // Crear un estado
     @PostMapping
     @RequirePermission(module = "COTIZACIONES", permission = "CREATE")
-    public ResponseEntity<EstadoCotizacionResponseDto> create(@RequestBody EstadoCotizacionRequestDto request) {
-        return ResponseEntity.ok(estadoCotizacionService.create(request));
+    public ResponseEntity<EstadoCotizacionResponseDTO> create(@RequestBody EstadoCotizacionRequestDTO estadoCotizacionRequestDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(estadoCotizacionService.create(estadoCotizacionRequestDTO));
     }
 
-    // Actualizar un estado (id por path, descripcion en body)
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @RequirePermission(module = "COTIZACIONES", permission = "UPDATE")
-    public ResponseEntity<EstadoCotizacionResponseDto> update(
+    public ResponseEntity<EstadoCotizacionResponseDTO> update(
             @PathVariable Integer id,
-            @RequestBody EstadoCotizacionRequestDto request) {
-        return ResponseEntity.ok(estadoCotizacionService.update(id, request));
+            @RequestBody EstadoCotizacionRequestDTO estadoCotizacionRequestDTO) {
+        return ResponseEntity.ok(estadoCotizacionService.update(id, estadoCotizacionRequestDTO));
     }
 
-    // Obtener por id
     @GetMapping("/{id}")
     @RequirePermission(module = "COTIZACIONES", permission = "READ")
-    public ResponseEntity<EstadoCotizacionResponseDto> getById(@PathVariable Integer id) {
-        return estadoCotizacionService.getById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<EstadoCotizacionResponseDTO> getById(@PathVariable Integer id) {
+        return ResponseEntity.ok(estadoCotizacionService.getById(id));
     }
 
-    // Listar todos
     @GetMapping
     @RequirePermission(module = "COTIZACIONES", permission = "READ")
-    public ResponseEntity<List<EstadoCotizacionResponseDto>> getAll() {
+    public ResponseEntity<List<EstadoCotizacionResponseDTO>> getAll() {
         return ResponseEntity.ok(estadoCotizacionService.getAll());
     }
 
-    // Eliminar por id
     @DeleteMapping("/{id}")
     @RequirePermission(module = "COTIZACIONES", permission = "DELETE")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {

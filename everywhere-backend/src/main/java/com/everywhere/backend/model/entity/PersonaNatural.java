@@ -1,8 +1,16 @@
 package com.everywhere.backend.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.ArrayList;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Data
 @Entity
@@ -20,22 +28,36 @@ public class PersonaNatural {
     @Column(name = "per_nat_nomb_vac")
     private String nombres;
 
-    @Column(name = "per_nat_apell_vac")
-    private String apellidos;
+    @Column(name = "per_nat_apell_pat_vac")
+    private String apellidosPaterno;
 
-    @Column(name = "per_nat_cliente_bol")
-    private Boolean cliente;
+    @Column(name = "per_nat_apell_mat_vac")
+    private String apellidosMaterno;
 
-    @Column(name = "per_nat_catg_vac")
-    private String categoria;
+    @Column(name = "per_nat_sexo_vac")
+    private String sexo; 
 
+    @CreationTimestamp
     @Column(name = "per_nat_cre_tmp", updatable = false)
     private LocalDateTime creado;
 
+    @UpdateTimestamp
     @Column(name = "per_nat_upd_tmp")
     private LocalDateTime actualizado;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "per_id_int", nullable = false)
     private Personas personas;
+
+    @OneToMany(mappedBy = "personaNatural", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<NaturalJuridico> relacionesJuridicas = new ArrayList<>();
+
+    @OneToOne
+    @JoinColumn(name = "via_id_int")
+    @JsonManagedReference("viajero-personaNatural")
+    private Viajero viajero;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cat_per_id_int")
+    private CategoriaPersona categoriaPersona;
 }

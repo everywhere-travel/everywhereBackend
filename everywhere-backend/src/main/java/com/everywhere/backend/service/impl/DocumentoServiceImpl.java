@@ -1,71 +1,62 @@
 package com.everywhere.backend.service.impl;
 
+import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.DocumentoMapper; 
 import com.everywhere.backend.model.dto.DocumentoRequestDto;
 import com.everywhere.backend.model.dto.DocumentoResponseDto;
 import com.everywhere.backend.model.entity.Documento; 
 import com.everywhere.backend.repository.DocumentoRepository;
 import com.everywhere.backend.service.DocumentoService;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class DocumentoServiceImpl implements DocumentoService {
 
-    @Autowired
-    private DocumentoRepository documentoRepository;
+    private final DocumentoRepository documentoRepository;
+    private final DocumentoMapper documentoMapper;
 
     @Override
     public List<DocumentoResponseDto> findAll() {
-        return documentoRepository.findAll()
-                .stream()
-                .map(DocumentoMapper::toDto)
-                .toList();
+        return mapToResponseList(documentoRepository.findAll());
     }
 
     @Override
     public DocumentoResponseDto findById(int id) {
         Documento documento = documentoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Documento no encontrado con id: " + id));
-        return DocumentoMapper.toDto(documento);
+                .orElseThrow(() -> new ResourceNotFoundException("Documento no encontrado con id: " + id));
+        return documentoMapper.toResponseDTO(documento);
     }
 
     @Override
-    public DocumentoResponseDto create(DocumentoRequestDto dto) {
-        Documento documento = DocumentoMapper.toEntity(dto);
-        LocalDateTime now = LocalDateTime.now();
-        documento.setCreado(now);
-        documento.setEstado(Boolean.TRUE);
-        Documento saved = documentoRepository.save(documento);
-        return DocumentoMapper.toDto(saved);
+    public DocumentoResponseDto create(DocumentoRequestDto documentoRequestDto) {
+        Documento documento = documentoMapper.toEntity(documentoRequestDto); 
+        return documentoMapper.toResponseDTO(documentoRepository.save(documento));
     }
 
     @Override
-    public DocumentoResponseDto update(int id, DocumentoRequestDto dto) {
-        Documento documento = documentoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Documento no encontrado con id: " + id));
+    public DocumentoResponseDto patch(int id, DocumentoRequestDto documentoRequestDto) {
+        if (!documentoRepository.existsById(id))
+            throw new ResourceNotFoundException("Documento no encontrado con id: " + id);
 
-        // actualizar campos
-        documento.setTipo(dto.getTipo());
-        documento.setDescripcion(dto.getDescripcion());
-        LocalDateTime now = LocalDateTime.now();
-        documento.setActualizado(now);
-        Documento updated = documentoRepository.save(documento);
-        return DocumentoMapper.toDto(updated);
+        Documento documento = documentoRepository.findById(id).get();
+        documentoMapper.updateEntityFromDto(documentoRequestDto, documento); 
+        return documentoMapper.toResponseDTO(documentoRepository.save(documento));
     }
 
     @Override
     public void delete(int id) {
-        Documento documento = documentoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Documento no encontrado con id: " + id));
+        if (!documentoRepository.existsById(id)) 
+            throw new ResourceNotFoundException("Documento no encontrado con id: " + id);
+        documentoRepository.deleteById(id);
+    }
 
-        // Alternar el estado: true -> false, false -> true
-        documento.setEstado(!documento.getEstado());
-        documento.setActualizado(LocalDateTime.now());
-
-        documentoRepository.save(documento);
+    private List<DocumentoResponseDto> mapToResponseList(List<Documento> documentos) {
+        return documentos.stream().map(documentoMapper::toResponseDTO).toList();
     }
 }

@@ -11,15 +11,13 @@ import java.util.Optional;
 
 @Repository
 public interface PersonaJuridicaRepository extends JpaRepository<PersonaJuridica, Integer> {
-    // Campo único - solo puede haber uno
     Optional<PersonaJuridica> findByRucIgnoreCase(String ruc);
 
-    // Búsqueda que ignora tildes/acentos
     @Query(value = "SELECT * FROM persona_juridica WHERE UPPER(TRANSLATE(per_jurd_razSocial_vac, 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou')) LIKE UPPER(TRANSLATE(:razonSocial, 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou'))", nativeQuery = true)
     List<PersonaJuridica> findByRazonSocialIgnoreAccents(@Param("razonSocial") String razonSocial);
 
     // Método original mantenido para compatibilidad
     List<PersonaJuridica> findByRazonSocialIgnoreCase(String razonSocial);
     Optional<PersonaJuridica> findByPersonasId(Integer personaId);
-
+    Optional<PersonaJuridica> findByRucIgnoreCaseAndIdNot(String ruc, Integer id);
 }

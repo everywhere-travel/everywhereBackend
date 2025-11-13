@@ -1,176 +1,117 @@
 package com.everywhere.backend.service.impl;
 
+import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.DetalleCotizacionMapper;
 import com.everywhere.backend.model.dto.DetalleCotizacionRequestDto;
 import com.everywhere.backend.model.dto.DetalleCotizacionResponseDto;
 import com.everywhere.backend.model.entity.*;
 import com.everywhere.backend.repository.*;
 import com.everywhere.backend.service.DetalleCotizacionService;
-import jakarta.persistence.EntityNotFoundException;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.List;  
 
 @Service
+@RequiredArgsConstructor
 public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
 
     private final DetalleCotizacionRepository detalleCotizacionRepository;
     private final CotizacionRepository cotizacionRepository;
+    private final CategoriaRepository categoriaRepository;
     private final ProductoRepository productoRepository;
     private final ProveedorRepository proveedorRepository;
-    private final CategoriaRepository categoriaRepository;
-    private final OperadorRepository operadorRepository;
-    private final LiquidacionRepository liquidacionRepository;
-    private final ViajeroRepository viajeroRepository;
-
-    public DetalleCotizacionServiceImpl(
-            DetalleCotizacionRepository detalleCotizacionRepository,
-            CotizacionRepository cotizacionRepository,
-            ProductoRepository productoRepository,
-            ProveedorRepository proveedorRepository,
-            CategoriaRepository categoriaRepository,
-            OperadorRepository operadorRepository,
-            LiquidacionRepository liquidacionRepository,
-            ViajeroRepository viajeroRepository
-    ) {
-        this.detalleCotizacionRepository = detalleCotizacionRepository;
-        this.cotizacionRepository = cotizacionRepository;
-        this.productoRepository = productoRepository;
-        this.proveedorRepository = proveedorRepository;
-        this.categoriaRepository = categoriaRepository;
-        this.operadorRepository = operadorRepository;
-        this.liquidacionRepository = liquidacionRepository;
-        this.viajeroRepository = viajeroRepository;
-    }
+    private final DetalleCotizacionMapper detalleCotizacionMapper;
 
     @Override
     public List<DetalleCotizacionResponseDto> findAll() {
-        return detalleCotizacionRepository.findAll()
-                .stream()
-                .map(DetalleCotizacionMapper::toResponse)
-                .collect(Collectors.toList());
+        return mapToResponseList(detalleCotizacionRepository.findAll());
     }
 
     @Override
-    public Optional<DetalleCotizacionResponseDto> findById(int id) {
-        return detalleCotizacionRepository.findById(id)
-                .map(DetalleCotizacionMapper::toResponse);
+    public DetalleCotizacionResponseDto findById(Integer id) {
+        return detalleCotizacionRepository.findById(id).map(detalleCotizacionMapper::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Detalle de cotización no encontrado con ID: " + id));
     }
 
     @Override
-    public List<DetalleCotizacionResponseDto> findByCotizacionId(int cotizacionId) {
-        return detalleCotizacionRepository.findByCotizacionId(cotizacionId)
-                .stream()
-                .map(DetalleCotizacionMapper::toResponse)
-                .collect(Collectors.toList());
+    public List<DetalleCotizacionResponseDto> findByCotizacionId(Integer cotizacionId) {
+        if (!cotizacionRepository.existsById(cotizacionId))
+            throw new ResourceNotFoundException("Cotización no encontrada con ID: " + cotizacionId);
+        
+        return mapToResponseList(detalleCotizacionRepository.findByCotizacionId(cotizacionId));
     }
 
     @Override
-    public DetalleCotizacionResponseDto create(DetalleCotizacionRequestDto dto, int cotizacionId) {
-        DetalleCotizacion entity = new DetalleCotizacion();
+    public DetalleCotizacionResponseDto create(DetalleCotizacionRequestDto detalleCotizacionRequestDto, Integer cotizacionId) {
+        if (cotizacionId == null) throw new IllegalArgumentException("El ID de la cotización es obligatorio");
+        
+        DetalleCotizacion detalleCotizacion = detalleCotizacionMapper.toEntity(detalleCotizacionRequestDto);
 
-        // Relación Cotización
-        Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId)
-                .orElseThrow(() -> new RuntimeException("Cotización no encontrada"));
-        entity.setCotizacion(cotizacion);
+        if (!cotizacionRepository.existsById(cotizacionId))
+            throw new ResourceNotFoundException("Cotización no encontrada con ID: " + cotizacionId);
+        detalleCotizacion.setCotizacion(cotizacionRepository.findById(cotizacionId).get());
 
-        // Relación Categoria
-        Categoria categoria = categoriaRepository.findById(dto.getCategoria())
-                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
-        entity.setCategoria(categoria);
-
-        // Campos simples
-        entity.setCantidad(dto.getCantidad());
-        entity.setUnidad(dto.getUnidad());
-        entity.setDescripcion(dto.getDescripcion());
-        entity.setComision(dto.getComision());
-        entity.setPrecioHistorico(dto.getPrecioHistorico());
-        entity.setSeleccionado(dto.getSeleccionado()); // Campo opcional, puede ser null
-
-        DetalleCotizacion saved = detalleCotizacionRepository.save(entity);
-        return DetalleCotizacionMapper.toResponse(saved);
-    }
-
-
-    @Override
-    public DetalleCotizacionResponseDto update(int id, DetalleCotizacionRequestDto dto) {
-        DetalleCotizacion entity = detalleCotizacionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Detalle de cotización no encontrado"));
-
-    DetalleCotizacionMapper.updateEntityFromRequest(entity, dto, categoriaRepository);
-        entity.setActualizado(LocalDateTime.now());
-
-        DetalleCotizacion updated = detalleCotizacionRepository.save(entity);
-        return DetalleCotizacionMapper.toResponse(updated);
-    }
-
-    @Override
-    public void delete(int id) {
-        if (!detalleCotizacionRepository.existsById(id)) {
-            throw new EntityNotFoundException("Detalle de cotización no encontrado");
+        if (detalleCotizacionRequestDto.getCategoriaId() != null) {
+            if (!categoriaRepository.existsById(detalleCotizacionRequestDto.getCategoriaId()))
+                throw new ResourceNotFoundException("Categoría no encontrada con ID: " + detalleCotizacionRequestDto.getCategoriaId());
+            detalleCotizacion.setCategoria(categoriaRepository.findById(detalleCotizacionRequestDto.getCategoriaId()).get());
         }
+
+        if (detalleCotizacionRequestDto.getProductoId() != null) {
+            if (!productoRepository.existsById(detalleCotizacionRequestDto.getProductoId()))
+                throw new ResourceNotFoundException("Producto no encontrado con ID: " + detalleCotizacionRequestDto.getProductoId());
+            detalleCotizacion.setProducto(productoRepository.findById(detalleCotizacionRequestDto.getProductoId()).get());
+        }
+
+        if (detalleCotizacionRequestDto.getProveedorId() != null) {
+            if (!proveedorRepository.existsById(detalleCotizacionRequestDto.getProveedorId()))
+                throw new ResourceNotFoundException("Proveedor no encontrado con ID: " + detalleCotizacionRequestDto.getProveedorId());
+            detalleCotizacion.setProveedor(proveedorRepository.findById(detalleCotizacionRequestDto.getProveedorId()).get());
+        }
+
+        return detalleCotizacionMapper.toResponse(detalleCotizacionRepository.save(detalleCotizacion));
+    }
+
+    @Override
+    public DetalleCotizacionResponseDto patch(Integer id, DetalleCotizacionRequestDto detalleCotizacionRequestDto) {
+        if (!detalleCotizacionRepository.existsById(id))
+            throw new ResourceNotFoundException("Detalle de cotización no encontrado con ID: " + id);
+
+        DetalleCotizacion detalleCotizacion = detalleCotizacionRepository.findById(id).get();
+        detalleCotizacionMapper.updateEntityFromRequest(detalleCotizacion, detalleCotizacionRequestDto);
+
+        if (detalleCotizacionRequestDto.getCategoriaId() != null) {
+            if (!categoriaRepository.existsById(detalleCotizacionRequestDto.getCategoriaId()))
+                throw new ResourceNotFoundException("Categoría no encontrada con ID: " + detalleCotizacionRequestDto.getCategoriaId());
+            detalleCotizacion.setCategoria(categoriaRepository.findById(detalleCotizacionRequestDto.getCategoriaId()).get());
+        }
+
+        if (detalleCotizacionRequestDto.getProductoId() != null) {
+            if (!productoRepository.existsById(detalleCotizacionRequestDto.getProductoId()))
+                throw new ResourceNotFoundException("Producto no encontrado con ID: " + detalleCotizacionRequestDto.getProductoId());
+            detalleCotizacion.setProducto(productoRepository.findById(detalleCotizacionRequestDto.getProductoId()).get());
+        }
+
+        if (detalleCotizacionRequestDto.getProveedorId() != null) {
+            if (!proveedorRepository.existsById(detalleCotizacionRequestDto.getProveedorId()))
+                throw new ResourceNotFoundException("Proveedor no encontrado con ID: " + detalleCotizacionRequestDto.getProveedorId());
+            detalleCotizacion.setProveedor(proveedorRepository.findById(detalleCotizacionRequestDto.getProveedorId()).get());
+        }
+
+        return detalleCotizacionMapper.toResponse(detalleCotizacionRepository.save(detalleCotizacion));
+    }
+
+    @Override
+    public void delete(Integer id) {
+        if (!detalleCotizacionRepository.existsById(id))
+            throw new ResourceNotFoundException("Detalle de cotización no encontrado con ID: " + id);
         detalleCotizacionRepository.deleteById(id);
     }
 
-    @Override
-    public DetalleCotizacionResponseDto setCotizacion(int detalleId, int cotizacionId) {
-        DetalleCotizacion detalle = detalleCotizacionRepository.findById(detalleId)
-                .orElseThrow(() -> new EntityNotFoundException("Detalle no encontrado"));
-        Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId)
-                .orElseThrow(() -> new EntityNotFoundException("Cotización no encontrada"));
-
-        detalle.setCotizacion(cotizacion);
-        detalle.setActualizado(LocalDateTime.now());
-
-        return DetalleCotizacionMapper.toResponse(detalleCotizacionRepository.save(detalle));
+    private List<DetalleCotizacionResponseDto> mapToResponseList(List<DetalleCotizacion> detalles) {
+        return detalles.stream().map(detalleCotizacionMapper::toResponse).toList();
     }
-
-    @Override
-    public DetalleCotizacionResponseDto setProducto(int detalleId, int productoId) {
-        DetalleCotizacion detalle = detalleCotizacionRepository.findById(detalleId)
-                .orElseThrow(() -> new EntityNotFoundException("Detalle no encontrado"));
-        Producto producto = productoRepository.findById(productoId)
-                .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
-
-        detalle.setProducto(producto);
-        detalle.setActualizado(LocalDateTime.now());
-
-        return DetalleCotizacionMapper.toResponse(detalleCotizacionRepository.save(detalle));
-    }
-
-    @Override
-    public DetalleCotizacionResponseDto setProveedor(int detalleId, int proveedorId) {
-        DetalleCotizacion detalle = detalleCotizacionRepository.findById(detalleId)
-                .orElseThrow(() -> new EntityNotFoundException("Detalle no encontrado"));
-        Proveedor proveedor = proveedorRepository.findById(proveedorId)
-                .orElseThrow(() -> new EntityNotFoundException("Proveedor no encontrado"));
-
-        detalle.setProveedor(proveedor);
-        detalle.setActualizado(LocalDateTime.now());
-
-        return DetalleCotizacionMapper.toResponse(detalleCotizacionRepository.save(detalle));
-    }
-
-    @Override
-    public DetalleCotizacionResponseDto updateSeleccionado(int detalleId, Boolean seleccionado) {
-        if (detalleId <= 0) {
-            throw new IllegalArgumentException("El ID del detalle debe ser un número válido mayor a 0");
-        }
-        if (seleccionado == null) {
-            throw new IllegalArgumentException("El valor de seleccionado no puede ser null");
-        }
-        
-        DetalleCotizacion detalle = detalleCotizacionRepository.findById(detalleId)
-                .orElseThrow(() -> new EntityNotFoundException("Detalle no encontrado con ID: " + detalleId));
-        
-        detalle.setSeleccionado(seleccionado);
-        detalle.setActualizado(LocalDateTime.now());
-        
-        DetalleCotizacion saved = detalleCotizacionRepository.save(detalle);
-        return DetalleCotizacionMapper.toResponse(saved);
-    }
-
 }

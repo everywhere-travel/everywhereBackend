@@ -1,69 +1,41 @@
 package com.everywhere.backend.mapper;
 
+import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Component;
+
 import com.everywhere.backend.model.dto.DetalleCotizacionRequestDto;
 import com.everywhere.backend.model.dto.DetalleCotizacionResponseDto;
 import com.everywhere.backend.model.entity.DetalleCotizacion;
-import com.everywhere.backend.repository.CategoriaRepository;
 
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+
+@Component
+@RequiredArgsConstructor
 public class DetalleCotizacionMapper {
 
-    public static DetalleCotizacionResponseDto toResponse(DetalleCotizacion entity) {
-        if (entity == null) {
-            return null;
-        }
+    private final ModelMapper modelMapper;
 
-    DetalleCotizacionResponseDto dto = new DetalleCotizacionResponseDto();
-    dto.setId(entity.getId());
-    dto.setCantidad(entity.getCantidad());
-    dto.setUnidad(entity.getUnidad());
-    dto.setDescripcion(entity.getDescripcion());
-    dto.setPrecioHistorico(entity.getPrecioHistorico());
-    dto.setSeleccionado(entity.getSeleccionado());
-    dto.setCreado(entity.getCreado());
-    dto.setActualizado(entity.getActualizado());
-    dto.setComision(entity.getComision());
-
-    // Solo IDs de relaciones
-    dto.setCotizacion(entity.getCotizacion());
-    dto.setProducto(entity.getProducto());
-    dto.setProveedor(entity.getProveedor());
-    dto.setCategoria(entity.getCategoria());
-
-    return dto;
+    @PostConstruct
+    public void configureMappings() {
+        modelMapper.typeMap(DetalleCotizacionRequestDto.class, DetalleCotizacion.class).addMappings(mapper -> {
+                mapper.skip(DetalleCotizacion::setCotizacion);
+                mapper.skip(DetalleCotizacion::setProducto);
+                mapper.skip(DetalleCotizacion::setProveedor);
+            });
     }
 
-    public static DetalleCotizacion toEntity(DetalleCotizacionRequestDto dto, com.everywhere.backend.repository.CategoriaRepository categoriaRepository) {
-        if (dto == null) {
-            return null;
-        }
-
-        DetalleCotizacion entity = new DetalleCotizacion();
-        entity.setCantidad(dto.getCantidad());
-        entity.setUnidad(dto.getUnidad());
-        entity.setDescripcion(dto.getDescripcion());
-        entity.setCategoria(
-            categoriaRepository.findById(dto.getCategoria()).orElse(null)
-        );
-        entity.setComision(dto.getComision());
-        entity.setPrecioHistorico(dto.getPrecioHistorico());
-        entity.setSeleccionado(dto.getSeleccionado());
-        return entity;
+    public DetalleCotizacionResponseDto toResponse(DetalleCotizacion detalleCotizacion) {
+        DetalleCotizacionResponseDto detalleCotizacionResponseDto = modelMapper.map(detalleCotizacion, DetalleCotizacionResponseDto.class);
+        return detalleCotizacionResponseDto;
     }
 
-    public static void updateEntityFromRequest(
-            DetalleCotizacion entity,
-            DetalleCotizacionRequestDto dto,
-            CategoriaRepository categoriaRepository
-    ) {
-        if (dto == null || entity == null) {
-            return;
-        }
-        entity.setCantidad(dto.getCantidad());
-        entity.setUnidad(dto.getUnidad());
-        entity.setDescripcion(dto.getDescripcion());
-        entity.setCategoria(categoriaRepository.findById(dto.getCategoria()).orElse(null));
-        entity.setComision(dto.getComision());
-        entity.setPrecioHistorico(dto.getPrecioHistorico());
-        entity.setSeleccionado(dto.getSeleccionado());
+    public DetalleCotizacion toEntity(DetalleCotizacionRequestDto detalleCotizacionRequestDto) {
+        DetalleCotizacion detalleCotizacion = modelMapper.map(detalleCotizacionRequestDto, DetalleCotizacion.class);
+        return detalleCotizacion;
+    }
+
+    public void updateEntityFromRequest(DetalleCotizacion detalleCotizacion, DetalleCotizacionRequestDto detalleCotizacionRequestDto) {
+        modelMapper.map(detalleCotizacionRequestDto, detalleCotizacion);
     }
 }

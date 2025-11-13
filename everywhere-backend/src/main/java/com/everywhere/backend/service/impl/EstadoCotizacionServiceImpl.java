@@ -1,60 +1,75 @@
 package com.everywhere.backend.service.impl;
 
+import com.everywhere.backend.exceptions.ConflictException;
+import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.EstadoCotizacionMapper;
-import com.everywhere.backend.model.dto.EstadoCotizacionRequestDto;
-import com.everywhere.backend.model.dto.EstadoCotizacionResponseDto;
+import com.everywhere.backend.model.dto.EstadoCotizacionRequestDTO;
+import com.everywhere.backend.model.dto.EstadoCotizacionResponseDTO;
 import com.everywhere.backend.model.entity.EstadoCotizacion;
+import com.everywhere.backend.repository.CotizacionRepository;
 import com.everywhere.backend.repository.EstadoCotizacionRepository;
 import com.everywhere.backend.service.EstadoCotizacionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
+
+import static org.openqa.selenium.By.id;
 
 @Service
 @RequiredArgsConstructor
 public class EstadoCotizacionServiceImpl implements EstadoCotizacionService {
 
     private final EstadoCotizacionRepository estadoCotizacionRepository;
+    private final EstadoCotizacionMapper estadoCotizacionMapper;
+    private final CotizacionRepository cotizacionRepository;
 
     @Override
-    public EstadoCotizacionResponseDto create(EstadoCotizacionRequestDto dto) {
-        EstadoCotizacion entity = EstadoCotizacionMapper.toEntity(dto);
-        EstadoCotizacion saved = estadoCotizacionRepository.save(entity);
-        return EstadoCotizacionMapper.toResponse(saved);
+    public EstadoCotizacionResponseDTO create(EstadoCotizacionRequestDTO estadoCotizacionRequestDTO) {
+        EstadoCotizacion estadoCotizacion = estadoCotizacionMapper.toEntity(estadoCotizacionRequestDTO); 
+        return estadoCotizacionMapper.toResponseDTO(estadoCotizacionRepository.save(estadoCotizacion));
     }
 
     @Override
-    public EstadoCotizacionResponseDto update(Integer id, EstadoCotizacionRequestDto dto) {
-        EstadoCotizacion entity = estadoCotizacionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Estado de Cotización no encontrado"));
+    public EstadoCotizacionResponseDTO update(Integer id, EstadoCotizacionRequestDTO estadoCotizacionRequestDTO) {
+        if (!estadoCotizacionRepository.existsById(id))
+            throw new ResourceNotFoundException("Estado de Cotización no encontrado con ID: " + id);
 
-        entity.setDescripcion(dto.getDescripcion());
-        EstadoCotizacion updated = estadoCotizacionRepository.save(entity);
-
-        return EstadoCotizacionMapper.toResponse(updated);
+        EstadoCotizacion existing = estadoCotizacionRepository.findById(id).get();
+        estadoCotizacionMapper.updateEntityFromDTO(estadoCotizacionRequestDTO, existing); 
+        return estadoCotizacionMapper.toResponseDTO(estadoCotizacionRepository.save(existing));
     }
 
     @Override
-    public Optional<EstadoCotizacionResponseDto> getById(Integer id) {
-        return estadoCotizacionRepository.findById(id)
-                .map(EstadoCotizacionMapper::toResponse);
+    public EstadoCotizacionResponseDTO getById(Integer id) {
+        return estadoCotizacionRepository.findById(id).map(estadoCotizacionMapper::toResponseDTO)
+            .orElseThrow(() -> new ResourceNotFoundException("Estado de Cotización no encontrado con ID: " + id));
     }
 
     @Override
-    public List<EstadoCotizacionResponseDto> getAll() {
-        return estadoCotizacionRepository.findAll()
-                .stream()
-                .map(EstadoCotizacionMapper::toResponse)
-                .toList();
+    public List<EstadoCotizacionResponseDTO> getAll() {
+        return mapToResponseList(estadoCotizacionRepository.findAll());
     }
 
     @Override
-    public void delete(Integer id) {
-        if (!estadoCotizacionRepository.existsById(id)) {
-            throw new RuntimeException("Estado de Cotización no encontrado");
+    public void delete(Integer ida) {
+        if (!estadoCotizacionRepository.existsById(ida))
+            throw new ResourceNotFoundException("Estado de Cotización no encontrado con ID: " + ida);
+
+        // Validar que no existan cotizaciones vinculadas a este estado
+        Long cotizacionesCount = cotizacionRepository.countByEstadoCotizacionId(ida);
+        if (cotizacionesCount > 0) {
+            throw new ConflictException(
+                    "No se puede eliminar el Estado de Cotización porque hay " + cotizacionesCount +
+                            " cotización(es) vinculada(s).",
+                    "/api/v1/estados-cotizacion/" + ida
+            );
         }
-        estadoCotizacionRepository.deleteById(id);
+
+        estadoCotizacionRepository.deleteById(ida);
+    }
+
+    private List<EstadoCotizacionResponseDTO> mapToResponseList(List<EstadoCotizacion> estadosCotizacion) {
+        return estadosCotizacion.stream().map(estadoCotizacionMapper::toResponseDTO).toList();
     }
 }

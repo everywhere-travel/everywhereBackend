@@ -20,12 +20,9 @@ public class DetalleLiquidacionResponseDTO {
     private LocalDateTime creado;
     private LocalDateTime actualizado;
 
-    // Relaciones anidadas que SÍ existen
     private LiquidacionResponseDTO liquidacion;
     private ViajeroResponseDTO viajero;
-
-    // Relaciones comentadas temporalmente porque no existen sus DTOs
-    private ProductoResponse producto;
+    private ProductoResponseDTO producto;
     private ProveedorResponseDTO proveedor;
     private OperadorResponseDTO operador;
 }

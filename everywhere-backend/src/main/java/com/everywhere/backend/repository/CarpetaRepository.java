@@ -2,30 +2,25 @@ package com.everywhere.backend.repository;
 
 import com.everywhere.backend.model.entity.Carpeta;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
-    // Listar carpetas por hijo de un ID padre
+
     List<Carpeta> findByCarpetaPadreId(Integer carpetaPadreId);
-
-    // Listar carpetas por nivel
     List<Carpeta> findByNivel(Integer nivel);
-
-    // Listar carpetas por nombre (contiene, ignorando mayúsculas/minúsculas)
     List<Carpeta> findByNombreContainingIgnoreCase(String nombre);
-
-    // Listar carpetas creadas en un rango de fechas (ejemplo: año/mes o entre dos días)
     List<Carpeta> findByCreadoBetween(LocalDateTime inicio, LocalDateTime fin);
-
-    // Listar carpetas creadas en un rango, ordenadas por fecha ascendente
     List<Carpeta> findByCreadoBetweenOrderByCreadoAsc(LocalDateTime inicio, LocalDateTime fin);
+    List<Carpeta> findByCarpetaPadreIsNull(); // Carpeta raíz (sin padre) 
+    List<Carpeta> findAllByOrderByCreadoDesc(); 
 
-    // Carpeta raíz (sin padre)
-    List<Carpeta> findByCarpetaPadreIsNull();
+    @Query("SELECT COUNT(c) > 0 FROM Carpeta c WHERE c.nombre = :nombre AND c.nivel = :nivel")
+    boolean existsByNombreAndNivel(@Param("nombre") String nombre, @Param("nivel") Integer nivel);
 
-    // Listar carpetas recientes (luego se limita con Pageable en el service)
-    List<Carpeta> findAllByOrderByCreadoDesc();
-
+    @Query("SELECT c FROM Carpeta c WHERE YEAR(c.creado) = :anio AND MONTH(c.creado) = :mes")
+    List<Carpeta> findByAnioAndMes(@Param("anio") int anio, @Param("mes") int mes);
 }
