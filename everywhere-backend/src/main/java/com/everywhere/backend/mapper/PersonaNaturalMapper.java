@@ -14,11 +14,15 @@ public class PersonaNaturalMapper {
 
     private final ModelMapper modelMapper;
     private final PersonaMapper personaMapper;
+    private final ViajeroMapper viajeroMapper;
 
     public PersonaNaturalResponseDTO toResponseDTO(PersonaNatural personaNatural) {
         PersonaNaturalResponseDTO personaNaturalResponseDTO = modelMapper.map(personaNatural, PersonaNaturalResponseDTO.class);
         if (personaNatural.getPersonas() != null) {
             personaNaturalResponseDTO.setPersona(personaMapper.toResponseDTO(personaNatural.getPersonas()));
+        }
+        if (personaNatural.getViajero() != null) {
+            personaNaturalResponseDTO.setViajero(viajeroMapper.toResponseDTO(personaNatural.getViajero()));
         }
         return personaNaturalResponseDTO;
     }
