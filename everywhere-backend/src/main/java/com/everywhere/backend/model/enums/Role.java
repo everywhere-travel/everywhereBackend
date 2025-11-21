@@ -7,24 +7,10 @@ import static java.util.Map.entry;
 public enum Role {
 
     GERENTE(1, "GERENTE", Map.ofEntries(
-            entry("CLIENTES", Set.of("READ","CREATE","UPDATE","DELETE")),
-            entry("VIAJEROS", Set.of("READ","CREATE","UPDATE","DELETE")),
-            entry("VIAJEROS_FREC", Set.of("READ","CREATE","UPDATE","DELETE")),
-            entry("COTIZACIONES", Set.of("READ","CREATE","UPDATE","DELETE")),
-            entry("LIQUIDACIONES", Set.of("READ","CREATE","UPDATE","DELETE")),
-            entry("PRODUCTOS", Set.of("READ","CREATE","UPDATE","DELETE")),
-            entry("PROVEEDORES", Set.of("READ","CREATE","UPDATE","DELETE")),
-            entry("OPERADORES", Set.of("READ","CREATE","UPDATE","DELETE")),
-            entry("CARPETA", Set.of("READ","CREATE","UPDATE","DELETE")),
-            entry("CATEGORIA", Set.of("READ","CREATE","UPDATE","DELETE")),
-            entry("SUCURSALES", Set.of("READ","CREATE","UPDATE","DELETE")),
-            entry("PERSONAS", Set.of("READ","CREATE","UPDATE","DELETE")),
-            entry("OPERADOR", Set.of("READ","CREATE","UPDATE","DELETE")),
-            entry("FORMA-PAGO", Set.of("READ","CREATE","UPDATE","DELETE")),
-            entry("COUNTERS", Set.of("READ","CREATE","UPDATE","DELETE")),
-            entry("DOCUMENTOS", Set.of("READ","CREATE","UPDATE","DELETE"))
+            entry("ALL_MODULES", Set.of("READ","CREATE","UPDATE","DELETE"))
     )),
 
+    /* 
     VENTAS(2, "VENTAS", Map.ofEntries(
             entry("CLIENTES", Set.of("CREATE","READ","UPDATE")),
             entry("VIAJEROS", Set.of("CREATE","READ","UPDATE","DELETE")),
@@ -35,6 +21,11 @@ public enum Role {
             entry("PROVEEDORES", Set.of("READ")),
             entry("OPERADOR", Set.of("CREATE","READ","UPDATE","DELETE")),
             entry("CARPETA", Set.of("CREATE","READ","UPDATE","DELETE"))
+    )),
+
+     */
+    VENTAS(2, "VENTAS", Map.ofEntries(
+            entry("ALL_MODULES", Set.of("READ","CREATE","UPDATE","DELETE"))
     )),
 
 
