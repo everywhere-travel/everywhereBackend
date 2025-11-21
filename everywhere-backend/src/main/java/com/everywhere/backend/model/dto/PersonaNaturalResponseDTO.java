@@ -1,6 +1,6 @@
 package com.everywhere.backend.model.dto;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,7 +23,7 @@ public class PersonaNaturalResponseDTO {
     private LocalDateTime actualizado;
     private PersonaResponseDTO persona;
     
-    @JsonBackReference("viajero-personaNatural")
+    @JsonManagedReference("viajero-personaNatural")
     private ViajeroResponseDTO viajero;
     
     private CategoriaPersonaResponseDTO categoriaPersona;
