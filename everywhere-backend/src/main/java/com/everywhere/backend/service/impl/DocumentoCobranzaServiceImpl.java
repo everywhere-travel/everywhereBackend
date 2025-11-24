@@ -31,11 +31,14 @@ import com.everywhere.backend.model.entity.DetalleDocumento;
 import com.everywhere.backend.repository.DetalleDocumentoCobranzaRepository;
 import com.everywhere.backend.repository.DetalleDocumentoRepository;
 import com.everywhere.backend.repository.DocumentoCobranzaRepository;
+import com.everywhere.backend.security.UserPrincipal;
 import com.everywhere.backend.service.CotizacionService;
 import com.everywhere.backend.service.DocumentoCobranzaService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -278,10 +281,15 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                 addServicesTable(document, documentoCobranzaResponseDTO);
             addObservationsBox(document, documentoCobranzaResponseDTO); // 4. CUADRO DE OBSERVACIONES (separado)
             addPageFooter(pdfDocument); // 5. PIE DE PÁGINA EN CADA HOJA
+            
+            // ✅ NUEVO: Agregar texto rojo en la última página ANTES de cerrar
+            addRedTextToLastPage(document, pdfDocument);
+            
             document.close();
             return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         } catch (Exception e) {
-            throw new ResourceNotFoundException("Error al generar el PDF del documento de cobranza");
+            e.printStackTrace(); // ✅ Ver el error completo
+            throw new ResourceNotFoundException("Error al generar el PDF del documento de cobranza: " + e.getMessage());
         }
     }
 
@@ -354,9 +362,9 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         rucCell.add(new Paragraph("R.U.C. Nº 20602292941").setFontSize(10).setBold());
         rucCell.add(new Paragraph("DOCUMENTO DE COBRANZA").setFontSize(14).setBold().setMarginTop(5));
 
-        // Agregar número de documento basado en cotización
-        if (documentoCobranzaResponseDTO.getCodigoCotizacion() != null)
-            rucCell.add(new Paragraph("COT: " + documentoCobranzaResponseDTO.getCodigoCotizacion()).setFontSize(12).setBold().setMarginTop(5));
+        // Agregar número del documento de cobranza
+        if (documentoCobranzaResponseDTO.getNumero() != null)
+            rucCell.add(new Paragraph(documentoCobranzaResponseDTO.getNumero()).setFontSize(12).setBold().setMarginTop(5));
 
         rucTable.addCell(rucCell);
         rightCell.add(rucTable);
@@ -539,7 +547,13 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         totalsTable.addCell(new Cell().add(new Paragraph("$ " + subtotal).setFontSize(9))
                 .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.RIGHT));
 
-        totalsTable.addCell(new Cell(2, 2));
+        // Celda con información de "Creado por:" con nombre del usuario autenticado (ocupa 2 filas y 2 columnas)
+        String nombreUsuario = getAuthenticatedUserName();
+        totalsTable.addCell(new Cell(2, 2)
+                .add(new Paragraph("Creado por: " + nombreUsuario).setFontSize(9))
+                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                .setTextAlignment(TextAlignment.LEFT)
+                .setPadding(5));
 
         totalsTable.addCell(new Cell().add(new Paragraph("COSTO DE ENVIO").setFontSize(9))
                 .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.CENTER));
@@ -571,10 +585,11 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
             Cell observationsCell = new Cell().setBorder(new com.itextpdf.layout.borders.SolidBorder(1));
 
-            // Contenido de observaciones
+            // Contenido de observaciones - Manejar observaciones nulas
+            String observaciones = documento.getObservaciones() != null ? documento.getObservaciones() : "";
             Paragraph observationsParagraph = new Paragraph()
                     .add(new com.itextpdf.layout.element.Text("OBSERVACIONES: ").setBold())
-                    .add(new com.itextpdf.layout.element.Text(documento.getObservaciones()))
+                    .add(new com.itextpdf.layout.element.Text(observaciones))
                     .setFontSize(10).setMarginBottom(0);
 
             observationsCell.add(observationsParagraph);
@@ -609,7 +624,58 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         });
     }
 
+    // ✅ NUEVO: Agregar texto rojo centrado SOLO en la última página
+    private void addRedTextToLastPage(Document document, PdfDocument pdfDocument) {
+        try {
+            int lastPageNumber = pdfDocument.getNumberOfPages();
+            
+            // Crear párrafo con el texto en ROJO, MAYÚSCULAS y CENTRADO
+            Paragraph redText = new Paragraph("NO VÁLIDO PARA CRÉDITO FISCAL, SOLO PARA FINES DE COBRANZA")
+                .setFontColor(ColorConstants.RED)
+                .setFontSize(10)
+                .setBold()
+                .setTextAlignment(TextAlignment.CENTER)
+                .setFixedPosition(
+                    lastPageNumber,  // Número de página (la última)
+                    40,              // Margen izquierdo (x)
+                    60,              // Posición vertical desde abajo (y)
+                    515              // Ancho del texto (ancho de página - márgenes)
+                );
+            
+            document.add(redText);
+            
+        } catch (Exception e) {
+            // Si falla agregar el texto rojo, no detener la generación del PDF
+            System.err.println("Advertencia: No se pudo agregar el texto rojo al PDF: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     private List<DocumentoCobranzaResponseDTO> mapToResponseList(List<DocumentoCobranza> documentos) {
         return documentos.stream().map(documentoCobranzaMapper::toResponseDTO).toList();
+    }
+
+    /**
+     * Obtiene el nombre del usuario autenticado actualmente
+     * @return Nombre del usuario autenticado o "Usuario desconocido" si no hay autenticación
+     */
+    private String getAuthenticatedUserName() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            
+            if (authentication != null && authentication.isAuthenticated() 
+                && authentication.getPrincipal() instanceof UserPrincipal) {
+                
+                UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+                
+                if (userPrincipal.getUser() != null && userPrincipal.getUser().getNombre() != null) {
+                    return userPrincipal.getUser().getNombre();
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error al obtener el usuario autenticado: " + e.getMessage());
+        }
+        
+        return "Usuario desconocido";
     }
 }
