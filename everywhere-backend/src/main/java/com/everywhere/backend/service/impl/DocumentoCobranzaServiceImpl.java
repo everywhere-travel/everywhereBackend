@@ -585,10 +585,11 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
             Cell observationsCell = new Cell().setBorder(new com.itextpdf.layout.borders.SolidBorder(1));
 
-            // Contenido de observaciones
+            // Contenido de observaciones - Manejar observaciones nulas
+            String observaciones = documento.getObservaciones() != null ? documento.getObservaciones() : "";
             Paragraph observationsParagraph = new Paragraph()
                     .add(new com.itextpdf.layout.element.Text("OBSERVACIONES: ").setBold())
-                    .add(new com.itextpdf.layout.element.Text(documento.getObservaciones()))
+                    .add(new com.itextpdf.layout.element.Text(observaciones))
                     .setFontSize(10).setMarginBottom(0);
 
             observationsCell.add(observationsParagraph);
