@@ -31,11 +31,14 @@ import com.everywhere.backend.model.entity.DetalleDocumento;
 import com.everywhere.backend.repository.DetalleDocumentoCobranzaRepository;
 import com.everywhere.backend.repository.DetalleDocumentoRepository;
 import com.everywhere.backend.repository.DocumentoCobranzaRepository;
+import com.everywhere.backend.security.UserPrincipal;
 import com.everywhere.backend.service.CotizacionService;
 import com.everywhere.backend.service.DocumentoCobranzaService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -544,7 +547,13 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         totalsTable.addCell(new Cell().add(new Paragraph("$ " + subtotal).setFontSize(9))
                 .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.RIGHT));
 
-        totalsTable.addCell(new Cell(2, 2));
+        // Celda con información de "Creado por:" con nombre del usuario autenticado (ocupa 2 filas y 2 columnas)
+        String nombreUsuario = getAuthenticatedUserName();
+        totalsTable.addCell(new Cell(2, 2)
+                .add(new Paragraph("Creado por: " + nombreUsuario).setFontSize(9))
+                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                .setTextAlignment(TextAlignment.LEFT)
+                .setPadding(5));
 
         totalsTable.addCell(new Cell().add(new Paragraph("COSTO DE ENVIO").setFontSize(9))
                 .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.CENTER));
@@ -643,5 +652,29 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
     private List<DocumentoCobranzaResponseDTO> mapToResponseList(List<DocumentoCobranza> documentos) {
         return documentos.stream().map(documentoCobranzaMapper::toResponseDTO).toList();
+    }
+
+    /**
+     * Obtiene el nombre del usuario autenticado actualmente
+     * @return Nombre del usuario autenticado o "Usuario desconocido" si no hay autenticación
+     */
+    private String getAuthenticatedUserName() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            
+            if (authentication != null && authentication.isAuthenticated() 
+                && authentication.getPrincipal() instanceof UserPrincipal) {
+                
+                UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+                
+                if (userPrincipal.getUser() != null && userPrincipal.getUser().getNombre() != null) {
+                    return userPrincipal.getUser().getNombre();
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error al obtener el usuario autenticado: " + e.getMessage());
+        }
+        
+        return "Usuario desconocido";
     }
 }
