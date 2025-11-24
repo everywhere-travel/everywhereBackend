@@ -278,10 +278,15 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                 addServicesTable(document, documentoCobranzaResponseDTO);
             addObservationsBox(document, documentoCobranzaResponseDTO); // 4. CUADRO DE OBSERVACIONES (separado)
             addPageFooter(pdfDocument); // 5. PIE DE PÁGINA EN CADA HOJA
+            
+            // ✅ NUEVO: Agregar texto rojo en la última página ANTES de cerrar
+            addRedTextToLastPage(document, pdfDocument);
+            
             document.close();
             return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         } catch (Exception e) {
-            throw new ResourceNotFoundException("Error al generar el PDF del documento de cobranza");
+            e.printStackTrace(); // ✅ Ver el error completo
+            throw new ResourceNotFoundException("Error al generar el PDF del documento de cobranza: " + e.getMessage());
         }
     }
 
@@ -354,9 +359,9 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         rucCell.add(new Paragraph("R.U.C. Nº 20602292941").setFontSize(10).setBold());
         rucCell.add(new Paragraph("DOCUMENTO DE COBRANZA").setFontSize(14).setBold().setMarginTop(5));
 
-        // Agregar número de documento basado en cotización
-        if (documentoCobranzaResponseDTO.getCodigoCotizacion() != null)
-            rucCell.add(new Paragraph("COT: " + documentoCobranzaResponseDTO.getCodigoCotizacion()).setFontSize(12).setBold().setMarginTop(5));
+        // Agregar número del documento de cobranza
+        if (documentoCobranzaResponseDTO.getNumero() != null)
+            rucCell.add(new Paragraph(documentoCobranzaResponseDTO.getNumero()).setFontSize(12).setBold().setMarginTop(5));
 
         rucTable.addCell(rucCell);
         rightCell.add(rucTable);
@@ -607,6 +612,33 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                 }
             }
         });
+    }
+
+    // ✅ NUEVO: Agregar texto rojo centrado SOLO en la última página
+    private void addRedTextToLastPage(Document document, PdfDocument pdfDocument) {
+        try {
+            int lastPageNumber = pdfDocument.getNumberOfPages();
+            
+            // Crear párrafo con el texto en ROJO, MAYÚSCULAS y CENTRADO
+            Paragraph redText = new Paragraph("NO VÁLIDO PARA CRÉDITO FISCAL, SOLO PARA FINES DE COBRANZA")
+                .setFontColor(ColorConstants.RED)
+                .setFontSize(10)
+                .setBold()
+                .setTextAlignment(TextAlignment.CENTER)
+                .setFixedPosition(
+                    lastPageNumber,  // Número de página (la última)
+                    40,              // Margen izquierdo (x)
+                    60,              // Posición vertical desde abajo (y)
+                    515              // Ancho del texto (ancho de página - márgenes)
+                );
+            
+            document.add(redText);
+            
+        } catch (Exception e) {
+            // Si falla agregar el texto rojo, no detener la generación del PDF
+            System.err.println("Advertencia: No se pudo agregar el texto rojo al PDF: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private List<DocumentoCobranzaResponseDTO> mapToResponseList(List<DocumentoCobranza> documentos) {
