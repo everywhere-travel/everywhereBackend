@@ -2,7 +2,7 @@ package com.everywhere.backend.mapper;
 
 import com.everywhere.backend.model.dto.CotizacionConDetallesResponseDTO;
 import com.everywhere.backend.model.dto.DocumentoCobranzaRequestDTO;
-import com.everywhere.backend.model.dto.DocumentoCobranzaResponseDTO; 
+import com.everywhere.backend.model.dto.DocumentoCobranzaResponseDTO;
 import com.everywhere.backend.model.dto.DocumentoCobranzaUpdateDTO;
 import com.everywhere.backend.model.entity.Cotizacion;
 import com.everywhere.backend.model.entity.DocumentoCobranza;
@@ -33,15 +33,16 @@ public class DocumentoCobranzaMapper {
             mapper.skip(DocumentoCobranza::setDetalleDocumento);
         });
     }
-    
+
     public DocumentoCobranza toEntity(DocumentoCobranzaRequestDTO documentoCobranzaRequestDTO) {
         return modelMapper.map(documentoCobranzaRequestDTO, DocumentoCobranza.class);
     }
 
-    //maneja la lógica de mapeo desde cotización a documento de cobranza
-    public DocumentoCobranza fromCotizacion(CotizacionConDetallesResponseDTO cotizacionConDetallesResponseDTO, String numeroDocumento) {
+    // maneja la lógica de mapeo desde cotización a documento de cobranza
+    public DocumentoCobranza fromCotizacion(CotizacionConDetallesResponseDTO cotizacionConDetallesResponseDTO,
+            String numeroDocumento) {
         DocumentoCobranza documentoCobranza = new DocumentoCobranza();
-        
+
         documentoCobranza.setNumero(numeroDocumento);
         documentoCobranza.setMoneda(cotizacionConDetallesResponseDTO.getMoneda());
 
@@ -73,34 +74,52 @@ public class DocumentoCobranzaMapper {
         return modelMapper.map(documentoCobranza, DocumentoCobranzaRequestDTO.class);
     }
 
-    public void updateEntityFromRequest(DocumentoCobranza documentoCobranza, DocumentoCobranzaRequestDTO documentoCobranzaRequestDTO) {
+    public void updateEntityFromRequest(DocumentoCobranza documentoCobranza,
+            DocumentoCobranzaRequestDTO documentoCobranzaRequestDTO) {
         modelMapper.map(documentoCobranzaRequestDTO, documentoCobranza);
     }
 
-    public void updateEntityFromUpdateDTO(DocumentoCobranza documentoCobranza, DocumentoCobranzaUpdateDTO documentoCobranzaUpdateDTO) {
+    public void updateEntityFromUpdateDTO(DocumentoCobranza documentoCobranza,
+            DocumentoCobranzaUpdateDTO documentoCobranzaUpdateDTO) {
         modelMapper.map(documentoCobranzaUpdateDTO, documentoCobranza);
     }
 
     public DocumentoCobranzaResponseDTO toResponseDTO(DocumentoCobranza documentoCobranza) {
-        DocumentoCobranzaResponseDTO documentoCobranzaResponseDTO = modelMapper.map(documentoCobranza, DocumentoCobranzaResponseDTO.class);
-        
+        DocumentoCobranzaResponseDTO documentoCobranzaResponseDTO = modelMapper.map(documentoCobranza,
+                DocumentoCobranzaResponseDTO.class);
+
+        // Mapear código de cotización
+        if (documentoCobranza.getCotizacion() != null) {
+            documentoCobranzaResponseDTO.setCotizacionId(documentoCobranza.getCotizacion().getId());
+            if (documentoCobranza.getCotizacion().getCodigoCotizacion() != null) {
+                documentoCobranzaResponseDTO
+                        .setCodigoCotizacion(documentoCobranza.getCotizacion().getCodigoCotizacion());
+            }
+        }
+
         if (documentoCobranza.getDetalleDocumento() != null) {
             documentoCobranzaResponseDTO.setClienteDocumento(documentoCobranza.getDetalleDocumento().getNumero());
             if (documentoCobranza.getDetalleDocumento().getDocumento() != null)
-                documentoCobranzaResponseDTO.setTipoDocumentoCliente(documentoCobranza.getDetalleDocumento().getDocumento().getTipo());
+                documentoCobranzaResponseDTO
+                        .setTipoDocumentoCliente(documentoCobranza.getDetalleDocumento().getDocumento().getTipo());
         }
-        
+
         if (documentoCobranza.getPersona() != null) {
             Integer personaId = documentoCobranza.getPersona().getId();
             documentoCobranzaResponseDTO.setPersonaId(personaId);
-            
+
             PersonaNatural personaNatural = personaNaturalRepository.findByPersonasId(personaId).orElse(null);
             if (personaNatural != null) {
-                String nombreCompleto = personaNatural.getNombres() + " " + 
-                                       personaNatural.getApellidosPaterno() + " " + personaNatural.getApellidosMaterno();
-                documentoCobranzaResponseDTO.setClienteNombre(nombreCompleto);
-                
-                // Si no hay detalleDocumento seleccionado, usar el campo documento de PersonaNatural (legacy)
+                // Concatenación null-safe para evitar mostrar "null" en el nombre
+                String nombreCompleto = String.join(" ",
+                        personaNatural.getNombres() != null ? personaNatural.getNombres().trim() : "",
+                        personaNatural.getApellidosPaterno() != null ? personaNatural.getApellidosPaterno().trim() : "",
+                        personaNatural.getApellidosMaterno() != null ? personaNatural.getApellidosMaterno().trim() : "")
+                        .trim();
+                documentoCobranzaResponseDTO.setClienteNombre(nombreCompleto.isEmpty() ? "Sin nombre" : nombreCompleto);
+
+                // Si no hay detalleDocumento seleccionado, usar el campo documento de
+                // PersonaNatural (legacy)
                 if (documentoCobranza.getDetalleDocumento() == null) {
                     documentoCobranzaResponseDTO.setClienteDocumento(personaNatural.getDocumento());
                     documentoCobranzaResponseDTO.setTipoDocumentoCliente("DNI");
@@ -115,7 +134,7 @@ public class DocumentoCobranzaMapper {
                 }
             }
         }
-        
+
         if (documentoCobranza.getSucursal() != null)
             documentoCobranzaResponseDTO.setSucursalDescripcion(documentoCobranza.getSucursal().getDescripcion());
         if (documentoCobranza.getFormaPago() != null)
