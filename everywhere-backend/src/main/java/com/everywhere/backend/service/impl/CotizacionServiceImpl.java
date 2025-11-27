@@ -33,7 +33,8 @@ public class CotizacionServiceImpl implements CotizacionService {
     private final SucursalRepository sucursalRepository;
     private final CarpetaRepository carpetaRepository;
     private final PersonaRepository personasRepository;
-    private final DetalleCotizacionService detalleCotizacionService; 
+    private final DetalleCotizacionService detalleCotizacionService;
+    private final PersonaNaturalRepository personaNaturalRepository; 
 
     @Override
     public CotizacionResponseDto create(CotizacionRequestDto cotizacionRequestDto, Integer personaId) {
@@ -240,9 +241,32 @@ public class CotizacionServiceImpl implements CotizacionService {
         infoRun.addBreak();
         infoRun.setText("Fecha Emisión: " + (cotizacion.getFechaEmision() != null ? cotizacion.getFechaEmision().toString() : "N/A"));
         infoRun.addBreak();
+        
+        // Obtener nombre completo del cliente
         String clienteInfo = "N/A";
         if (cotizacion.getPersonas() != null) {
-            clienteInfo = cotizacion.getPersonas().getEmail() != null ? cotizacion.getPersonas().getEmail() : "ID: " + cotizacion.getPersonas().getId();
+            try {
+                PersonaNatural personaNatural = personaNaturalRepository.findByPersonasId(cotizacion.getPersonas().getId()).orElse(null);
+                if (personaNatural != null) {
+                    StringBuilder nombreCompleto = new StringBuilder();
+                    if (personaNatural.getNombres() != null) {
+                        nombreCompleto.append(personaNatural.getNombres());
+                    }
+                    if (personaNatural.getApellidosPaterno() != null) {
+                        if (nombreCompleto.length() > 0) nombreCompleto.append(" ");
+                        nombreCompleto.append(personaNatural.getApellidosPaterno());
+                    }
+                    if (personaNatural.getApellidosMaterno() != null) {
+                        if (nombreCompleto.length() > 0) nombreCompleto.append(" ");
+                        nombreCompleto.append(personaNatural.getApellidosMaterno());
+                    }
+                    clienteInfo = nombreCompleto.length() > 0 ? nombreCompleto.toString() : cotizacion.getPersonas().getEmail();
+                } else {
+                    clienteInfo = cotizacion.getPersonas().getEmail() != null ? cotizacion.getPersonas().getEmail() : "ID: " + cotizacion.getPersonas().getId();
+                }
+            } catch (Exception e) {
+                clienteInfo = cotizacion.getPersonas().getEmail() != null ? cotizacion.getPersonas().getEmail() : "ID: " + cotizacion.getPersonas().getId();
+            }
         }
         infoRun.setText("Cliente: " + clienteInfo);
         infoRun.addBreak();
@@ -305,33 +329,39 @@ public class CotizacionServiceImpl implements CotizacionService {
             }
         }
 
-        // Crear tabla para "Importe a Pagar"
+        // Crear tabla para "Importe a Pagar" centrada y ancho completo
         XWPFTable table = document.createTable(2, 1);
-        table.setWidth("50%");
+        table.setWidth("100%"); // Ancho completo
+        
+        // Centrar la tabla
+        table.getCTTbl().addNewTblPr().addNewJc().setVal(org.openxmlformats.schemas.wordprocessingml.x2006.main.STJcTable.CENTER);
 
         // Fila superior roja: IMPORTE A PAGAR
         XWPFTableRow row1 = table.getRow(0);
         XWPFTableCell cell1 = row1.getCell(0);
         cell1.setColor("DC2626"); // Rojo
         XWPFParagraph p1 = cell1.getParagraphs().get(0);
+        p1.setAlignment(ParagraphAlignment.CENTER); // Centrar texto
         XWPFRun r1 = p1.createRun();
         r1.setText("IMPORTE A PAGAR");
         r1.setBold(true);
         r1.setColor("FFFFFF"); // Blanco
+        r1.setFontSize(14);
 
         // Fila inferior: Detalles
         XWPFTableRow row2 = table.getRow(1);
         XWPFTableCell cell2 = row2.getCell(0);
         XWPFParagraph p2 = cell2.getParagraphs().get(0);
+        p2.setAlignment(ParagraphAlignment.CENTER); // Centrar texto
         XWPFRun r2 = p2.createRun();
         r2.setText("USD. " + String.format("%.2f", total));
         r2.setBold(true);
-        r2.setFontSize(14);
+        r2.setFontSize(16);
         r2.addBreak();
         int totalPersonas = cotizacion.getCantAdultos() + cotizacion.getCantNinos();
         r2.setText("Precio por " + totalPersonas + " persona(s) en Tarifa: ___________");
         r2.setBold(false);
-        r2.setFontSize(10);
+        r2.setFontSize(11);
 
         XWPFParagraph spaceParagraph = document.createParagraph();
         spaceParagraph.setSpacingAfter(200);
