@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -192,7 +193,7 @@ public class CotizacionServiceImpl implements CotizacionService {
             XWPFDocument document = new XWPFDocument(templateStream);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-            // Agregar contenido del documento - Título de la cotización
+            // 1. Título de la cotización
             XWPFParagraph titleParagraph = document.createParagraph();
             titleParagraph.setAlignment(ParagraphAlignment.CENTER);
             titleParagraph.setSpacingBefore(300);
@@ -203,22 +204,20 @@ public class CotizacionServiceImpl implements CotizacionService {
             titleRun.setBold(true);
             titleRun.setFontSize(18);
 
-            // Agregar varias hojas de ejemplo (saltos de página)
-            for (int i = 1; i <= 3; i++) {
-                // Crear párrafo con contenido de ejemplo
-                XWPFParagraph contentParagraph = document.createParagraph();
-                contentParagraph.setAlignment(ParagraphAlignment.LEFT);
-                contentParagraph.setSpacingBefore(200);
-                
-                XWPFRun contentRun = contentParagraph.createRun();
-                contentRun.setText("Contenido de la página " + i);
-                contentRun.setFontSize(12);
-                
-                // Si no es la última página, agregar salto de página
-                if (i < 3) {
-                    contentRun.addBreak(BreakType.PAGE);
-                }
-            }
+            // 2. Información general de la cotización
+            addCotizacionInfo(document, cotizacion);
+
+            // 3. Tabla de detalles de la cotización
+            addDetallesTable(document, cotizacion);
+
+            // 4. Sección de Importe a Pagar
+            addImporteAPagar(document, cotizacion);
+
+            // 5. Condiciones de Tarifa
+            addCondicionesTarifa(document);
+
+            // 6. Política de Privacidad
+            addPoliticaPrivacidad(document);
 
             document.write(out);
             document.close();
@@ -228,6 +227,187 @@ public class CotizacionServiceImpl implements CotizacionService {
 
         } catch (Exception e) {
             throw new ResourceNotFoundException("Error al generar el DOCX de la cotización: " + e.getMessage());
+        }
+    }
+
+    private void addCotizacionInfo(XWPFDocument document, CotizacionConDetallesResponseDTO cotizacion) {
+        XWPFParagraph infoParagraph = document.createParagraph();
+        infoParagraph.setSpacingBefore(200);
+        infoParagraph.setSpacingAfter(200);
+        
+        XWPFRun infoRun = infoParagraph.createRun();
+        infoRun.setText("Código: " + cotizacion.getCodigoCotizacion());
+        infoRun.addBreak();
+        infoRun.setText("Fecha Emisión: " + (cotizacion.getFechaEmision() != null ? cotizacion.getFechaEmision().toString() : "N/A"));
+        infoRun.addBreak();
+        String clienteInfo = "N/A";
+        if (cotizacion.getPersonas() != null) {
+            clienteInfo = cotizacion.getPersonas().getEmail() != null ? cotizacion.getPersonas().getEmail() : "ID: " + cotizacion.getPersonas().getId();
+        }
+        infoRun.setText("Cliente: " + clienteInfo);
+        infoRun.addBreak();
+        infoRun.setText("Destino: " + (cotizacion.getOrigenDestino() != null ? cotizacion.getOrigenDestino() : "N/A"));
+        infoRun.addBreak();
+        infoRun.setText("Adultos: " + cotizacion.getCantAdultos() + " | Niños: " + cotizacion.getCantNinos());
+        infoRun.setFontSize(11);
+    }
+
+    private void addDetallesTable(XWPFDocument document, CotizacionConDetallesResponseDTO cotizacion) {
+        if (cotizacion.getDetalles() == null || cotizacion.getDetalles().isEmpty()) {
+            return;
+        }
+
+        XWPFTable table = document.createTable();
+        table.setWidth("100%");
+
+        // Encabezados de la tabla
+        XWPFTableRow headerRow = table.getRow(0);
+        headerRow.getCell(0).setText("Descripción");
+        headerRow.addNewTableCell().setText("Cantidad");
+        headerRow.addNewTableCell().setText("Precio Unit.");
+        headerRow.addNewTableCell().setText("Total");
+
+        // Agregar detalles
+        for (DetalleCotizacionSimpleDTO detalle : cotizacion.getDetalles()) {
+            XWPFTableRow row = table.createRow();
+            row.getCell(0).setText(detalle.getDescripcion() != null ? detalle.getDescripcion() : "");
+            row.getCell(1).setText(detalle.getCantidad() != null ? detalle.getCantidad().toString() : "0");
+            row.getCell(2).setText(detalle.getPrecioHistorico() != null ? String.format("%.2f", detalle.getPrecioHistorico()) : "0.00");
+            
+            // Calcular total: cantidad * precio
+            BigDecimal total = BigDecimal.ZERO;
+            if (detalle.getCantidad() != null && detalle.getPrecioHistorico() != null) {
+                total = detalle.getPrecioHistorico().multiply(BigDecimal.valueOf(detalle.getCantidad()));
+            }
+            row.getCell(3).setText(String.format("%.2f", total));
+        }
+
+        XWPFParagraph spaceParagraph = document.createParagraph();
+        spaceParagraph.setSpacingAfter(200);
+    }
+
+    private void addImporteAPagar(XWPFDocument document, CotizacionConDetallesResponseDTO cotizacion) {
+        // Título "Pagos"
+        XWPFParagraph titleParagraph = document.createParagraph();
+        titleParagraph.setSpacingBefore(300);
+        XWPFRun titleRun = titleParagraph.createRun();
+        titleRun.setText("Pagos");
+        titleRun.setBold(true);
+        titleRun.setFontSize(14);
+
+        // Calcular total
+        double total = 0.0;
+        if (cotizacion.getDetalles() != null) {
+            for (DetalleCotizacionSimpleDTO detalle : cotizacion.getDetalles()) {
+                if (detalle.getCantidad() != null && detalle.getPrecioHistorico() != null) {
+                    total += detalle.getCantidad() * detalle.getPrecioHistorico().doubleValue();
+                }
+            }
+        }
+
+        // Crear tabla para "Importe a Pagar"
+        XWPFTable table = document.createTable(2, 1);
+        table.setWidth("50%");
+
+        // Fila superior roja: IMPORTE A PAGAR
+        XWPFTableRow row1 = table.getRow(0);
+        XWPFTableCell cell1 = row1.getCell(0);
+        cell1.setColor("DC2626"); // Rojo
+        XWPFParagraph p1 = cell1.getParagraphs().get(0);
+        XWPFRun r1 = p1.createRun();
+        r1.setText("IMPORTE A PAGAR");
+        r1.setBold(true);
+        r1.setColor("FFFFFF"); // Blanco
+
+        // Fila inferior: Detalles
+        XWPFTableRow row2 = table.getRow(1);
+        XWPFTableCell cell2 = row2.getCell(0);
+        XWPFParagraph p2 = cell2.getParagraphs().get(0);
+        XWPFRun r2 = p2.createRun();
+        r2.setText("USD. " + String.format("%.2f", total));
+        r2.setBold(true);
+        r2.setFontSize(14);
+        r2.addBreak();
+        int totalPersonas = cotizacion.getCantAdultos() + cotizacion.getCantNinos();
+        r2.setText("Precio por " + totalPersonas + " persona(s) en Tarifa: ___________");
+        r2.setBold(false);
+        r2.setFontSize(10);
+
+        XWPFParagraph spaceParagraph = document.createParagraph();
+        spaceParagraph.setSpacingAfter(200);
+    }
+
+    private void addCondicionesTarifa(XWPFDocument document) {
+        XWPFParagraph titleParagraph = document.createParagraph();
+        titleParagraph.setSpacingBefore(200);
+        XWPFRun titleRun = titleParagraph.createRun();
+        titleRun.setText("CONDICIONES DE TARIFA:");
+        titleRun.setBold(true);
+        titleRun.setFontSize(12);
+
+        String[] condiciones = {
+            "Tarifa \"NO REEMBOLSABLE\", no permite devoluciones.",
+            "Tarifas sujetas a cambios acorde a disponibilidad de la misma.",
+            "Puede realizar cambios antes de la fecha de viaje inicial contratada hasta 1 día antes de ese viaje. Después de ese plazo, hasta 6 horas antes del vuelo, los cambios deben realizarse directamente con la línea aérea. No se permiten cambios después de este período.",
+            "Cualquier modificación está sujeta al pago de una penalidad de $ por persona, así como un cargo de reemisión $35 y diferencias de tarifa, si las hay."
+        };
+
+        for (String condicion : condiciones) {
+            XWPFParagraph condicionParagraph = document.createParagraph();
+            condicionParagraph.setIndentationLeft(400);
+            XWPFRun condicionRun = condicionParagraph.createRun();
+            condicionRun.setText("• " + condicion);
+            condicionRun.setFontSize(10);
+        }
+
+        XWPFParagraph spaceParagraph = document.createParagraph();
+        spaceParagraph.setSpacingAfter(200);
+    }
+
+    private void addPoliticaPrivacidad(XWPFDocument document) {
+        XWPFParagraph titleParagraph = document.createParagraph();
+        titleParagraph.setSpacingBefore(300);
+        XWPFRun titleRun = titleParagraph.createRun();
+        titleRun.setText("POLÍTICA DE PRIVACIDAD");
+        titleRun.setBold(true);
+        titleRun.setFontSize(12);
+
+        String[] parrafos = {
+            "EVERYWHERE TRAVEL S.A.C. te informa sobre su Política de Privacidad respecto al tratamiento y protección de los datos de carácter personal en los usuarios y clientes que puedan ser recabados por la navegación o contratación de servicios a través de cualquier medio digital o del sitio Web https://everywhereviajes.com/.",
+            "En este sentido, el Titular garantiza el cumplimiento de la normativa vigente en materia de protección de datos personales, reflejada en la Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos Personales y de Garantía de Derechos Digitales (LOPD GDD). Cumple también con el Reglamento (UE) 2016/679 del Parlamento Europeo y del Consejo de 27 de abril de 2016 relativo a la protección de las personas físicas (RGPD).",
+            "El uso de sitio Web y él envió de la foto del DNI o Pasaporte implica la aceptación de esta Política de Privacidad, así como las condiciones incluidas en el Aviso Legal."
+        };
+
+        for (String parrafo : parrafos) {
+            XWPFParagraph p = document.createParagraph();
+            p.setSpacingAfter(100);
+            XWPFRun r = p.createRun();
+            r.setText(parrafo);
+            r.setFontSize(9);
+        }
+
+        // Términos y Condiciones
+        XWPFParagraph terminosTitleParagraph = document.createParagraph();
+        terminosTitleParagraph.setSpacingBefore(100);
+        XWPFRun terminosTitleRun = terminosTitleParagraph.createRun();
+        terminosTitleRun.setText("Términos y Condiciones de uso, el usuario y/o cliente reconoce que cumple lo siguiente:");
+        terminosTitleRun.setBold(true);
+        terminosTitleRun.setFontSize(10);
+
+        String[] terminos = {
+            "Es mayor de edad, conforme a la Ley peruana vigente. Si es menor de edad, por favor abstenerse de utilizar la herramienta.",
+            "Es hábil en el idioma español.",
+            "Se encuentra en pleno uso de sus facultades mentales y no adolece de vicio que afecte sus razonamiento, entendimiento y manifestación de voluntad. Por lo tanto, tiene plena capacidad civil, de acuerdo con la Ley peruana vigente.",
+            "Ha leído íntegramente los Términos y Condiciones de uso.",
+            "Actúa y declara únicamente por sí mismo y no en representación de terceros ni de menores de edad conforme a la Ley peruana vigente."
+        };
+
+        for (int i = 0; i < terminos.length; i++) {
+            XWPFParagraph terminoParagraph = document.createParagraph();
+            terminoParagraph.setIndentationLeft(400);
+            XWPFRun terminoRun = terminoParagraph.createRun();
+            terminoRun.setText((i + 1) + ". " + terminos[i]);
+            terminoRun.setFontSize(9);
         }
     }
 }
