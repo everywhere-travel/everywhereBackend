@@ -500,9 +500,15 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
             servicesTable.addCell(new Cell().add(new Paragraph("TKT").setFontSize(8))
                     .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
 
+            Paragraph descripcionParagraph = new Paragraph(detalle.getDescripcion() != null ? detalle.getDescripcion() : "")
+                    .setFontSize(9)
+                    .setFixedLeading(11);
+            
             servicesTable.addCell(new Cell()
-                    .add(new Paragraph(detalle.getDescripcion() != null ? detalle.getDescripcion() : "").setFontSize(9))
-                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)));
+                    .add(descripcionParagraph)
+                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                    .setMaxWidth(280f)
+                    .setPadding(3));
 
             String precioUnitario = String.format("$ %.2f",
                     detalle.getPrecio() != null ? detalle.getPrecio() : BigDecimal.ZERO);
@@ -578,24 +584,26 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
     // 4. CUADRO DE OBSERVACIONES
     private void addObservationsBox(Document document, DocumentoCobranzaResponseDTO documento) { 
-            document.add(new Paragraph("\n")); // Espacio antes del cuadro
+            document.add(new Paragraph("\n"));
 
-            // Crear tabla de una sola celda para el cuadro de observaciones
-            Table observationsTable = new Table(1).setWidth(UnitValue.createPercentValue(100));
+            float[] observationColumnWidths = { 523f };
+            Table observationsTable = new Table(UnitValue.createPointArray(observationColumnWidths));
+            observationsTable.setWidth(523f);
+            observationsTable.setBorder(new com.itextpdf.layout.borders.SolidBorder(1));
 
-            Cell observationsCell = new Cell().setBorder(new com.itextpdf.layout.borders.SolidBorder(1));
-
-            // Contenido de observaciones - Manejar observaciones nulas
             String observaciones = documento.getObservaciones() != null ? documento.getObservaciones() : "";
-            Paragraph observationsParagraph = new Paragraph()
-                    .add(new com.itextpdf.layout.element.Text("OBSERVACIONES: ").setBold())
-                    .add(new com.itextpdf.layout.element.Text(observaciones))
-                    .setFontSize(10).setMarginBottom(0);
+            
+            Paragraph labelParagraph = new Paragraph().add(new com.itextpdf.layout.element.Text("OBSERVACIONES: ").setBold()).setFontSize(10);
+            Paragraph observationsParagraph = new Paragraph(observaciones).setFontSize(10).setFixedLeading(11);
 
-            observationsCell.add(observationsParagraph);
+            observationsTable.addCell(new Cell()
+                    .add(labelParagraph)
+                    .add(observationsParagraph)
+                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                    .setMaxWidth(523f)
+                    .setPadding(3));
 
-            observationsTable.addCell(observationsCell);
-            document.add(observationsTable); 
+            document.add(observationsTable);
     }
 
     // 5. PIE DE PÁGINA EN CADA HOJA
