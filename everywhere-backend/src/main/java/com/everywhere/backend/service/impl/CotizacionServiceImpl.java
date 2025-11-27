@@ -12,15 +12,12 @@ import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 import org.apache.poi.xwpf.usermodel.*;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageMar;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.math.BigInteger;
 import java.util.List;
 
 @Service
@@ -183,136 +180,54 @@ public class CotizacionServiceImpl implements CotizacionService {
         }
 
         try {
+            // Cargar la plantilla DOCX existente
+            String templatePath = "/static/documents/PLANTILLA.docx";
+            InputStream templateStream = getClass().getResourceAsStream(templatePath);
+            
+            if (templateStream == null) {
+                throw new ResourceNotFoundException("No se encontró la plantilla en: " + templatePath);
+            }
+
+            // Abrir la plantilla como documento
+            XWPFDocument document = new XWPFDocument(templateStream);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            XWPFDocument document = new XWPFDocument();
 
-            // 1. Agregar encabezado con imagen al 100% del ancho
-            addHeaderImage(document);
+            // Agregar contenido del documento - Título de la cotización
+            XWPFParagraph titleParagraph = document.createParagraph();
+            titleParagraph.setAlignment(ParagraphAlignment.CENTER);
+            titleParagraph.setSpacingBefore(300);
+            titleParagraph.setSpacingAfter(300);
             
-            // Establecer todos los márgenes del documento en 0 DESPUÉS de crear contenido
-            CTSectPr sectPr = document.getDocument().getBody().isSetSectPr() 
-                ? document.getDocument().getBody().getSectPr() 
-                : document.getDocument().getBody().addNewSectPr();
-            
-            CTPageMar pageMar = sectPr.isSetPgMar() ? sectPr.getPgMar() : sectPr.addNewPgMar();
-            pageMar.setTop(BigInteger.ZERO);
-            pageMar.setRight(BigInteger.ZERO);
-            pageMar.setBottom(BigInteger.ZERO);
-            pageMar.setLeft(BigInteger.ZERO);
-            pageMar.setHeader(BigInteger.ZERO);
-            pageMar.setFooter(BigInteger.ZERO);
-            pageMar.setGutter(BigInteger.ZERO);
+            XWPFRun titleRun = titleParagraph.createRun();
+            titleRun.setText("COTIZACIÓN N° " + cotizacion.getCodigoCotizacion());
+            titleRun.setBold(true);
+            titleRun.setFontSize(18);
 
-            // 2. Agregar contenido del documento con título centrado
-            XWPFParagraph contentParagraph = document.createParagraph();
-            contentParagraph.setAlignment(ParagraphAlignment.CENTER);
-            contentParagraph.setSpacingBefore(200); // Espacio antes
-            contentParagraph.setSpacingAfter(200);  // Espacio después
-            
-            XWPFRun contentRun = contentParagraph.createRun();
-            contentRun.setText("COTIZACIÓN: " + cotizacion.getCodigoCotizacion());
-            contentRun.setBold(true);
-            contentRun.setFontSize(16);
-
-            // Agregar espacio
-            document.createParagraph();
-
-            // 3. Agregar pie de página con imagen al 100% del ancho
-            addFooterImage(document);
+            // Agregar varias hojas de ejemplo (saltos de página)
+            for (int i = 1; i <= 3; i++) {
+                // Crear párrafo con contenido de ejemplo
+                XWPFParagraph contentParagraph = document.createParagraph();
+                contentParagraph.setAlignment(ParagraphAlignment.LEFT);
+                contentParagraph.setSpacingBefore(200);
+                
+                XWPFRun contentRun = contentParagraph.createRun();
+                contentRun.setText("Contenido de la página " + i);
+                contentRun.setFontSize(12);
+                
+                // Si no es la última página, agregar salto de página
+                if (i < 3) {
+                    contentRun.addBreak(BreakType.PAGE);
+                }
+            }
 
             document.write(out);
             document.close();
+            templateStream.close();
 
             return new ByteArrayInputStream(out.toByteArray());
 
         } catch (Exception e) {
             throw new ResourceNotFoundException("Error al generar el DOCX de la cotización: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Agrega la imagen del encabezado al documento ocupando el 100% del ancho
-     */
-    private void addHeaderImage(XWPFDocument document) {
-        try {
-            // ========== CONFIGURACIÓN DE TAMAÑO DEL ENCABEZADO ==========
-            // Ajusta estos valores según necesites (base: 5400000 = 100% ancho A4)
-            final double HEADER_WIDTH_PERCENTAGE = 1.43; // 145% del ancho de página
-            final int BASE_PAGE_WIDTH_EMU = 5400000; // Ancho base de página A4 en EMUs
-            final int HEADER_HEIGHT_EMU = 1450000; // Altura del encabezado en EMUs
-            // ============================================================
-            
-            String headerImagePath = "/static/images/Encabezado.png";
-            InputStream headerStream = getClass().getResourceAsStream(headerImagePath);
-            
-            if (headerStream == null) {
-                System.err.println("Advertencia: No se encontró la imagen del encabezado en: " + headerImagePath);
-                return;
-            }
-
-            XWPFParagraph headerParagraph = document.createParagraph();
-            headerParagraph.setAlignment(ParagraphAlignment.LEFT);  // Izquierda para que empiece desde el borde
-            
-            // Sin márgenes ni indentación para ocupar todo el ancho
-            headerParagraph.setIndentationLeft(0);
-            headerParagraph.setIndentationRight(0);
-            headerParagraph.setSpacingBefore(0);
-            headerParagraph.setSpacingAfter(0);
-            
-            XWPFRun headerRun = headerParagraph.createRun();
-            
-            // Calcular ancho final basado en el porcentaje configurado
-            int finalWidthEMU = (int) (BASE_PAGE_WIDTH_EMU * HEADER_WIDTH_PERCENTAGE);
-            headerRun.addPicture(headerStream, XWPFDocument.PICTURE_TYPE_PNG, "Encabezado.png", 
-                                finalWidthEMU, HEADER_HEIGHT_EMU);
-            
-            headerStream.close();
-
-        } catch (Exception e) {
-            System.err.println("Error al agregar imagen del encabezado: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Agrega la imagen del pie de página al documento ocupando el 100% del ancho
-     */
-    private void addFooterImage(XWPFDocument document) {
-        try {
-            // ========== CONFIGURACIÓN DE TAMAÑO DEL PIE DE PÁGINA ==========
-            // Ajusta estos valores según necesites (base: 5400000 = 100% ancho A4)
-            final double FOOTER_WIDTH_PERCENTAGE = 1.43; // 145% del ancho de página
-            final int BASE_PAGE_WIDTH_EMU = 5400000; // Ancho base de página A4 en EMUs
-            final int FOOTER_HEIGHT_EMU = 1160000; // Altura del pie de página en EMUs
-            // ==============================================================
-            
-            String footerImagePath = "/static/images/pie.png";
-            InputStream footerStream = getClass().getResourceAsStream(footerImagePath);
-            
-            if (footerStream == null) {
-                System.err.println("Advertencia: No se encontró la imagen del pie de página en: " + footerImagePath);
-                return;
-            }
-
-            XWPFParagraph footerParagraph = document.createParagraph();
-            footerParagraph.setAlignment(ParagraphAlignment.LEFT);  // Izquierda para que empiece desde el borde
-            
-            // Sin márgenes ni indentación para ocupar todo el ancho
-            footerParagraph.setIndentationLeft(0);
-            footerParagraph.setIndentationRight(0);
-            footerParagraph.setSpacingBefore(0);
-            footerParagraph.setSpacingAfter(0);
-            
-            XWPFRun footerRun = footerParagraph.createRun();
-            
-            // Calcular ancho final basado en el porcentaje configurado
-            int finalWidthEMU = (int) (BASE_PAGE_WIDTH_EMU * FOOTER_WIDTH_PERCENTAGE);
-            footerRun.addPicture(footerStream, XWPFDocument.PICTURE_TYPE_PNG, "pie.png", 
-                                finalWidthEMU, FOOTER_HEIGHT_EMU);
-            
-            footerStream.close();
-
-        } catch (Exception e) {
-            System.err.println("Error al agregar imagen del pie: " + e.getMessage());
         }
     }
 }
