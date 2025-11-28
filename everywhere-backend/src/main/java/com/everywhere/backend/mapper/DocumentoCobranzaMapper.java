@@ -31,6 +31,8 @@ public class DocumentoCobranzaMapper {
     public void configureMapping() {
         modelMapper.typeMap(DocumentoCobranzaUpdateDTO.class, DocumentoCobranza.class).addMappings(mapper -> {
             mapper.skip(DocumentoCobranza::setDetalleDocumento);
+            mapper.skip(DocumentoCobranza::setSucursal);
+            mapper.skip(DocumentoCobranza::setPersonaJuridica);
         });
     }
 
@@ -98,15 +100,34 @@ public class DocumentoCobranzaMapper {
         }
 
         if (documentoCobranza.getDetalleDocumento() != null) {
+            documentoCobranzaResponseDTO.setDetalleDocumentoId(documentoCobranza.getDetalleDocumento().getId());
             documentoCobranzaResponseDTO.setClienteDocumento(documentoCobranza.getDetalleDocumento().getNumero());
             if (documentoCobranza.getDetalleDocumento().getDocumento() != null)
                 documentoCobranzaResponseDTO
                         .setTipoDocumentoCliente(documentoCobranza.getDetalleDocumento().getDocumento().getTipo());
         }
 
+        // Siempre setear personaId si existe
         if (documentoCobranza.getPersona() != null) {
+            documentoCobranzaResponseDTO.setPersonaId(documentoCobranza.getPersona().getId());
+        }
+        
+        // PRIORIDAD 1: Si hay PersonaJuridica seleccionada, usar sus datos
+        if (documentoCobranza.getPersonaJuridica() != null) {
+            PersonaJuridica pj = documentoCobranza.getPersonaJuridica();
+            documentoCobranzaResponseDTO.setPersonaJuridicaId(pj.getId());
+            documentoCobranzaResponseDTO.setPersonaJuridicaRuc(pj.getRuc());
+            documentoCobranzaResponseDTO.setPersonaJuridicaRazonSocial(pj.getRazonSocial());
+            
+            // Usar datos de PersonaJuridica para el cliente
+            // Los campos están INVERTIDOS en la base de datos getRuc() contiene la Razón Social y getRazonSocial() contiene el RUC
+            documentoCobranzaResponseDTO.setClienteNombre(pj.getRuc()); // Señores: usar getRuc() porque contiene razón social
+            documentoCobranzaResponseDTO.setClienteDocumento(pj.getRazonSocial()); // Documento: usar getRazonSocial() porque contiene RUC
+            documentoCobranzaResponseDTO.setTipoDocumentoCliente("RUC");
+        } 
+        // PRIORIDAD 2: Si no hay PersonaJuridica, usar datos de Persona (Natural o Jurídica base)
+        else if (documentoCobranza.getPersona() != null) {
             Integer personaId = documentoCobranza.getPersona().getId();
-            documentoCobranzaResponseDTO.setPersonaId(personaId);
 
             PersonaNatural personaNatural = personaNaturalRepository.findByPersonasId(personaId).orElse(null);
             if (personaNatural != null) {
@@ -127,18 +148,23 @@ public class DocumentoCobranzaMapper {
             } else {
                 PersonaJuridica personaJuridica = personaJuridicaRepository.findByPersonasId(personaId).orElse(null);
                 if (personaJuridica != null) {
-                    documentoCobranzaResponseDTO.setClienteNombre(personaJuridica.getRazonSocial());
+                    // Los campos están INVERTIDOS en la base de datos
+                    documentoCobranzaResponseDTO.setClienteNombre(personaJuridica.getRuc()); // Señores: getRuc() contiene razón social
                     // Siempre usar el RUC de PersonaJuridica, independiente del detalleDocumento
-                    documentoCobranzaResponseDTO.setClienteDocumento(personaJuridica.getRuc());
+                    documentoCobranzaResponseDTO.setClienteDocumento(personaJuridica.getRazonSocial()); // Documento: getRazonSocial() contiene RUC
                     documentoCobranzaResponseDTO.setTipoDocumentoCliente("RUC");
                 }
             }
         }
 
-        if (documentoCobranza.getSucursal() != null)
+        if (documentoCobranza.getSucursal() != null) {
+            documentoCobranzaResponseDTO.setSucursalId(documentoCobranza.getSucursal().getId());
             documentoCobranzaResponseDTO.setSucursalDescripcion(documentoCobranza.getSucursal().getDescripcion());
-        if (documentoCobranza.getFormaPago() != null)
+        }
+        if (documentoCobranza.getFormaPago() != null) {
+            documentoCobranzaResponseDTO.setFormaPagoId(documentoCobranza.getFormaPago().getId());
             documentoCobranzaResponseDTO.setFormaPagoDescripcion(documentoCobranza.getFormaPago().getDescripcion());
+        }
         return documentoCobranzaResponseDTO;
     }
 }
