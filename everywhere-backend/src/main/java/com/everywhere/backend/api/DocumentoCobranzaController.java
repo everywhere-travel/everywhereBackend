@@ -23,8 +23,11 @@ public class DocumentoCobranzaController {
 
     @PostMapping
     @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "CREATE")
-    public ResponseEntity<DocumentoCobranzaResponseDTO> createDocumentoCobranza(@RequestParam Integer cotizacionId) { 
-        return ResponseEntity.status(HttpStatus.CREATED).body(documentoCobranzaService.createDocumentoCobranza(cotizacionId));
+    public ResponseEntity<DocumentoCobranzaResponseDTO> createDocumentoCobranza(
+            @RequestParam Integer cotizacionId,
+            @RequestParam(required = false) Integer personaJuridicaId,
+            @RequestParam(required = false) Integer sucursalId) { 
+        return ResponseEntity.status(HttpStatus.CREATED).body(documentoCobranzaService.createDocumentoCobranza(cotizacionId, personaJuridicaId, sucursalId));
     }
 
     @GetMapping
