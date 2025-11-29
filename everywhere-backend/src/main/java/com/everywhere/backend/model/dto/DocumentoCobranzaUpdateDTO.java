@@ -8,4 +8,6 @@ public class DocumentoCobranzaUpdateDTO {
     private Double costoEnvio;
     private String observaciones;
     private Integer detalleDocumentoId;
+    private Integer sucursalId;
+    private Integer personaJuridicaId;
 }

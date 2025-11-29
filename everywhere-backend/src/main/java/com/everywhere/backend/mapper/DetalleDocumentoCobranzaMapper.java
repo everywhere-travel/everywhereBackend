@@ -25,7 +25,18 @@ public class DetalleDocumentoCobranzaMapper {
     }
 
     public DetalleDocumentoCobranzaResponseDTO toResponseDTO(DetalleDocumentoCobranza detalleDocumentoCobranza) {
-        return modelMapper.map(detalleDocumentoCobranza, DetalleDocumentoCobranzaResponseDTO.class);
+         DetalleDocumentoCobranzaResponseDTO dto = modelMapper.map(detalleDocumentoCobranza, DetalleDocumentoCobranzaResponseDTO.class);
+         
+        if (detalleDocumentoCobranza.getProducto() != null) {
+            dto.setProductoId(detalleDocumentoCobranza.getProducto().getId());
+            dto.setProductoDescripcion(detalleDocumentoCobranza.getProducto().getTipo());
+        } 
+        if (detalleDocumentoCobranza.getDocumentoCobranza() != null) {
+            dto.setDocumentoCobranzaId(detalleDocumentoCobranza.getDocumentoCobranza().getId());
+            dto.setDocumentoCobranzaNumero(detalleDocumentoCobranza.getDocumentoCobranza().getNumero());
+        }
+        
+        return dto;
     }
 
     public void updateEntityFromRequest(DetalleDocumentoCobranza detalleDocumentoCobranza, DetalleDocumentoCobranzaRequestDTO detalleDocumentoCobranzaRequestDTO) {

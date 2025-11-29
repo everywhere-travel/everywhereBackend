@@ -1,5 +1,6 @@
 package com.everywhere.backend.service;
 
+import com.everywhere.backend.model.dto.ViajeroConPersonaResponseDTO;
 import com.everywhere.backend.model.dto.ViajeroRequestDTO;
 import com.everywhere.backend.model.dto.ViajeroResponseDTO;
 
@@ -14,4 +15,5 @@ public interface ViajeroService {
     ViajeroResponseDTO save(ViajeroRequestDTO viajeroRequestDTO);
     ViajeroResponseDTO patch(Integer id, ViajeroRequestDTO viajeroRequestDTO);
     void deleteById(Integer id);
+    List<ViajeroConPersonaResponseDTO> findAllWithPersonaNatural();
 }

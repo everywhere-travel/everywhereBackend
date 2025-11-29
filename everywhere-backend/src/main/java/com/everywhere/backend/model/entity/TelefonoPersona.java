@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
@@ -26,7 +28,8 @@ public class TelefonoPersona {
     @Column(name = "tel_tipo_vac", length = 15)
     private String tipo;
 
-    @Column(name = "tel_desc_vac", length = 100)
+    @Column(name = "tel_desc_vac")
+    @JdbcTypeCode(SqlTypes.LONGNVARCHAR)
     private String descripcion;
 
     @CreationTimestamp

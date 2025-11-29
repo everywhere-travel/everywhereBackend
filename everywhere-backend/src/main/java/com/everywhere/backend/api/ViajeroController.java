@@ -1,5 +1,6 @@
 package com.everywhere.backend.api;
 
+import com.everywhere.backend.model.dto.ViajeroConPersonaResponseDTO;
 import com.everywhere.backend.model.dto.ViajeroRequestDTO;
 import com.everywhere.backend.model.dto.ViajeroResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
@@ -59,5 +60,11 @@ public class ViajeroController {
     public ResponseEntity<Void> deleteViajero(@PathVariable Integer id) {
         viajeroService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/con-persona-natural")
+    @RequirePermission(module = "VIAJEROS", permission = "DELETE")
+    public ResponseEntity<List<ViajeroConPersonaResponseDTO>> findAllWithPersonaNatural() {
+        return ResponseEntity.ok(viajeroService.findAllWithPersonaNatural());
     }
 }
