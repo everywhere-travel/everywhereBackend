@@ -10,6 +10,7 @@ import com.everywhere.backend.service.DetalleCotizacionService;
 
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.util.Units;
 
 import org.apache.poi.xwpf.usermodel.*;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -284,6 +285,10 @@ public class CotizacionServiceImpl implements CotizacionService {
             throw new ResourceNotFoundException("Cotización no encontrada con ID: " + cotizacionId);
         }
 
+        // Detectar si hay productos de tipo TKT (vuelos)
+        boolean tieneVuelos = cotizacion.getDetalles().stream()
+                .anyMatch(detalle -> detalle.getProducto() != null && "TKT".equals(detalle.getProducto().getTipo()));
+
         // Agrupar detalles por tipo de producto
         Map<String, Object> datosAgrupados = agruparDetallesPorTipoProducto(cotizacion.getDetalles());
         
@@ -325,7 +330,12 @@ public class CotizacionServiceImpl implements CotizacionService {
             // 5. Sección de OPCIONES (categorías no FIJAS)
             addOpcionesPorCategoria(document, datosAgrupados);
 
-            // 6. Sección de Importe a Pagar (total solo de productos FIJOS)
+            // 6. NUEVA: Tabla de Tarifas de Vuelo (solo si hay productos TKT)
+            if (tieneVuelos) {
+                addTablaTarifasVuelo(document);
+            }
+
+            // 7. Sección de Importe a Pagar (total solo de productos FIJOS)
             int totalPersonas = cotizacion.getCantAdultos() + cotizacion.getCantNinos();
             
             // Debug: Si totalPersonas es 0, usar 1 para evitar división por cero
@@ -335,10 +345,10 @@ public class CotizacionServiceImpl implements CotizacionService {
             
             addImporteAPagarConPersonas(document, datosAgrupados, totalPersonas);
 
-            // 7. Condiciones de Tarifa
+            // 8. Condiciones de Tarifa
             addCondicionesTarifa(document);
 
-            // 8. Política de Privacidad
+            // 9. Política de Privacidad
             addPoliticaPrivacidad(document);
 
             document.write(out);
@@ -756,6 +766,222 @@ public class CotizacionServiceImpl implements CotizacionService {
 
         XWPFParagraph spaceParagraph = document.createParagraph();
         spaceParagraph.setSpacingAfter(200);
+    }
+
+    private void addTablaTarifasVuelo(XWPFDocument document) {
+        // Título
+        XWPFParagraph titleParagraph = document.createParagraph();
+        titleParagraph.setSpacingBefore(400);
+        titleParagraph.setSpacingAfter(200);
+        XWPFRun titleRun = titleParagraph.createRun();
+        titleRun.setText("Información sobre el vuelo");
+        titleRun.setBold(true);
+        titleRun.setFontSize(14);
+
+        // Crear tabla 4 columnas x 5 filas
+        XWPFTable table = document.createTable(5, 4);
+        table.setWidth("100%");
+
+        // FILA 1: Headers (Vacío, BASIC, LIGHT, PLUS)
+        XWPFTableRow row1 = table.getRow(0);
+        row1.getCell(0).setText("");
+        row1.getCell(0).setColor("FFFFFF"); // Blanco
+        
+        row1.getCell(1).setText("BASIC");
+        row1.getCell(1).setColor("87CEEB"); // Azul celeste
+        row1.getCell(1).getParagraphs().get(0).getRuns().get(0).setBold(true);
+        row1.getCell(1).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+        
+        row1.getCell(2).setText("LIGHT");
+        row1.getCell(2).setColor("87CEEB"); // Azul celeste
+        row1.getCell(2).getParagraphs().get(0).getRuns().get(0).setBold(true);
+        row1.getCell(2).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+        
+        row1.getCell(3).setText("PLUS");
+        row1.getCell(3).setColor("87CEEB"); // Azul celeste
+        row1.getCell(3).getParagraphs().get(0).getRuns().get(0).setBold(true);
+        row1.getCell(3).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+
+        // FILA 2: Precios (Adulto con fondo amarillo)
+        XWPFTableRow row2 = table.getRow(1);
+        row2.getCell(0).setText("Adulto");
+        row2.getCell(0).setColor("FFFFFF");
+        
+        row2.getCell(1).setText("$ 0.00");
+        row2.getCell(1).setColor("FFFF99"); // Amarillo
+        row2.getCell(1).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+        
+        row2.getCell(2).setText("$ 0.00");
+        row2.getCell(2).setColor("FFFF99"); // Amarillo
+        row2.getCell(2).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+        
+        row2.getCell(3).setText("$ 0.00");
+        row2.getCell(3).setColor("FFFF99"); // Amarillo
+        row2.getCell(3).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+
+        // FILA 3: Características principales
+        XWPFTableRow row3 = table.getRow(2);
+        row3.getCell(0).setText("");
+        row3.getCell(0).setColor("FFFFFF");
+        
+        // BASIC (Azul)
+        XWPFParagraph p1 = row3.getCell(1).getParagraphs().get(0);
+        p1.createRun().setText("Basic");
+        p1.getRuns().get(0).setBold(true);
+        p1.getRuns().get(0).setColor("0000FF");
+        p1.createRun().addBreak();
+        p1.createRun().setText("• Bolso o mochila.");
+        p1.getRuns().get(0).setBold(true);
+        p1.createRun().addBreak();
+        p1.createRun().setText("• Cambio con cargo + diferencia de precio.");
+        p1.createRun().addBreak();
+        p1.createRun().setText("• No aplican beneficios por categorías de socios.");
+        row3.getCell(1).setColor("FFFFFF");
+        
+        // LIGHT (Verde)
+        XWPFParagraph p2 = row3.getCell(2).getParagraphs().get(0);
+        p2.createRun().setText("Light");
+        p2.getRuns().get(0).setBold(true);
+        p2.getRuns().get(0).setColor("008000");
+        p2.createRun().addBreak();
+        p2.createRun().setText("• Bolso o mochila.");
+        p2.createRun().addBreak();
+        p2.createRun().setText("• Maleta pequeña 12 kg.");
+        p2.createRun().addBreak();
+        p2.createRun().setText("• Cambio con cargo + diferencia de precio.");
+        p2.createRun().addBreak();
+        p2.createRun().setText("• Postulación a UPG con tramos.");
+        row3.getCell(2).setColor("FFFFFF");
+        
+        // FULL (Magenta)
+        XWPFParagraph p3 = row3.getCell(3).getParagraphs().get(0);
+        p3.createRun().setText("Full");
+        p3.getRuns().get(0).setBold(true);
+        p3.getRuns().get(0).setColor("FF00FF");
+        p3.createRun().addBreak();
+        p3.createRun().setText("• Bolso o mochila.");
+        p3.createRun().addBreak();
+        p3.createRun().setText("• Maleta pequeña 12 kg.");
+        p3.createRun().addBreak();
+        p3.createRun().setText("• 1 equipaje de bodega 23 kg.");
+        p3.createRun().addBreak();
+        p3.createRun().setText("• Cambio sin cargo + diferencia de precio.");
+        p3.createRun().addBreak();
+        p3.createRun().setText("• Devolución antes de la salida del primer vuelo.");
+        p3.createRun().addBreak();
+        p3.createRun().setText("• Selección de asiento Estándar.");
+        p3.createRun().addBreak();
+        p3.createRun().setText("• Postulación a UPG con tramos.");
+        row3.getCell(3).setColor("FFFFFF");
+
+        // FILA 4: Esta tarifa incluye
+        XWPFTableRow row4 = table.getRow(3);
+        row4.getCell(0).setText("");
+        row4.getCell(0).setColor("FFFFFF");
+        
+        XWPFParagraph p4_1 = row4.getCell(1).getParagraphs().get(0);
+        p4_1.createRun().setText("Esta tarifa incluye:");
+        p4_1.getRuns().get(0).setBold(true);
+        p4_1.createRun().addBreak();
+        XWPFRun r4_1 = p4_1.createRun();
+        r4_1.setText("Bolso o mochila ");
+        r4_1.setBold(true);
+        p4_1.createRun().setText("Puede ser una cartera, un bolso para laptop o un bolso para bebé.");
+        row4.getCell(1).setColor("FFFFFF");
+        
+        XWPFParagraph p4_2 = row4.getCell(2).getParagraphs().get(0);
+        p4_2.createRun().setText("Esta tarifa incluye:");
+        p4_2.getRuns().get(0).setBold(true);
+        p4_2.createRun().addBreak();
+        XWPFRun r4_2a = p4_2.createRun();
+        r4_2a.setText("Bolso o mochila ");
+        r4_2a.setBold(true);
+        p4_2.createRun().setText("Puede ser una cartera, un bolso para laptop o un bolso para bebé.");
+        p4_2.createRun().addBreak();
+        p4_2.createRun().addBreak();
+        XWPFRun r4_2b = p4_2.createRun();
+        r4_2b.setText("Maleta pequeña ");
+        r4_2b.setBold(true);
+        p4_2.createRun().setText("Equipaje con un peso máximo de 12 kg.");
+        row4.getCell(2).setColor("FFFFFF");
+        
+        XWPFParagraph p4_3 = row4.getCell(3).getParagraphs().get(0);
+        p4_3.createRun().setText("Esta tarifa incluye:");
+        p4_3.getRuns().get(0).setBold(true);
+        p4_3.createRun().addBreak();
+        XWPFRun r4_3a = p4_3.createRun();
+        r4_3a.setText("Bolso o mochila ");
+        r4_3a.setBold(true);
+        p4_3.createRun().setText("Puede ser una cartera, un bolso para laptop o un bolso para bebé.");
+        p4_3.createRun().addBreak();
+        p4_3.createRun().addBreak();
+        XWPFRun r4_3b = p4_3.createRun();
+        r4_3b.setText("Maleta pequeña ");
+        r4_3b.setBold(true);
+        p4_3.createRun().setText("Equipaje con un peso máximo de 12 kg.");
+        p4_3.createRun().addBreak();
+        p4_3.createRun().addBreak();
+        XWPFRun r4_3c = p4_3.createRun();
+        r4_3c.setText("1 equipajes de bodega ");
+        r4_3c.setBold(true);
+        p4_3.createRun().setText("Equipajes de bodega con un peso máximo de 23 kg cada uno.");
+        p4_3.createRun().addBreak();
+        p4_3.createRun().addBreak();
+        XWPFRun r4_3d = p4_3.createRun();
+        r4_3d.setText("Selección de asiento ");
+        r4_3d.setBold(true);
+        p4_3.createRun().setText("Asegura el lugar en el que quieres viajar.");
+        row4.getCell(3).setColor("FFFFFF");
+
+        // FILA 5: Extras incluidos
+        XWPFTableRow row5 = table.getRow(4);
+        row5.getCell(0).setText("");
+        row5.getCell(0).setColor("FFFFFF");
+        
+        // Columna 1 - BASIC
+        XWPFParagraph p5_1 = row5.getCell(1).getParagraphs().get(0);
+        p5_1.createRun().setText("Extras incluidos:");
+        p5_1.getRuns().get(0).setBold(true);
+        p5_1.createRun().addBreak();
+        p5_1.createRun().setText("Beneficios exclusivos de esta tarifa, no disponibles por separado");
+        p5_1.createRun().addBreak();
+        p5_1.createRun().setText("• Cambios");
+        p5_1.createRun().addBreak();
+        p5_1.createRun().setText("Rutas nacionales");
+        p5_1.createRun().addBreak();
+        p5_1.createRun().setText("Se permiten cambios con cargo adicional antes de la hora del vuelo, más la diferencia de precio (en caso que aplique). Después de la hora del vuelo, no se pueden realizar cambios.");
+        row5.getCell(1).setColor("FFFFFF");
+        
+        // Columna 2 - LIGHT
+        XWPFParagraph p5_2 = row5.getCell(2).getParagraphs().get(0);
+        p5_2.createRun().setText("Extras incluidos:");
+        p5_2.getRuns().get(0).setBold(true);
+        p5_2.createRun().addBreak();
+        p5_2.createRun().setText("Beneficios exclusivos de esta tarifa, no disponibles por separado");
+        p5_2.createRun().addBreak();
+        p5_2.createRun().setText("• Cambios");
+        p5_2.createRun().addBreak();
+        p5_2.createRun().setText("Rutas nacionales (excepto en Brasil)");
+        p5_2.createRun().addBreak();
+        p5_2.createRun().setText("Se permiten cambios con cargo adicional antes de la hora del vuelo, más la diferencia de precio (en caso que aplique). Después de la hora del vuelo, no se pueden realizar cambios.");
+        row5.getCell(2).setColor("FFFFFF");
+        
+        // Columna 3 - PLUS
+        XWPFParagraph p5_3 = row5.getCell(3).getParagraphs().get(0);
+        p5_3.createRun().setText("Extras incluidos:");
+        p5_3.getRuns().get(0).setBold(true);
+        p5_3.createRun().addBreak();
+        p5_3.createRun().setText("Beneficios exclusivos de esta tarifa, no disponibles por separado");
+        p5_3.createRun().addBreak();
+        p5_3.createRun().setText("• Cambios");
+        p5_3.createRun().addBreak();
+        p5_3.createRun().setText("Rutas nacionales (excepto en Brasil)");
+        p5_3.createRun().addBreak();
+        p5_3.createRun().setText("Se permiten cambios sin cargo adicional antes de la hora del vuelo, más la diferencia de precio (en caso que aplique). Después de la hora del vuelo, los cambios tienen un cargo adicional.");
+        row5.getCell(3).setColor("FFFFFF");
+
+        XWPFParagraph spaceParagraph = document.createParagraph();
+        spaceParagraph.setSpacingAfter(300);
     }
 
     private void addPoliticaPrivacidad(XWPFDocument document) {
