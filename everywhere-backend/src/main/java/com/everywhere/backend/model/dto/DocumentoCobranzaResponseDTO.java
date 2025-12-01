@@ -28,5 +28,12 @@ public class DocumentoCobranzaResponseDTO {
     private String tipoDocumentoCliente;
     private String sucursalDescripcion;
     private String formaPagoDescripcion;
+    
+    private Integer personaJuridicaId;
+    private String personaJuridicaRuc;
+    private String personaJuridicaRazonSocial;
+    
+    private Integer detalleDocumentoId;
+    
     private List<DetalleDocumentoCobranzaResponseDTO> detalles;
 }

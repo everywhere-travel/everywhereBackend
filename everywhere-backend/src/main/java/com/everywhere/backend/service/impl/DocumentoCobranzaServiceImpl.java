@@ -26,6 +26,9 @@ import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.DetalleDocumentoCobranzaMapper;
 import com.everywhere.backend.mapper.DocumentoCobranzaMapper;
 import com.everywhere.backend.model.entity.DocumentoCobranza;
+import com.everywhere.backend.model.entity.PersonaJuridica;
+import com.everywhere.backend.model.entity.PersonaNatural;
+import com.everywhere.backend.model.entity.Sucursal;
 import com.everywhere.backend.model.entity.DetalleDocumentoCobranza;
 import com.everywhere.backend.model.entity.DetalleDocumento;
 import com.everywhere.backend.repository.DetalleDocumentoCobranzaRepository;
@@ -61,10 +64,14 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     private final DetalleDocumentoRepository detalleDocumentoRepository;
     private final DocumentoCobranzaMapper documentoCobranzaMapper;
     private final DetalleDocumentoCobranzaMapper detalleDocumentoCobranzaMapper;
+    private final com.everywhere.backend.repository.PersonaJuridicaRepository personaJuridicaRepository;
+    private final com.everywhere.backend.repository.SucursalRepository sucursalRepository;
+    private final com.everywhere.backend.repository.NaturalJuridicoRepository naturalJuridicoRepository;
+    private final com.everywhere.backend.repository.PersonaNaturalRepository personaNaturalRepository;
 
     @Override
     @Transactional
-    public DocumentoCobranzaResponseDTO createDocumentoCobranza(Integer cotizacionId) {
+    public DocumentoCobranzaResponseDTO createDocumentoCobranza(Integer cotizacionId, Integer personaJuridicaId, Integer sucursalId) {
         if (cotizacionId == null)
             throw new IllegalArgumentException("El ID de la cotización no puede ser nulo");
 
@@ -75,6 +82,41 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         
         String numeroDocumento = generateNextDocumentNumber();
         DocumentoCobranza documentoCobranza = documentoCobranzaMapper.fromCotizacion(cotizacion, numeroDocumento);
+        
+        // Validar y setear PersonaJuridica si fue proporcionada
+        if (personaJuridicaId != null) {
+            PersonaJuridica personaJuridica = personaJuridicaRepository.findById(personaJuridicaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Persona jurídica no encontrada con ID: " + personaJuridicaId));
+            
+            // Validar que la PersonaJuridica esté asociada a la PersonaNatural de la cotización
+            if (cotizacion.getPersonas() != null) {
+                Integer personaId = cotizacion.getPersonas().getId();
+                PersonaNatural personaNatural = personaNaturalRepository.findByPersonasId(personaId)
+                    .orElse(null);
+                
+                if (personaNatural != null) {
+                    // Verificar que existe la relación NaturalJuridico
+                    boolean relacionExiste = naturalJuridicoRepository
+                        .findByPersonaNaturalIdAndPersonaJuridicaId(personaNatural.getId(), personaJuridicaId)
+                        .isPresent();
+                    
+                    if (!relacionExiste) {
+                        throw new IllegalArgumentException("La persona jurídica ID " + personaJuridicaId + 
+                            " no está asociada a la persona natural de la cotización");
+                    }
+                }
+            }
+            
+            documentoCobranza.setPersonaJuridica(personaJuridica);
+        }
+        
+        // Validar y setear Sucursal si fue proporcionada
+        if (sucursalId != null) {
+            Sucursal sucursal = sucursalRepository.findById(sucursalId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada con ID: " + sucursalId));
+            documentoCobranza.setSucursal(sucursal);
+        }
+        
         documentoCobranza = documentoCobranzaRepository.save(documentoCobranza);
 
         List<DetalleDocumentoCobranza> detalleDocumentoCobranzas = detalleDocumentoCobranzaMapper
@@ -136,9 +178,47 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         DocumentoCobranza documentoCobranza = documentoCobranzaRepository.findById(id).get();
         documentoCobranzaMapper.updateEntityFromUpdateDTO(documentoCobranza, documentoCobranzaUpdateDTO);
 
+        // ========== LÓGICA MUTUAMENTE EXCLUYENTE: DetalleDocumento XOR PersonaJuridica ==========
+        // Si se envía detalleDocumentoId, usar documento personal y LIMPIAR empresa
         if (documentoCobranzaUpdateDTO.getDetalleDocumentoId() != null) {
             DetalleDocumento detalleDocumento = detalleDocumentoRepository.findById(documentoCobranzaUpdateDTO.getDetalleDocumentoId()).get();
             documentoCobranza.setDetalleDocumento(detalleDocumento);
+            //Limpiar PersonaJuridica cuando se selecciona documento personal
+            documentoCobranza.setPersonaJuridica(null);
+        }
+        // Si se envía personaJuridicaId, usar empresa y LIMPIAR documento personal
+        else if (documentoCobranzaUpdateDTO.getPersonaJuridicaId() != null) {
+            PersonaJuridica personaJuridica = personaJuridicaRepository.findById(documentoCobranzaUpdateDTO.getPersonaJuridicaId())
+                .orElseThrow(() -> new ResourceNotFoundException("Persona jurídica no encontrada con ID: " + documentoCobranzaUpdateDTO.getPersonaJuridicaId()));
+            
+            // Validar que la PersonaJuridica esté asociada a la PersonaNatural del documento
+            if (documentoCobranza.getPersona() != null) {
+                Integer personaId = documentoCobranza.getPersona().getId();
+                PersonaNatural personaNatural = personaNaturalRepository.findByPersonasId(personaId)
+                    .orElse(null);
+                
+                if (personaNatural != null) {
+                    boolean relacionExiste = naturalJuridicoRepository
+                        .findByPersonaNaturalIdAndPersonaJuridicaId(personaNatural.getId(), documentoCobranzaUpdateDTO.getPersonaJuridicaId())
+                        .isPresent();
+                    
+                    if (!relacionExiste) {
+                        throw new IllegalArgumentException("La persona jurídica ID " + documentoCobranzaUpdateDTO.getPersonaJuridicaId() + 
+                            " no está asociada a la persona natural del documento");
+                    }
+                }
+            }
+            
+            documentoCobranza.setPersonaJuridica(personaJuridica);
+            // Limpiar DetalleDocumento cuando se selecciona empresa
+            documentoCobranza.setDetalleDocumento(null);
+        }
+
+        // Validar y actualizar Sucursal si fue proporcionada
+        if (documentoCobranzaUpdateDTO.getSucursalId() != null) {
+            Sucursal sucursal = sucursalRepository.findById(documentoCobranzaUpdateDTO.getSucursalId())
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada con ID: " + documentoCobranzaUpdateDTO.getSucursalId()));
+            documentoCobranza.setSucursal(sucursal);
         }
 
         return documentoCobranzaMapper.toResponseDTO(documentoCobranzaRepository.save(documentoCobranza));
@@ -500,9 +580,15 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
             servicesTable.addCell(new Cell().add(new Paragraph("TKT").setFontSize(8))
                     .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.CENTER).setKeepTogether(true));
 
+            Paragraph descripcionParagraph = new Paragraph(detalle.getDescripcion() != null ? detalle.getDescripcion() : "")
+                    .setFontSize(9)
+                    .setFixedLeading(11);
+            
             servicesTable.addCell(new Cell()
-                    .add(new Paragraph(detalle.getDescripcion() != null ? detalle.getDescripcion() : "").setFontSize(9))
-                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)));
+                    .add(descripcionParagraph)
+                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                    .setMaxWidth(280f)
+                    .setPadding(3));
 
             String precioUnitario = String.format("$ %.2f",
                     detalle.getPrecio() != null ? detalle.getPrecio() : BigDecimal.ZERO);
@@ -578,24 +664,26 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
     // 4. CUADRO DE OBSERVACIONES
     private void addObservationsBox(Document document, DocumentoCobranzaResponseDTO documento) { 
-            document.add(new Paragraph("\n")); // Espacio antes del cuadro
+            document.add(new Paragraph("\n"));
 
-            // Crear tabla de una sola celda para el cuadro de observaciones
-            Table observationsTable = new Table(1).setWidth(UnitValue.createPercentValue(100));
+            float[] observationColumnWidths = { 523f };
+            Table observationsTable = new Table(UnitValue.createPointArray(observationColumnWidths));
+            observationsTable.setWidth(523f);
+            observationsTable.setBorder(new com.itextpdf.layout.borders.SolidBorder(1));
 
-            Cell observationsCell = new Cell().setBorder(new com.itextpdf.layout.borders.SolidBorder(1));
-
-            // Contenido de observaciones - Manejar observaciones nulas
             String observaciones = documento.getObservaciones() != null ? documento.getObservaciones() : "";
-            Paragraph observationsParagraph = new Paragraph()
-                    .add(new com.itextpdf.layout.element.Text("OBSERVACIONES: ").setBold())
-                    .add(new com.itextpdf.layout.element.Text(observaciones))
-                    .setFontSize(10).setMarginBottom(0);
+            
+            Paragraph labelParagraph = new Paragraph().add(new com.itextpdf.layout.element.Text("OBSERVACIONES: ").setBold()).setFontSize(10);
+            Paragraph observationsParagraph = new Paragraph(observaciones).setFontSize(10).setFixedLeading(11);
 
-            observationsCell.add(observationsParagraph);
+            observationsTable.addCell(new Cell()
+                    .add(labelParagraph)
+                    .add(observationsParagraph)
+                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                    .setMaxWidth(523f)
+                    .setPadding(3));
 
-            observationsTable.addCell(observationsCell);
-            document.add(observationsTable); 
+            document.add(observationsTable);
     }
 
     // 5. PIE DE PÁGINA EN CADA HOJA
