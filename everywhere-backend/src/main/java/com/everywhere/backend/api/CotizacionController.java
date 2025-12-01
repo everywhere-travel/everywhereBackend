@@ -73,6 +73,7 @@ public class CotizacionController {
 
     /**
      * Generar documento DOCX de la cotización
+     * Acepta GET (sin configuración) o POST (con configuración de vuelos)
      */
     @GetMapping("/{id}/generar-docx")
     @RequirePermission(module = "COTIZACIONES", permission = "READ")
