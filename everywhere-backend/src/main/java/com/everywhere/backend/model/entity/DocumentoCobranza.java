@@ -53,6 +53,10 @@ public class DocumentoCobranza {
     private Personas persona;
 
     @ManyToOne
+    @JoinColumn(name = "per_jur_id_int")
+    private PersonaJuridica personaJuridica;
+
+    @ManyToOne
     @JoinColumn(name = "dtdoc_id_int")
     private DetalleDocumento detalleDocumento;
 
