@@ -4,7 +4,8 @@ import com.everywhere.backend.model.dto.CotizacionRequestDto;
 import com.everywhere.backend.model.dto.CotizacionResponseDto;
 import com.everywhere.backend.model.dto.CotizacionConDetallesResponseDTO;
 
-import java.util.List; 
+import java.io.ByteArrayInputStream;
+import java.util.List;
 
 public interface CotizacionService {
     CotizacionResponseDto create(CotizacionRequestDto dto, Integer personaId);
@@ -14,4 +15,6 @@ public interface CotizacionService {
     void delete(Integer id);
     CotizacionConDetallesResponseDTO findByIdWithDetalles(Integer id);
     List<CotizacionResponseDto> findCotizacionesSinLiquidacion();
+
+    ByteArrayInputStream generateDocx(Integer cotizacionId);
 }
