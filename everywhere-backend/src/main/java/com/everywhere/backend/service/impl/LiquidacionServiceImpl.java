@@ -5,8 +5,11 @@ import com.everywhere.backend.model.dto.LiquidacionResponseDTO;
 import com.everywhere.backend.model.dto.LiquidacionConDetallesResponseDTO;
 import com.everywhere.backend.model.dto.DetalleLiquidacionResponseDTO;
 import com.everywhere.backend.model.dto.DetalleLiquidacionSimpleDTO;
+import com.everywhere.backend.model.dto.DetalleCotizacionResponseDto;
 import com.everywhere.backend.model.entity.Carpeta;
 import com.everywhere.backend.model.entity.Cotizacion;
+import com.everywhere.backend.model.entity.DetalleCotizacion;
+import com.everywhere.backend.model.entity.DetalleLiquidacion;
 import com.everywhere.backend.model.entity.FormaPago;
 import com.everywhere.backend.model.dto.ObservacionLiquidacionResponseDTO;
 import com.everywhere.backend.model.dto.ObservacionLiquidacionSimpleDTO;
@@ -14,9 +17,11 @@ import com.everywhere.backend.model.entity.Liquidacion;
 import com.everywhere.backend.model.entity.Producto;
 import com.everywhere.backend.repository.CarpetaRepository;
 import com.everywhere.backend.repository.CotizacionRepository;
+import com.everywhere.backend.repository.DetalleLiquidacionRepository;
 import com.everywhere.backend.repository.FormaPagoRepository;
 import com.everywhere.backend.repository.LiquidacionRepository;
 import com.everywhere.backend.repository.ProductoRepository;
+import com.everywhere.backend.service.DetalleCotizacionService;
 import com.everywhere.backend.service.LiquidacionService;
 import com.everywhere.backend.service.DetalleLiquidacionService;
 import com.everywhere.backend.service.ObservacionLiquidacionService;
@@ -26,6 +31,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -36,6 +42,8 @@ public class LiquidacionServiceImpl implements LiquidacionService {
     private final LiquidacionRepository liquidacionRepository;
     private final LiquidacionMapper liquidacionMapper;
     private final DetalleLiquidacionService detalleLiquidacionService;
+    private final DetalleLiquidacionRepository detalleLiquidacionRepository;
+    private final DetalleCotizacionService detalleCotizacionService;
     private final CotizacionRepository cotizacionRepository;
     private final CarpetaRepository carpetaRepository;
     private final ObservacionLiquidacionService observacionLiquidacionService;
@@ -117,17 +125,14 @@ public class LiquidacionServiceImpl implements LiquidacionService {
 
         LiquidacionResponseDTO liquidacionResponseDTO = liquidacionMapper.toResponseDTO(liquidacion);
 
-        List<DetalleLiquidacionResponseDTO> detalleLiquidacionResponseDTOs = detalleLiquidacionService.findByLiquidacionId(id); // Obtener los detalles simplificados (sin liquidación repetida)
-        List<DetalleLiquidacionSimpleDTO> detalleLiquidacionSimpleDTOs = detalleLiquidacionResponseDTOs.stream() // Convertir a detalles simples (sin liquidación)
+        List<DetalleLiquidacionResponseDTO> detalleLiquidacionResponseDTOs = detalleLiquidacionService.findByLiquidacionId(id);
+        List<DetalleLiquidacionSimpleDTO> detalleLiquidacionSimpleDTOs = detalleLiquidacionResponseDTOs.stream()
                 .map(this::convertirADetalleSimple).toList();
 
-        // Obtener las observaciones simplificadas (sin liquidación repetida)
         List<ObservacionLiquidacionResponseDTO> observacionLiquidacionResponseDTOS = observacionLiquidacionService.findByLiquidacionId(id);
-        // Convertir a observaciones simples (sin liquidación)
         List<ObservacionLiquidacionSimpleDTO> observacionLiquidacionSimpleDTOs = 
                 observacionLiquidacionResponseDTOS.stream().map(this::convertirAObservacionSimple).toList();
 
-        // Crear el DTO con detalles y observaciones
         LiquidacionConDetallesResponseDTO liquidacionConDetallesResponseDTO = new LiquidacionConDetallesResponseDTO();
         liquidacionConDetallesResponseDTO.setId(liquidacionResponseDTO.getId());
         liquidacionConDetallesResponseDTO.setNumero(liquidacionResponseDTO.getNumero());
@@ -159,7 +164,6 @@ public class LiquidacionServiceImpl implements LiquidacionService {
         detalleLiquidacionSimpleDTO.setCreado(detalleLiquidacionResponseDTO.getCreado());
         detalleLiquidacionSimpleDTO.setActualizado(detalleLiquidacionResponseDTO.getActualizado());
 
-        // Mapear todas las relaciones (excepto liquidación)
         detalleLiquidacionSimpleDTO.setViajero(detalleLiquidacionResponseDTO.getViajero());
         detalleLiquidacionSimpleDTO.setProducto(detalleLiquidacionResponseDTO.getProducto());
         detalleLiquidacionSimpleDTO.setProveedor(detalleLiquidacionResponseDTO.getProveedor());
@@ -205,7 +209,63 @@ public class LiquidacionServiceImpl implements LiquidacionService {
             Carpeta carpeta = carpetaRepository.findById(liquidacionRequestDTO.getCarpetaId()).get();
             liquidacion.setCarpeta(carpeta);
         }
-        return liquidacionMapper.toResponseDTO(liquidacionRepository.save(liquidacion));
+        
+        liquidacion = liquidacionRepository.save(liquidacion); // Guardar la liquidación primero para obtener el ID
+        crearDetallesDesdeCotizacion(liquidacion, cotizacionId);
+        return liquidacionMapper.toResponseDTO(liquidacion);
+    }
+    
+    /**
+     * Método privado que crea los detalles de liquidación basándose en los detalles de la cotización.
+     * Implementa la lógica de repartición: por cada detalle seleccionado de la cotización,
+     * crea N detalles de liquidación donde N = cantidad del detalle de cotización.
+     */
+    private void crearDetallesDesdeCotizacion(Liquidacion liquidacion, Integer cotizacionId) {
+        // Obtener todos los detalles de la cotizacion
+        List<DetalleCotizacionResponseDto> detallesCotizacion = detalleCotizacionService.findByCotizacionId(cotizacionId);
+        
+        // Filtrar solo los detalles seleccionados
+        List<DetalleCotizacionResponseDto> detallesSeleccionados = detallesCotizacion.stream()
+                .filter(detalle -> detalle.getSeleccionado() != null && detalle.getSeleccionado())
+                .toList();
+        
+        // Por cada detalle seleccionado, crear N detalles de liquidación (donde N = cantidad)
+        for (DetalleCotizacionResponseDto detalleCot : detallesSeleccionados) {
+            int cantidad = detalleCot.getCantidad() != null ? detalleCot.getCantidad() : 1;
+            
+            // Crear un detalle de liquidación por cada unidad de cantidad
+            for (int i = 0; i < cantidad; i++) {
+                DetalleLiquidacion detalleLiq = new DetalleLiquidacion();
+                
+                // Asignar la liquidación
+                detalleLiq.setLiquidacion(liquidacion);
+                
+                // Mapear datos desde el detalle de cotización
+                detalleLiq.setCostoTicket(detalleCot.getPrecioHistorico() != null ? detalleCot.getPrecioHistorico() : BigDecimal.ZERO);
+                detalleLiq.setCargoServicio(detalleCot.getComision() != null ? detalleCot.getComision() : BigDecimal.ZERO);
+                
+                // Asignar producto y proveedor si existen
+                if (detalleCot.getProducto() != null) {
+                    detalleLiq.setProducto(detalleCot.getProducto());
+                }
+                if (detalleCot.getProveedor() != null) {
+                    detalleLiq.setProveedor(detalleCot.getProveedor());
+                }
+                
+                // Inicializar otros campos con valores por defecto (se llenarán después)
+                detalleLiq.setTicket("");
+                detalleLiq.setValorVenta(BigDecimal.ZERO);
+                detalleLiq.setFacturaCompra("");
+                detalleLiq.setBoletaPasajero("");
+                detalleLiq.setMontoDescuento(BigDecimal.ZERO);
+                detalleLiq.setPagoPaxUSD(BigDecimal.ZERO);
+                detalleLiq.setPagoPaxPEN(BigDecimal.ZERO);
+                // Viajero y Operador se quedan null para ser asignados después
+                
+                // Guardar el detalle
+                detalleLiquidacionRepository.save(detalleLiq);
+            }
+        }
     }
 
     private ObservacionLiquidacionSimpleDTO convertirAObservacionSimple(ObservacionLiquidacionResponseDTO observacionLiquidacionResponseDTO) {
@@ -217,7 +277,6 @@ public class LiquidacionServiceImpl implements LiquidacionService {
         observacionLiquidacionSimpleDTO.setNumeroDocumento(observacionLiquidacionResponseDTO.getNumeroDocumento());
         observacionLiquidacionSimpleDTO.setCreado(observacionLiquidacionResponseDTO.getCreado());
         observacionLiquidacionSimpleDTO.setActualizado(observacionLiquidacionResponseDTO.getActualizado());
-        // NO incluimos la liquidación para evitar referencia circular
         return observacionLiquidacionSimpleDTO;
     }
 }
