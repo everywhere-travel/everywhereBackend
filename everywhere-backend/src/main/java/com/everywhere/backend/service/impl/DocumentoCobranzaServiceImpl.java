@@ -26,6 +26,7 @@ import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.DetalleDocumentoCobranzaMapper;
 import com.everywhere.backend.mapper.DocumentoCobranzaMapper;
 import com.everywhere.backend.model.entity.DocumentoCobranza;
+import com.everywhere.backend.model.entity.FormaPago;
 import com.everywhere.backend.model.entity.PersonaJuridica;
 import com.everywhere.backend.model.entity.PersonaNatural;
 import com.everywhere.backend.model.entity.Sucursal;
@@ -34,6 +35,7 @@ import com.everywhere.backend.model.entity.DetalleDocumento;
 import com.everywhere.backend.repository.DetalleDocumentoCobranzaRepository;
 import com.everywhere.backend.repository.DetalleDocumentoRepository;
 import com.everywhere.backend.repository.DocumentoCobranzaRepository;
+import com.everywhere.backend.repository.FormaPagoRepository;
 import com.everywhere.backend.security.UserPrincipal;
 import com.everywhere.backend.service.CotizacionService;
 import com.everywhere.backend.service.DocumentoCobranzaService;
@@ -69,6 +71,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     private final DetalleDocumentoCobranzaMapper detalleDocumentoCobranzaMapper;
     private final com.everywhere.backend.repository.PersonaJuridicaRepository personaJuridicaRepository;
     private final com.everywhere.backend.repository.SucursalRepository sucursalRepository;
+    private final FormaPagoRepository formaPagoRepository;
     private final com.everywhere.backend.repository.NaturalJuridicoRepository naturalJuridicoRepository;
     private final com.everywhere.backend.repository.PersonaNaturalRepository personaNaturalRepository;
     private final com.everywhere.backend.service.DetalleCotizacionService detalleCotizacionService;
@@ -139,6 +142,8 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Documento de cobranza no encontrado con ID: " + documentoId));
 
+        documentoCobranzaRepository.findByIdWithDetalles(documentoId)
+                .ifPresent(d -> documentoCobranza.setDetalles(d.getDetalles()));
         DocumentoCobranzaResponseDTO documentoCobranzaResponseDTO = documentoCobranzaMapper
                 .toResponseDTO(documentoCobranza);
         return generatePdfFromDTO(documentoCobranzaResponseDTO);
@@ -235,6 +240,15 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Sucursal no encontrada con ID: " + documentoCobranzaUpdateDTO.getSucursalId()));
             documentoCobranza.setSucursal(sucursal);
+        }
+        
+        // Validar y actualizar FormaPago si fue proporcionada
+        if (documentoCobranzaUpdateDTO.getFormaPagoId() != null) {
+            FormaPago formaPago = formaPagoRepository.findById(documentoCobranzaUpdateDTO.getFormaPagoId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Forma de pago no encontrada con ID: " + documentoCobranzaUpdateDTO.getFormaPagoId()));
+            documentoCobranza.setFormaPago(formaPago);
+            System.out.println("✅ FormaPago actualizada: " + formaPago.getDescripcion());
         }
 
         return documentoCobranzaMapper.toResponseDTO(documentoCobranzaRepository.save(documentoCobranza));
@@ -587,7 +601,10 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
         String formaPago = documento.getFormaPagoDescripcion() != null
                 ? documento.getFormaPagoDescripcion().toUpperCase()
-                : "DEPOSITO";
+                : "NO ESPECIFICADO";
+        
+        System.out.println("🔍 DEBUG PDF - FormaPagoId: " + documento.getFormaPagoId());
+        System.out.println("🔍 DEBUG PDF - FormaPagoDescripcion: " + documento.getFormaPagoDescripcion());
 
         formaPagoCell.add(new Paragraph("Forma de Pago: " + formaPago).setFontSize(10));
 
@@ -635,11 +652,13 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         BigDecimal subTotalAmount = BigDecimal.ZERO;
         // Agregar filas de detalles
         for (DetalleDocumentoCobranzaResponseDTO detalle : documento.getDetalles()) {
+            
             String cantidad = String.valueOf(detalle.getCantidad() != null ? detalle.getCantidad() : 1);
             servicesTable.addCell(new Cell().add(new Paragraph(cantidad).setFontSize(9))
                     .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.CENTER));
-
-            servicesTable.addCell(new Cell().add(new Paragraph("TKT").setFontSize(8))
+ 
+            String codigoProducto = detalle.getProductoDescripcion() != null ? detalle.getProductoDescripcion() : "N/A";
+            servicesTable.addCell(new Cell().add(new Paragraph(codigoProducto).setFontSize(8))
                     .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.CENTER)
                     .setKeepTogether(true));
 

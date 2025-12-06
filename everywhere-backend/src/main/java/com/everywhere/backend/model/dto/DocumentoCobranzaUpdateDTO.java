@@ -10,4 +10,5 @@ public class DocumentoCobranzaUpdateDTO {
     private Integer detalleDocumentoId;
     private Integer sucursalId;
     private Integer personaJuridicaId;
+    private Integer formaPagoId;
 }
