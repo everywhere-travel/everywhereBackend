@@ -1,6 +1,7 @@
 package com.everywhere.backend.mapper;
 
 import com.everywhere.backend.model.dto.CotizacionConDetallesResponseDTO;
+import com.everywhere.backend.model.dto.DetalleDocumentoCobranzaResponseDTO;
 import com.everywhere.backend.model.dto.DocumentoCobranzaRequestDTO;
 import com.everywhere.backend.model.dto.DocumentoCobranzaResponseDTO;
 import com.everywhere.backend.model.dto.DocumentoCobranzaUpdateDTO;
@@ -18,6 +19,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -26,6 +29,7 @@ public class DocumentoCobranzaMapper {
     private final ModelMapper modelMapper;
     private final PersonaNaturalRepository personaNaturalRepository;
     private final PersonaJuridicaRepository personaJuridicaRepository;
+    private final DetalleDocumentoCobranzaMapper detalleDocumentoCobranzaMapper;
 
     @PostConstruct
     public void configureMapping() {
@@ -165,6 +169,17 @@ public class DocumentoCobranzaMapper {
             documentoCobranzaResponseDTO.setFormaPagoId(documentoCobranza.getFormaPago().getId());
             documentoCobranzaResponseDTO.setFormaPagoDescripcion(documentoCobranza.getFormaPago().getDescripcion());
         }
+        
+        // ✅ CRÍTICO: Mapear los detalles con el DetalleDocumentoCobranzaMapper
+        if (documentoCobranza.getDetalles() != null && !documentoCobranza.getDetalles().isEmpty()) {
+            List<DetalleDocumentoCobranzaResponseDTO> detallesDTO = documentoCobranza.getDetalles().stream()
+                .map(detalleDocumentoCobranzaMapper::toResponseDTO)
+                .collect(Collectors.toList());
+            documentoCobranzaResponseDTO.setDetalles(detallesDTO);
+            
+            System.out.println("✅ Mapeados " + detallesDTO.size() + " detalles para documento " + documentoCobranza.getId());
+        }
+        
         return documentoCobranzaResponseDTO;
     }
 }
