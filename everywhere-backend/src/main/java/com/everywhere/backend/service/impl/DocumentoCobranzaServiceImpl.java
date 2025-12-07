@@ -602,9 +602,6 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         String formaPago = documento.getFormaPagoDescripcion() != null
                 ? documento.getFormaPagoDescripcion().toUpperCase()
                 : "NO ESPECIFICADO";
-        
-        System.out.println("🔍 DEBUG PDF - FormaPagoId: " + documento.getFormaPagoId());
-        System.out.println("🔍 DEBUG PDF - FormaPagoDescripcion: " + documento.getFormaPagoDescripcion());
 
         formaPagoCell.add(new Paragraph("Forma de Pago: " + formaPago).setFontSize(10));
 
@@ -658,7 +655,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                     .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.CENTER));
  
             String codigoProducto = detalle.getProductoDescripcion() != null ? detalle.getProductoDescripcion() : "N/A";
-            servicesTable.addCell(new Cell().add(new Paragraph(codigoProducto).setFontSize(8))
+            servicesTable.addCell(new Cell().add(new Paragraph(codigoProducto).setFontSize(9))
                     .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.CENTER)
                     .setKeepTogether(true));
 
@@ -675,7 +672,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
             String precioUnitario = String.format("$ %.2f",
                     detalle.getPrecio() != null ? detalle.getPrecio() : BigDecimal.ZERO);
-            servicesTable.addCell(new Cell().add(new Paragraph(precioUnitario).setFontSize(8))
+            servicesTable.addCell(new Cell().add(new Paragraph(precioUnitario).setFontSize(9))
                     .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.RIGHT)
                     .setKeepTogether(true));
 
