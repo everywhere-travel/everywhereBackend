@@ -55,6 +55,14 @@ public interface DocumentoCobranzaRepository extends JpaRepository<DocumentoCobr
        List<DocumentoCobranza> findAllWithRelations();
 
        @Query("SELECT DISTINCT d FROM DocumentoCobranza d " +
+                     "LEFT JOIN FETCH d.formaPago " +
+                     "LEFT JOIN FETCH d.sucursal " +
+                     "LEFT JOIN FETCH d.persona " +
+                     "LEFT JOIN FETCH d.personaJuridica " +
+                     "LEFT JOIN FETCH d.cotizacion")
+       List<DocumentoCobranza> findAllForListing();
+
+       @Query("SELECT DISTINCT d FROM DocumentoCobranza d " +
                      "LEFT JOIN FETCH d.detalles det " +
                      "LEFT JOIN FETCH det.producto " +
                      "WHERE d.id = :id")

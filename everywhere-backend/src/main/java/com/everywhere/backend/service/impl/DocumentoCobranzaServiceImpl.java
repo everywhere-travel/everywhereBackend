@@ -38,8 +38,7 @@ import com.everywhere.backend.repository.DocumentoCobranzaRepository;
 import com.everywhere.backend.repository.FormaPagoRepository;
 import com.everywhere.backend.security.UserPrincipal;
 import com.everywhere.backend.service.CotizacionService;
-import com.everywhere.backend.service.DocumentoCobranzaService;
-import com.everywhere.backend.service.DetalleCotizacionService;
+import com.everywhere.backend.service.DocumentoCobranzaService; 
 import com.everywhere.backend.model.dto.DetalleCotizacionResponseDto;
 import com.everywhere.backend.model.entity.Producto;
 import lombok.RequiredArgsConstructor;
@@ -166,7 +165,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
     @Override
     public List<DocumentoCobranzaResponseDTO> findAll() {
-        return mapToResponseList(documentoCobranzaRepository.findAllWithRelations());
+        return mapToResponseList(documentoCobranzaRepository.findAllForListing());
     }
 
     @Override
@@ -241,7 +240,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                             "Sucursal no encontrada con ID: " + documentoCobranzaUpdateDTO.getSucursalId()));
             documentoCobranza.setSucursal(sucursal);
         }
-        
+
         // Validar y actualizar FormaPago si fue proporcionada
         if (documentoCobranzaUpdateDTO.getFormaPagoId() != null) {
             FormaPago formaPago = formaPagoRepository.findById(documentoCobranzaUpdateDTO.getFormaPagoId())
@@ -649,11 +648,11 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         BigDecimal subTotalAmount = BigDecimal.ZERO;
         // Agregar filas de detalles
         for (DetalleDocumentoCobranzaResponseDTO detalle : documento.getDetalles()) {
-            
+
             String cantidad = String.valueOf(detalle.getCantidad() != null ? detalle.getCantidad() : 1);
             servicesTable.addCell(new Cell().add(new Paragraph(cantidad).setFontSize(9))
                     .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.CENTER));
- 
+
             String codigoProducto = detalle.getProductoDescripcion() != null ? detalle.getProductoDescripcion() : "N/A";
             servicesTable.addCell(new Cell().add(new Paragraph(codigoProducto).setFontSize(9))
                     .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.CENTER)
@@ -864,7 +863,8 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                 .filter(detalle -> detalle.getSeleccionado() != null && detalle.getSeleccionado())
                 .toList();
 
-        // Por cada detalle seleccionado, crear N detalles de documento de cobranza (donde N = cantidad)
+        // Por cada detalle seleccionado, crear N detalles de documento de cobranza
+        // (donde N = cantidad)
         for (DetalleCotizacionResponseDto detalleCot : detallesSeleccionados) {
             int cantidad = detalleCot.getCantidad() != null ? detalleCot.getCantidad() : 1;
 
