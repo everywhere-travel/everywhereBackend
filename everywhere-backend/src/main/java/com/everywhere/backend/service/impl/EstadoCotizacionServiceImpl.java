@@ -14,8 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static org.openqa.selenium.By.id;
-
 @Service
 @RequiredArgsConstructor
 public class EstadoCotizacionServiceImpl implements EstadoCotizacionService {

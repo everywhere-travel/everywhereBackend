@@ -8,10 +8,15 @@ import com.everywhere.backend.service.CotizacionService;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 
 @RestController
@@ -65,4 +70,24 @@ public class CotizacionController {
     public ResponseEntity<List<CotizacionResponseDto>> findCotizacionesSinLiquidacion() {
         return ResponseEntity.ok(cotizacionService.findCotizacionesSinLiquidacion());
     }
+
+    /**
+     * Generar documento DOCX de la cotización
+     * Acepta GET (sin configuración) o POST (con configuración de vuelos)
+     */
+    @GetMapping("/{id}/generar-docx")
+    @RequirePermission(module = "COTIZACIONES", permission = "READ")
+    public ResponseEntity<Resource> generateDocx(@PathVariable Integer id) {
+        ByteArrayInputStream docxStream = cotizacionService.generateDocx(id);
+        
+        InputStreamResource resource = new InputStreamResource(docxStream);
+        
+        String filename = "Cotizacion_" + id + ".docx";
+        
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+                .body(resource);
+    }
+
 }
