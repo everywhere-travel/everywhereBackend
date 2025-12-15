@@ -1,7 +1,6 @@
 package com.everywhere.backend.model.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference; 
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;

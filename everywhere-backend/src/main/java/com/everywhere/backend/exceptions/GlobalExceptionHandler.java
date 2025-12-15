@@ -77,8 +77,34 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ProblemDetail> handleDataIntegrityViolationException(DataIntegrityViolationException ex, WebRequest request) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMostSpecificCause().getMessage());
-        problemDetail.setTitle("Conflict");
+        String detailedMessage = ex.getMostSpecificCause().getMessage();
+        String userFriendlyMessage;
+        
+        // Detectar errores de llave foránea (foreign key constraint)
+        if (detailedMessage != null && (detailedMessage.contains("llave foránea") || detailedMessage.contains("foreign key"))) {
+            // Extraer el nombre de la tabla referenciada si es posible
+            String tableName = "otro registro";
+            if (detailedMessage.contains("«documento_cobranza»")) {
+                tableName = "documentos de cobranza";
+            } else if (detailedMessage.contains("«") && detailedMessage.contains("»")) {
+                int start = detailedMessage.lastIndexOf("«") + 1;
+                int end = detailedMessage.lastIndexOf("»");
+                if (start > 0 && end > start) {
+                    tableName = detailedMessage.substring(start, end).replace("_", " ");
+                }
+            }
+            
+            userFriendlyMessage = String.format("No se puede eliminar este registro porque está siendo utilizado por %s. " +
+                    "Primero debe eliminar las referencias asociadas.", tableName);
+        } else if (detailedMessage != null && detailedMessage.toLowerCase().contains("duplicate") || 
+                   (detailedMessage != null && detailedMessage.toLowerCase().contains("ya existe"))) {
+            userFriendlyMessage = detailedMessage;
+        } else {
+            userFriendlyMessage = "No se puede completar la operación debido a restricciones de integridad de datos.";
+        }
+        
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, userFriendlyMessage);
+        problemDetail.setTitle("Conflicto de integridad");
         problemDetail.setType(URI.create("about:blank"));
         problemDetail.setInstance(URI.create(request.getDescription(false).replace("uri=", "")));
         return ResponseEntity.status(HttpStatus.CONFLICT).body(problemDetail);
