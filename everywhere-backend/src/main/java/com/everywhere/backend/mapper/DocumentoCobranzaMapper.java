@@ -20,7 +20,6 @@ import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -152,11 +151,12 @@ public class DocumentoCobranzaMapper {
             } else {
                 PersonaJuridica personaJuridica = personaJuridicaRepository.findByPersonasId(personaId).orElse(null);
                 if (personaJuridica != null) {
-                    documentoCobranzaResponseDTO.setClienteNombre(personaJuridica.getRazonSocial()); // Señores: razón
-                                                                                                     // social de la
-                                                                                                     // empresa
-                    documentoCobranzaResponseDTO.setClienteDocumento(personaJuridica.getRuc()); // Documento: RUC de la
-                                                                                                // empresa
+                    documentoCobranzaResponseDTO.setPersonaJuridicaId(personaJuridica.getId());
+                    documentoCobranzaResponseDTO.setPersonaJuridicaRuc(personaJuridica.getRuc());
+                    documentoCobranzaResponseDTO.setPersonaJuridicaRazonSocial(personaJuridica.getRazonSocial());
+
+                    documentoCobranzaResponseDTO.setClienteNombre(personaJuridica.getRazonSocial()); // Señores: razón  social de la empresa
+                    documentoCobranzaResponseDTO.setClienteDocumento(personaJuridica.getRuc()); // Documento: RUC de la empresa
                     documentoCobranzaResponseDTO.setTipoDocumentoCliente("RUC");
                 }
             }
@@ -171,17 +171,14 @@ public class DocumentoCobranzaMapper {
             documentoCobranzaResponseDTO.setFormaPagoDescripcion(documentoCobranza.getFormaPago().getDescripcion());
         }
 
-        // CRÍTICO: Mapear los detalles con el DetalleDocumentoCobranzaMapper
+        // Mapear los detalles con el DetalleDocumentoCobranzaMapper
         if (documentoCobranza.getDetalles() != null && !documentoCobranza.getDetalles().isEmpty()) {
             List<DetalleDocumentoCobranzaResponseDTO> detallesDTO = documentoCobranza.getDetalles().stream()
-                    .map(detalleDocumentoCobranzaMapper::toResponseDTO)
-                    .collect(Collectors.toList());
+                    .map(detalleDocumentoCobranzaMapper::toResponseDTO).toList();
             documentoCobranzaResponseDTO.setDetalles(detallesDTO);
 
-            System.out.println(
-                    "Mapeados " + detallesDTO.size() + " detalles para documento " + documentoCobranza.getId());
+            System.out.println("Mapeados " + detallesDTO.size() + " detalles para documento " + documentoCobranza.getId());
         }
-
         return documentoCobranzaResponseDTO;
     }
 }

@@ -5,6 +5,7 @@ import com.everywhere.backend.model.dto.DetalleDocumentoRequestDto;
 import com.everywhere.backend.model.dto.DetalleDocumentoSearchDto;
 import com.everywhere.backend.service.DetalleDocumentoService;
 import com.everywhere.backend.security.RequirePermission;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
@@ -25,7 +26,7 @@ public class DetalleDocumentoController {
     public ResponseEntity<List<DetalleDocumentoResponseDto>> findAll() {
         return ResponseEntity.ok(detalleDocumentoService.findAll());
     }
-    
+
     @GetMapping("/persona/{personaId}")
     @RequirePermission(module = "DOCUMENTOS", permission = "READ")
     public ResponseEntity<List<DetalleDocumentoResponseDto>> findByPersonaId(@PathVariable Integer personaId) {
@@ -52,19 +53,22 @@ public class DetalleDocumentoController {
 
     @GetMapping("/persona-natural/{personaNaturalId}")
     @RequirePermission(module = "DOCUMENTOS", permission = "READ")
-    public ResponseEntity<List<DetalleDocumentoResponseDto>> findByPersonaNaturalId(@PathVariable Integer personaNaturalId) {
+    public ResponseEntity<List<DetalleDocumentoResponseDto>> findByPersonaNaturalId(
+            @PathVariable Integer personaNaturalId) {
         return ResponseEntity.ok(detalleDocumentoService.findByPersonaNaturalId(personaNaturalId));
     }
 
     @PostMapping
     @RequirePermission(module = "DOCUMENTOS", permission = "CREATE")
-    public ResponseEntity<DetalleDocumentoResponseDto> save(@RequestBody DetalleDocumentoRequestDto detalleDocumentoRequestDto) {
+    public ResponseEntity<DetalleDocumentoResponseDto> save(
+            @Valid @RequestBody DetalleDocumentoRequestDto detalleDocumentoRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(detalleDocumentoService.save(detalleDocumentoRequestDto));
     }
 
     @PatchMapping("/{id}")
     @RequirePermission(module = "DOCUMENTOS", permission = "UPDATE")
-    public ResponseEntity<DetalleDocumentoResponseDto> update(@PathVariable Integer id, @RequestBody DetalleDocumentoRequestDto detalleDocumentoRequestDto) {
+    public ResponseEntity<DetalleDocumentoResponseDto> update(@PathVariable Integer id,
+            @Valid @RequestBody DetalleDocumentoRequestDto detalleDocumentoRequestDto) {
         return ResponseEntity.ok(detalleDocumentoService.update(id, detalleDocumentoRequestDto));
     }
 
