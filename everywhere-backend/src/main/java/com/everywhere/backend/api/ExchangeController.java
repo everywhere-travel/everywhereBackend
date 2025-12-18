@@ -25,7 +25,7 @@ public class ExchangeController {
 
     private static final Logger LOGGER = Logger.getLogger(ExchangeController.class.getName());
 
-    @GetMapping("/tipo-de-cambio")
+    // @GetMapping("/tipo-de-cambio")
     public ResponseEntity<Object> getTipoDeCambio() { 
         System.setProperty("webdriver.chrome.silentOutput", "true");  
         
