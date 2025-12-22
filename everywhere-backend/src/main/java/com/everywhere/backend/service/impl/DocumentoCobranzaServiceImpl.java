@@ -774,7 +774,11 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
                 try {
                     PdfCanvas canvas = new PdfCanvas(page);
-                    float x = (page.getPageSize().getLeft() + page.getPageSize().getRight()) / 2;
+                    com.itextpdf.kernel.font.PdfFont font8 = PdfFontFactory.createFont();
+                    com.itextpdf.kernel.font.PdfFont font9 = PdfFontFactory.createFont();
+
+                    float pageWidth = page.getPageSize().getWidth();
+                    float pageLeft = page.getPageSize().getLeft();
 
                     // Si es la última página, agregar texto rojo adicional (arriba)
                     int currentPageNumber = pdf.getPageNumber(page);
@@ -782,23 +786,30 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
                     if (currentPageNumber == totalPages) {
                         float y1 = page.getPageSize().getBottom() + 35;
+                        String redText = "NO VÁLIDO PARA CRÉDITO FISCAL, SOLO PARA FINES DE COBRANZA";
+                        float redTextWidth = font9.getWidth(redText, 9);
+                        float redTextX = pageLeft + (pageWidth - redTextWidth) / 2;
 
                         // Texto en rojo (arriba)
                         canvas.setColor(ColorConstants.RED, true);
                         canvas.beginText()
-                                .setFontAndSize(PdfFontFactory.createFont(), 9)
-                                .moveText(x - 200, y1) // Centrar aproximadamente (texto más largo)
-                                .showText("NO VÁLIDO PARA CRÉDITO FISCAL, SOLO PARA FINES DE COBRANZA")
+                                .setFontAndSize(font9, 9)
+                                .moveText(redTextX, y1)
+                                .showText(redText)
                                 .endText();
                     }
 
                     // Pie de página normal en todas las páginas (abajo)
                     float y2 = page.getPageSize().getBottom() + 20;
+                    String footerText = "Representación Impresa de DOCUMENTO DE COBRANZA";
+                    float footerTextWidth = font8.getWidth(footerText, 8);
+                    float footerTextX = pageLeft + (pageWidth - footerTextWidth) / 2;
+
                     canvas.setColor(ColorConstants.BLACK, true); // Restaurar color negro
                     canvas.beginText()
-                            .setFontAndSize(PdfFontFactory.createFont(), 8)
-                            .moveText(x - 120, y2) // Centrar aproximadamente
-                            .showText("Representación Impresa de DOCUMENTO DE COBRANZA")
+                            .setFontAndSize(font8, 8)
+                            .moveText(footerTextX, y2)
+                            .showText(footerText)
                             .endText();
                 } catch (Exception e) {
                     // Manejo silencioso de errores para no interrumpir la generación
