@@ -638,8 +638,20 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                 .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.CENTER));
 
         BigDecimal subTotalAmount = BigDecimal.ZERO;
+
+        // Ordenar detalles por ID para mantener el orden consistente
+        List<DetalleDocumentoCobranzaResponseDTO> detallesOrdenados = documento.getDetalles().stream()
+                .sorted((d1, d2) -> {
+                    if (d1.getId() == null)
+                        return 1;
+                    if (d2.getId() == null)
+                        return -1;
+                    return d1.getId().compareTo(d2.getId());
+                })
+                .toList();
+
         // Agregar filas de detalles
-        for (DetalleDocumentoCobranzaResponseDTO detalle : documento.getDetalles()) {
+        for (DetalleDocumentoCobranzaResponseDTO detalle : detallesOrdenados) {
 
             String cantidad = String.valueOf(detalle.getCantidad() != null ? detalle.getCantidad() : 1);
             servicesTable.addCell(new Cell().add(new Paragraph(cantidad).setFontSize(9))
