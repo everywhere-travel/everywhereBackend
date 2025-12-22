@@ -694,8 +694,12 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         String totalEnLetras = convertirNumeroALetras(totalAmount.doubleValue(), documento.getMoneda());
 
         totalsTable.addCell(new Cell(3, 1));
-        totalsTable.addCell(new Cell(1, 2).add(new Paragraph("Son " + totalEnLetras).setFontSize(9)))
-                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.CENTER);
+
+        Cell totalLetrasCell = new Cell(1, 2)
+                .add(new Paragraph("Son " + totalEnLetras).setFontSize(9))
+                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
+                .setTextAlignment(TextAlignment.CENTER);
+        totalsTable.addCell(totalLetrasCell);
 
         Cell subtotalLabelCell = new Cell()
                 .add(new Paragraph("SUBTOTAL").setFontSize(9))
