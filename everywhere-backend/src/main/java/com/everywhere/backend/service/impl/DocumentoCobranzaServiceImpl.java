@@ -297,17 +297,17 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
     private String obtenerNombreMoneda(String moneda) {
         if (moneda == null)
-            return "DÓLARES AMERICANOS";
+            return "Dólares Americanos";
 
         switch (moneda.toUpperCase()) {
             case "USD":
-                return "DÓLARES AMERICANOS";
+                return "Dólares Americanos";
             case "PEN":
-                return "SOLES";
+                return "Soles";
             case "EUR":
-                return "EUROS";
+                return "Euros";
             default:
-                return "DÓLARES AMERICANOS";
+                return "Dólares Americanos";
         }
     }
 
