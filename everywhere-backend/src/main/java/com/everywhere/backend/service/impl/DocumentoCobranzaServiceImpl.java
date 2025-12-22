@@ -38,7 +38,7 @@ import com.everywhere.backend.repository.DocumentoCobranzaRepository;
 import com.everywhere.backend.repository.FormaPagoRepository;
 import com.everywhere.backend.security.UserPrincipal;
 import com.everywhere.backend.service.CotizacionService;
-import com.everywhere.backend.service.DocumentoCobranzaService; 
+import com.everywhere.backend.service.DocumentoCobranzaService;
 import com.everywhere.backend.model.dto.DetalleCotizacionResponseDto;
 import com.everywhere.backend.model.entity.Producto;
 import lombok.RequiredArgsConstructor;
@@ -276,7 +276,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
     private String convertirNumeroALetras(double numero, String moneda) {
         if (numero == 0)
-            return "Cero " + obtenerNombreMoneda(moneda);
+            return "CERO " + obtenerNombreMoneda(moneda);
 
         // Separar parte entera y decimales
         long parteEntera = (long) numero;
@@ -285,34 +285,29 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         String parteEnteraEnLetras = convertirEnteroALetras(parteEntera);
         String nombreMoneda = obtenerNombreMoneda(moneda);
 
-        // Convertir todo a minúsculas y capitalizar solo la primera letra
+        // Mantener todo en mayúsculas
         String resultado;
         if (decimales == 0)
-            resultado = parteEnteraEnLetras + " con 00/100 " + nombreMoneda;
+            resultado = parteEnteraEnLetras + " CON 00/100 " + nombreMoneda;
         else
-            resultado = parteEnteraEnLetras + " con " + String.format("%02d", decimales) + "/100 " + nombreMoneda;
-
-        // Convertir a minúsculas y capitalizar solo la primera letra
-        resultado = resultado.toLowerCase();
-        if (resultado.length() > 0)
-            resultado = Character.toUpperCase(resultado.charAt(0)) + resultado.substring(1);
+            resultado = parteEnteraEnLetras + " CON " + String.format("%02d", decimales) + "/100 " + nombreMoneda;
 
         return resultado;
     }
 
     private String obtenerNombreMoneda(String moneda) {
         if (moneda == null)
-            return "dólares americanos";
+            return "DÓLARES AMERICANOS";
 
         switch (moneda.toUpperCase()) {
             case "USD":
-                return "dólares americanos";
+                return "DÓLARES AMERICANOS";
             case "PEN":
-                return "soles";
+                return "SOLES";
             case "EUR":
-                return "euros";
+                return "EUROS";
             default:
-                return "dólares americanos";
+                return "DÓLARES AMERICANOS";
         }
     }
 
@@ -380,7 +375,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
             int u = resto % 10;
 
             if (d == 2 && u > 0)
-                resultado += "VEINTI" + unidades[u].toLowerCase();
+                resultado += "VEINTI" + unidades[u];
             else {
                 if (d > 0) {
                     resultado += decenas[d];
@@ -706,7 +701,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                 .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.CENTER);
 
         Cell subtotalLabelCell = new Cell()
-                .add(new Paragraph("Subtotal").setFontSize(9))
+                .add(new Paragraph("SUBTOTAL").setFontSize(9))
                 .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.CENTER);
         totalsTable.addCell(subtotalLabelCell);
 
@@ -719,7 +714,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         // (ocupa 2 filas y 2 columnas)
         String nombreUsuario = getAuthenticatedUserName();
         totalsTable.addCell(new Cell(2, 2)
-                .add(new Paragraph("Creado por: " + nombreUsuario).setFontSize(9))
+                .add(new Paragraph("CREADO POR: " + nombreUsuario).setFontSize(9))
                 .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
                 .setTextAlignment(TextAlignment.LEFT)
                 .setPadding(5));
