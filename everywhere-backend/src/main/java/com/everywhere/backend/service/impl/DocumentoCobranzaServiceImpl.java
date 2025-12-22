@@ -406,10 +406,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                     && !documentoCobranzaResponseDTO.getDetalles().isEmpty())
                 addServicesTable(document, documentoCobranzaResponseDTO);
             addObservationsBox(document, documentoCobranzaResponseDTO); // 4. CUADRO DE OBSERVACIONES (separado)
-            addPageFooter(pdfDocument); // 5. PIE DE PÁGINA EN CADA HOJA
-
-            // ✅ NUEVO: Agregar texto rojo en la última página ANTES de cerrar
-            addRedTextToLastPage(document, pdfDocument);
+            addPageFooter(pdfDocument); // 5. PIE DE PÁGINA EN CADA HOJA (incluye texto rojo en última página)
 
             document.close();
             return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
@@ -773,49 +770,42 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
             public void handleEvent(Event event) {
                 PdfDocumentEvent docEvent = (PdfDocumentEvent) event;
                 PdfPage page = docEvent.getPage();
+                PdfDocument pdf = docEvent.getDocument();
 
                 try {
-                    PdfCanvas canvas = new PdfCanvas(page); // Posición del pie de página
-                    float x = (page.getPageSize().getLeft() + page.getPageSize().getRight()) / 2;
-                    float y = page.getPageSize().getBottom() + 20;
+                    PdfCanvas canvas = new PdfCanvas(page);
+                    float pageWidth = page.getPageSize().getWidth();
+                    float x = pageWidth / 2;
 
-                    canvas.beginText() // Agregar el texto del pie de página centrado
+                    // Pie de página normal (en todas las páginas)
+                    float y1 = page.getPageSize().getBottom() + 35;
+                    canvas.beginText()
                             .setFontAndSize(PdfFontFactory.createFont(), 8)
-                            .moveText(x - 80, y) // Centrar aproximadamente
+                            .moveText(x - 100, y1) // Centrar aproximadamente
                             .showText("Representación Impresa de DOCUMENTO DE COBRANZA")
                             .endText();
-                } catch (Exception e) {// Manejo silencioso de errores para no interrumpir la generación
-                    throw new RuntimeException("Error al agregar el pie de página en el PDF del documento de cobranza");
+
+                    // Si es la última página, agregar texto rojo adicional
+                    int currentPageNumber = pdf.getPageNumber(page);
+                    int totalPages = pdf.getNumberOfPages();
+
+                    if (currentPageNumber == totalPages) {
+                        float y2 = page.getPageSize().getBottom() + 20;
+
+                        // Texto en rojo
+                        canvas.setColor(ColorConstants.RED, true);
+                        canvas.beginText()
+                                .setFontAndSize(PdfFontFactory.createFont(), 9)
+                                .moveText(x - 180, y2) // Centrar aproximadamente (texto más largo)
+                                .showText("NO VÁLIDO PARA CRÉDITO FISCAL, SOLO PARA FINES DE COBRANZA")
+                                .endText();
+                    }
+                } catch (Exception e) {
+                    // Manejo silencioso de errores para no interrumpir la generación
+                    System.err.println("Error al agregar el pie de página: " + e.getMessage());
                 }
             }
         });
-    }
-
-    // ✅ NUEVO: Agregar texto rojo centrado SOLO en la última página
-    private void addRedTextToLastPage(Document document, PdfDocument pdfDocument) {
-        try {
-            int lastPageNumber = pdfDocument.getNumberOfPages();
-
-            // Crear párrafo con el texto en ROJO, MAYÚSCULAS y CENTRADO
-            Paragraph redText = new Paragraph("NO VÁLIDO PARA CRÉDITO FISCAL, SOLO PARA FINES DE COBRANZA")
-                    .setFontColor(ColorConstants.RED)
-                    .setFontSize(10)
-                    .setBold()
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setFixedPosition(
-                            lastPageNumber, // Número de página (la última)
-                            40, // Margen izquierdo (x)
-                            60, // Posición vertical desde abajo (y)
-                            515 // Ancho del texto (ancho de página - márgenes)
-                    );
-
-            document.add(redText);
-
-        } catch (Exception e) {
-            // Si falla agregar el texto rojo, no detener la generación del PDF
-            System.err.println("Advertencia: No se pudo agregar el texto rojo al PDF: " + e.getMessage());
-            e.printStackTrace();
-        }
     }
 
     private List<DocumentoCobranzaResponseDTO> mapToResponseList(List<DocumentoCobranza> documentos) {
