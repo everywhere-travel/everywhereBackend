@@ -787,7 +787,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                         canvas.setColor(ColorConstants.RED, true);
                         canvas.beginText()
                                 .setFontAndSize(PdfFontFactory.createFont(), 9)
-                                .moveText(x - 180, y1) // Centrar aproximadamente (texto más largo)
+                                .moveText(x - 200, y1) // Centrar aproximadamente (texto más largo)
                                 .showText("NO VÁLIDO PARA CRÉDITO FISCAL, SOLO PARA FINES DE COBRANZA")
                                 .endText();
                     }
@@ -797,7 +797,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                     canvas.setColor(ColorConstants.BLACK, true); // Restaurar color negro
                     canvas.beginText()
                             .setFontAndSize(PdfFontFactory.createFont(), 8)
-                            .moveText(x - 80, y2) // Centrar aproximadamente
+                            .moveText(x - 120, y2) // Centrar aproximadamente
                             .showText("Representación Impresa de DOCUMENTO DE COBRANZA")
                             .endText();
                 } catch (Exception e) {
