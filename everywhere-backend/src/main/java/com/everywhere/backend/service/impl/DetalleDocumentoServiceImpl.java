@@ -2,6 +2,7 @@ package com.everywhere.backend.service.impl;
 
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.DetalleDocumentoMapper;
+import com.everywhere.backend.model.dto.DetalleDocumentoConPersonasDto;
 import com.everywhere.backend.model.dto.DetalleDocumentoRequestDto;
 import com.everywhere.backend.model.dto.DetalleDocumentoResponseDto;
 import com.everywhere.backend.model.dto.DetalleDocumentoSearchDto;
@@ -156,6 +157,108 @@ public class DetalleDocumentoServiceImpl implements DetalleDocumentoService {
                         .apellidosMaterno(detalle.getPersonaNatural() != null ? detalle.getPersonaNatural().getApellidosMaterno() : null)
                         .sexo(detalle.getPersonaNatural() != null ? detalle.getPersonaNatural().getSexo() : null)
                         .build())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<DetalleDocumentoConPersonasDto> findDocumentosConPersonas() {
+        // Usar query optimizada con JOIN FETCH para evitar problema N+1
+        List<DetalleDocumento> detalles = detalleDocumentoRepository.findAllWithPersonasAndDocumento();
+        
+        // Agrupar por número de documento (manejando números nulos)
+        return detalles.stream()
+                .filter(doc -> doc.getNumero() != null) // Filtrar documentos sin número
+                .collect(Collectors.groupingBy(DetalleDocumento::getNumero))
+                .entrySet().stream()
+                .map(entry -> {
+                    String numeroDocumento = entry.getKey();
+                    List<DetalleDocumento> documentos = entry.getValue();
+                    
+                    // Obtener el tipo de documento (asumiendo que todos los documentos con el mismo número tienen el mismo tipo)
+                    String tipoDocumento = documentos.isEmpty() || documentos.get(0).getDocumento() == null 
+                            ? "Sin tipo" 
+                            : documentos.get(0).getDocumento().getTipo();
+                    
+                    // Obtener la información de las personas (ID y nombre completo)
+                    List<DetalleDocumentoConPersonasDto.PersonaInfo> personas = documentos.stream()
+                            .filter(doc -> doc.getPersonaNatural() != null)
+                            .filter(doc -> doc.getPersonaNatural().getPersonas() != null)
+                            .map(doc -> {
+                                PersonaNatural personaNatural = doc.getPersonaNatural();
+                                Integer personaId = personaNatural.getPersonas().getId();
+                                String nombreCompleto = String.format("%s %s %s", 
+                                        personaNatural.getNombres() != null ? personaNatural.getNombres() : "",
+                                        personaNatural.getApellidosPaterno() != null ? personaNatural.getApellidosPaterno() : "",
+                                        personaNatural.getApellidosMaterno() != null ? personaNatural.getApellidosMaterno() : ""
+                                ).trim();
+                                return DetalleDocumentoConPersonasDto.PersonaInfo.builder()
+                                        .personaId(personaId)
+                                        .nombreCompleto(nombreCompleto)
+                                        .build();
+                            })
+                            .filter(p -> !p.getNombreCompleto().isEmpty())
+                            .distinct()
+                            .collect(Collectors.toList());
+                    
+                    return DetalleDocumentoConPersonasDto.builder()
+                            .numeroDocumento(numeroDocumento)
+                            .tipoDocumento(tipoDocumento)
+                            .personas(personas)
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<DetalleDocumentoConPersonasDto> findDocumentosConPersonasByNumero(String numero) {
+        if (numero == null || numero.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        // Usar query optimizada con JOIN FETCH para evitar problema N+1
+        List<DetalleDocumento> detalles = detalleDocumentoRepository.findByNumeroContainingWithPersonasAndDocumento(numero.trim());
+        
+        // Agrupar por número de documento (manejando números nulos)
+        return detalles.stream()
+                .filter(doc -> doc.getNumero() != null)
+                .collect(Collectors.groupingBy(DetalleDocumento::getNumero))
+                .entrySet().stream()
+                .map(entry -> {
+                    String numeroDocumento = entry.getKey();
+                    List<DetalleDocumento> documentos = entry.getValue();
+                    
+                    // Obtener el tipo de documento
+                    String tipoDocumento = documentos.isEmpty() || documentos.get(0).getDocumento() == null 
+                            ? "Sin tipo" 
+                            : documentos.get(0).getDocumento().getTipo();
+                    
+                    // Obtener la información de las personas (ID y nombre completo)
+                    List<DetalleDocumentoConPersonasDto.PersonaInfo> personas = documentos.stream()
+                            .filter(doc -> doc.getPersonaNatural() != null)
+                            .filter(doc -> doc.getPersonaNatural().getPersonas() != null)
+                            .map(doc -> {
+                                PersonaNatural personaNatural = doc.getPersonaNatural();
+                                Integer personaId = personaNatural.getPersonas().getId();
+                                String nombreCompleto = String.format("%s %s %s", 
+                                        personaNatural.getNombres() != null ? personaNatural.getNombres() : "",
+                                        personaNatural.getApellidosPaterno() != null ? personaNatural.getApellidosPaterno() : "",
+                                        personaNatural.getApellidosMaterno() != null ? personaNatural.getApellidosMaterno() : ""
+                                ).trim();
+                                return DetalleDocumentoConPersonasDto.PersonaInfo.builder()
+                                        .personaId(personaId)
+                                        .nombreCompleto(nombreCompleto)
+                                        .build();
+                            })
+                            .filter(p -> !p.getNombreCompleto().isEmpty())
+                            .distinct()
+                            .collect(Collectors.toList());
+                    
+                    return DetalleDocumentoConPersonasDto.builder()
+                            .numeroDocumento(numeroDocumento)
+                            .tipoDocumento(tipoDocumento)
+                            .personas(personas)
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 }
