@@ -1,5 +1,6 @@
 package com.everywhere.backend.service;
 
+import com.everywhere.backend.model.dto.DetalleDocumentoConPersonasDto;
 import com.everywhere.backend.model.dto.DetalleDocumentoRequestDto;
 import com.everywhere.backend.model.dto.DetalleDocumentoResponseDto;
 import com.everywhere.backend.model.dto.DetalleDocumentoSearchDto;
@@ -17,4 +18,6 @@ public interface DetalleDocumentoService {
     List<DetalleDocumentoResponseDto> findByNumero(String numero);
     List<DetalleDocumentoResponseDto> findByPersonaNaturalId(Integer personaNaturalId);
     List<DetalleDocumentoSearchDto> findByPersonaNaturalDocumentoPrefix(String prefijo);
+    List<DetalleDocumentoConPersonasDto> findDocumentosConPersonas();
+    List<DetalleDocumentoConPersonasDto> findDocumentosConPersonasByNumero(String numero);
 }
