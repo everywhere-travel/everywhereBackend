@@ -1,5 +1,6 @@
 package com.everywhere.backend.api;
 
+import com.everywhere.backend.model.dto.DetalleDocumentoConPersonasDto;
 import com.everywhere.backend.model.dto.DetalleDocumentoResponseDto;
 import com.everywhere.backend.model.dto.DetalleDocumentoRequestDto;
 import com.everywhere.backend.model.dto.DetalleDocumentoSearchDto;
@@ -84,5 +85,18 @@ public class DetalleDocumentoController {
     public ResponseEntity<List<DetalleDocumentoSearchDto>> findByPersonaNaturalDocumentoPrefix(
             @RequestParam(name = "prefijo") String prefijo) {
         return ResponseEntity.ok(detalleDocumentoService.findByPersonaNaturalDocumentoPrefix(prefijo));
+    }
+
+    @GetMapping("/documentos-con-personas")
+    @RequirePermission(module = "DOCUMENTOS", permission = "READ")
+    public ResponseEntity<List<DetalleDocumentoConPersonasDto>> findDocumentosConPersonas() {
+        return ResponseEntity.ok(detalleDocumentoService.findDocumentosConPersonas());
+    }
+
+    @GetMapping("/buscar-por-numero")
+    @RequirePermission(module = "DOCUMENTOS", permission = "READ")
+    public ResponseEntity<List<DetalleDocumentoConPersonasDto>> findDocumentosConPersonasByNumero(
+            @RequestParam(name = "numero") String numero) {
+        return ResponseEntity.ok(detalleDocumentoService.findDocumentosConPersonasByNumero(numero));
     }
 }
