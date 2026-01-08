@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -24,9 +26,16 @@ public class DocumentoCobranza {
     @Column(name = "doc_co_num_vac")
     private String numero;
 
-    @CreationTimestamp
     @Column(name = "doc_co_fec_emi_tmp")
-    private LocalDateTime fechaEmision;
+    private LocalDate fechaEmision;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 
     @Column(name = "doc_co_obs_vac")
     @JdbcTypeCode(SqlTypes.LONGNVARCHAR)
