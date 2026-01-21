@@ -36,5 +36,8 @@ public class DocumentoCobranzaResponseDTO {
 
     private Integer detalleDocumentoId;
 
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
     private List<DetalleDocumentoCobranzaResponseDTO> detalles;
 }
