@@ -14,43 +14,40 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 @Entity
-@Table(name = "documento_cobranza")
+@Table(name = "recibo")
 @Data
-public class DocumentoCobranza {
+public class Recibo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "doc_co_id_int")
-    private Long id;
+    @Column(name = "recibo_id_int")
+    private Integer id;
 
-    @Column(name = "doc_co_num_vac")
-    private String numero;
+    @Column(name = "recibo_serie_vac")
+    private String serie;
 
-    @Column(name = "doc_co_corre_int")
+    @Column(name = "recibo_corre_vac")
     private Integer correlativo;
 
-    @Column(name = "doc_co_fec_emi_tmp")
+    @Column(name = "recibo_fec_emi_tmp")
     private LocalDate fechaEmision;
 
-    @Column(name = "doc_co_obs_vac")
+    @Column(name = "recibo_obs_vac")
     @JdbcTypeCode(SqlTypes.LONGNVARCHAR)
     private String observaciones;
 
-    @Column(name = "doc_co_file_ven_vac")
-    private String fileVenta;
+    @Column(name = "recibo_file_ven_vac")
+    private String fileVenta; 
 
-    @Column(name = "doc_co_cos_env_dc")
-    private Double costoEnvio;
-
-    @Column(name = "doc_co_mon_vac")
+    @Column(name = "recibo_mon_vac")
     private String moneda;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "recibo_created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "recibo_updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     @OneToOne
@@ -85,8 +82,8 @@ public class DocumentoCobranza {
     @JoinColumn(name = "dtdoc_id_int")
     private DetalleDocumento detalleDocumento;
 
-    @OneToMany(mappedBy = "documentoCobranza", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "recibo", cascade = CascadeType.ALL)
     @JsonManagedReference
-    private List<DetalleDocumentoCobranza> detalles;
-    
+    private List<DetalleRecibo> detalleRecibo;
+
 }
