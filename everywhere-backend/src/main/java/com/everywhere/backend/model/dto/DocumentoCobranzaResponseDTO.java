@@ -11,7 +11,8 @@ import java.util.List;
 public class DocumentoCobranzaResponseDTO {
 
     private Long id;
-    private String numero;
+    private String serie;
+    private Integer correlativo;
     private LocalDate fechaEmision;
     private String observaciones;
     private String fileVenta;

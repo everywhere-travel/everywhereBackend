@@ -23,8 +23,8 @@ public class DocumentoCobranza {
     @Column(name = "doc_co_id_int")
     private Long id;
 
-    @Column(name = "doc_co_num_vac")
-    private String numero;
+    @Column(name = "doc_co_serie_vac")
+    private String serie;
 
     @Column(name = "doc_co_corre_int")
     private Integer correlativo;

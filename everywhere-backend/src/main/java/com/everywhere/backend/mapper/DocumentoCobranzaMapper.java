@@ -40,10 +40,11 @@ public class DocumentoCobranzaMapper {
 
     // maneja la lógica de mapeo desde cotización a documento de cobranza
     public DocumentoCobranza fromCotizacion(CotizacionConDetallesResponseDTO cotizacionConDetallesResponseDTO,
-            String numeroDocumento) {
+            String serie, Integer correlativo) {
         DocumentoCobranza documentoCobranza = new DocumentoCobranza();
 
-        documentoCobranza.setNumero(numeroDocumento);
+        documentoCobranza.setSerie(serie);
+        documentoCobranza.setCorrelativo(correlativo);
         documentoCobranza.setMoneda(cotizacionConDetallesResponseDTO.getMoneda());
 
         Cotizacion cotizacionEntity = new Cotizacion();
