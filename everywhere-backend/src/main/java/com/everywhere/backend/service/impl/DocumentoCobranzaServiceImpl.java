@@ -28,16 +28,21 @@ import com.everywhere.backend.mapper.DocumentoCobranzaMapper;
 import com.everywhere.backend.model.entity.DocumentoCobranza;
 import com.everywhere.backend.model.entity.FormaPago;
 import com.everywhere.backend.model.entity.PersonaJuridica;
+import com.everywhere.backend.repository.PersonaJuridicaRepository;
+import com.everywhere.backend.repository.PersonaNaturalRepository;
 import com.everywhere.backend.model.entity.PersonaNatural;
 import com.everywhere.backend.model.entity.Sucursal;
+import com.everywhere.backend.repository.SucursalRepository;
 import com.everywhere.backend.model.entity.DetalleDocumentoCobranza;
 import com.everywhere.backend.model.entity.DetalleDocumento;
 import com.everywhere.backend.repository.DetalleDocumentoCobranzaRepository;
 import com.everywhere.backend.repository.DetalleDocumentoRepository;
 import com.everywhere.backend.repository.DocumentoCobranzaRepository;
 import com.everywhere.backend.repository.FormaPagoRepository;
+import com.everywhere.backend.repository.NaturalJuridicoRepository;
 import com.everywhere.backend.security.UserPrincipal;
 import com.everywhere.backend.service.CotizacionService;
+import com.everywhere.backend.service.DetalleCotizacionService;
 import com.everywhere.backend.service.DocumentoCobranzaService;
 import com.everywhere.backend.model.dto.DetalleCotizacionResponseDto;
 import com.everywhere.backend.model.entity.Producto;
@@ -68,12 +73,12 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     private final DetalleDocumentoRepository detalleDocumentoRepository;
     private final DocumentoCobranzaMapper documentoCobranzaMapper;
     private final DetalleDocumentoCobranzaMapper detalleDocumentoCobranzaMapper;
-    private final com.everywhere.backend.repository.PersonaJuridicaRepository personaJuridicaRepository;
-    private final com.everywhere.backend.repository.SucursalRepository sucursalRepository;
+    private final PersonaJuridicaRepository personaJuridicaRepository;
+    private final SucursalRepository sucursalRepository;
     private final FormaPagoRepository formaPagoRepository;
-    private final com.everywhere.backend.repository.NaturalJuridicoRepository naturalJuridicoRepository;
-    private final com.everywhere.backend.repository.PersonaNaturalRepository personaNaturalRepository;
-    private final com.everywhere.backend.service.DetalleCotizacionService detalleCotizacionService;
+    private final NaturalJuridicoRepository naturalJuridicoRepository;
+    private final PersonaNaturalRepository personaNaturalRepository;
+    private final DetalleCotizacionService detalleCotizacionService;
 
     @Override
     @Transactional
@@ -97,8 +102,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Persona jurídica no encontrada con ID: " + personaJuridicaId));
 
-            // Validar que la PersonaJuridica esté asociada a la PersonaNatural de la
-            // cotización
+            // Validar que la PersonaJuridica esté asociada a la PersonaNatural de la cotización
             if (cotizacion.getPersonas() != null) {
                 Integer personaId = cotizacion.getPersonas().getId();
                 PersonaNatural personaNatural = personaNaturalRepository.findByPersonasId(personaId)
