@@ -1,6 +1,7 @@
 package com.everywhere.backend.util.pdf;
 
-import java.math.BigDecimal;
+import java.math.BigDecimal; 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
@@ -44,7 +45,9 @@ public class ReciboPdfGenerator extends PdfGenerator<ReciboResponseDTO, DetalleR
 
     @Override
     protected String getFechaEmision(ReciboResponseDTO documentoDTO) {
-        return documentoDTO.getFechaEmision();
+        return documentoDTO.getFechaEmision() != null 
+            ? documentoDTO.getFechaEmision().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) 
+            : null;
     }
 
     @Override
@@ -91,6 +94,18 @@ public class ReciboPdfGenerator extends PdfGenerator<ReciboResponseDTO, DetalleR
     protected BigDecimal getCostoEnvio(ReciboResponseDTO documentoDTO) {
         // Recibo no tiene costo de envío, retorna 0
         return BigDecimal.ZERO;
+    }
+
+    @Override
+    protected boolean showCostoEnvio() {
+        // Recibo no muestra la fila de costo de envío
+        return false;
+    }
+
+    @Override
+    protected boolean showDisclaimer() {
+        // Recibo no muestra el disclaimer de crédito fiscal
+        return false;
     }
 
     @Override

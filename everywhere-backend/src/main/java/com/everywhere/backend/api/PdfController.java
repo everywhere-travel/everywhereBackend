@@ -54,7 +54,7 @@ public class PdfController {
     }
 
     @GetMapping("/recibo/{id}")
-    @RequirePermission(module = "RECIBOS", permission = "READ")
+    @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "READ")
     public ResponseEntity<InputStreamResource> generateReciboPdf(@PathVariable Integer id) {
 
         try {

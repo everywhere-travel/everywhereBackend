@@ -1,5 +1,6 @@
 package com.everywhere.backend.model.dto;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -10,7 +11,7 @@ public class ReciboResponseDTO {
     private Integer id;
     private String serie;
     private Integer correlativo;
-    private String fechaEmision;
+    private LocalDate fechaEmision;
     private String observaciones;
     private String fileVenta;
     private String moneda;
