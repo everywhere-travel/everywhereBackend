@@ -278,16 +278,19 @@ public class ReciboServiceImpl implements ReciboService {
     private String getAuthenticatedUserName() {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication != null && authentication.isAuthenticated()) {
-                Object principal = authentication.getPrincipal();
-                if (principal instanceof UserPrincipal) {
-                    return ((UserPrincipal) principal).getUsername();
+            if (authentication != null && authentication.isAuthenticated()
+                    && authentication.getPrincipal() instanceof UserPrincipal) {
+
+                UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+
+                if (userPrincipal.getUser() != null && userPrincipal.getUser().getNombre() != null) {
+                    return userPrincipal.getUser().getNombre();
                 }
-                return principal.toString();
             }
-            return "Usuario desconocido";
         } catch (Exception e) {
-            return "Usuario desconocido";
+            System.err.println("Error al obtener el usuario autenticado: " + e.getMessage());
         }
+
+        return "Usuario desconocido";
     }
 }

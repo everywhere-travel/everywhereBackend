@@ -100,15 +100,29 @@ public abstract class PdfGenerator<T, D> {
     protected abstract String getFormaPagoDescripcion(T documentoDTO);
     protected abstract String getObservaciones(T documentoDTO);
     protected abstract BigDecimal getCostoEnvio(T documentoDTO);
-    
-    /**
-     * Obtiene datos específicos de cada detalle
-     */
     protected abstract Integer getCantidad(D detalle);
     protected abstract String getProductoDescripcion(D detalle);
     protected abstract String getDescripcionDetalle(D detalle);
     protected abstract BigDecimal getPrecio(D detalle);
     protected abstract Long getDetalleId(D detalle);
+
+    // ========== MÉTODOS OPCIONALES (pueden ser sobrescritos por subclases) ==========
+    
+    /**
+     * Indica si se debe mostrar la fila de costo de envío en el PDF.
+     * Por defecto retorna true. Sobrescribir en subclases para ocultar.
+     */
+    protected boolean showCostoEnvio() {
+        return true;
+    }
+
+    /**
+     * Indica si se debe mostrar el disclaimer "NO VÁLIDO PARA CRÉDITO FISCAL" en el PDF.
+     * Por defecto retorna true. Sobrescribir en subclases para ocultar.
+     */
+    protected boolean showDisclaimer() {
+        return true;
+    }
 
     // ========== MÉTODOS COMUNES (implementación compartida) ==========
 
@@ -371,18 +385,21 @@ public abstract class PdfGenerator<T, D> {
                 .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.RIGHT));
 
         String nombreUsuario = userName != null ? userName : "Usuario desconocido";
-        totalsTable.addCell(new Cell(2, 2)
+        int rowSpanCreador = showCostoEnvio() ? 2 : 1;
+        totalsTable.addCell(new Cell(rowSpanCreador, 2)
                 .add(new Paragraph("CREADO POR: " + nombreUsuario).setFontSize(9))
                 .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
                 .setTextAlignment(TextAlignment.LEFT)
                 .setPadding(5));
 
-        totalsTable.addCell(new Cell().add(new Paragraph("COSTO DE ENVIO").setFontSize(9))
-                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.CENTER));
+        if (showCostoEnvio()) {
+            totalsTable.addCell(new Cell().add(new Paragraph("COSTO DE ENVIO").setFontSize(9))
+                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.CENTER));
 
-        String costoEnvioStr = String.format("%.2f", costoEnvio);
-        totalsTable.addCell(new Cell().add(new Paragraph("$ " + costoEnvioStr).setFontSize(9))
-                .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.RIGHT));
+            String costoEnvioStr = String.format("%.2f", costoEnvio);
+            totalsTable.addCell(new Cell().add(new Paragraph("$ " + costoEnvioStr).setFontSize(9))
+                    .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.RIGHT));
+        }
 
         totalsTable.addCell(new Cell().add(new Paragraph("PRECIO VENTA").setBold().setFontSize(9))
                 .setBorder(new com.itextpdf.layout.borders.SolidBorder(1)).setTextAlignment(TextAlignment.CENTER));
@@ -438,7 +455,7 @@ public abstract class PdfGenerator<T, D> {
                     int currentPageNumber = pdf.getPageNumber(page);
                     int totalPages = pdf.getNumberOfPages();
 
-                    if (currentPageNumber == totalPages) {
+                    if (currentPageNumber == totalPages && showDisclaimer()) {
                         float y1 = page.getPageSize().getBottom() + 35;
                         String redText = "NO VÁLIDO PARA CRÉDITO FISCAL, SOLO PARA FINES DE COBRANZA";
                         float redTextWidth = font9.getWidth(redText, 9);
