@@ -12,9 +12,8 @@ import java.util.Optional;
 @Repository
 public interface DocumentoCobranzaRepository extends JpaRepository<DocumentoCobranza, Long> {
 
-       // Busca el último número de documento de cobranza para generar el siguiente
-       @Query("SELECT MAX(d.numero) FROM DocumentoCobranza d WHERE d.numero LIKE 'DC01-%'")
-       Optional<String> findLastDocumentNumber();
+       // Busca el último documento de cobranza para generar el siguiente serie y correlativo
+       Optional<DocumentoCobranza> findTopByOrderByIdDesc();
 
        @Query("SELECT d FROM DocumentoCobranza d " +
                      "LEFT JOIN FETCH d.carpeta " +
@@ -24,8 +23,8 @@ public interface DocumentoCobranzaRepository extends JpaRepository<DocumentoCobr
                      "LEFT JOIN FETCH d.persona " +
                      "LEFT JOIN FETCH d.detalles " +
                      "LEFT JOIN FETCH d.cotizacion " +
-                     "WHERE d.numero = :numero")
-       Optional<DocumentoCobranza> findByNumero(@Param("numero") String numero);
+                     "WHERE d.serie = :serie AND d.correlativo = :correlativo")
+       Optional<DocumentoCobranza> findBySerieAndCorrelativo(@Param("serie") String serie, @Param("correlativo") Integer correlativo);
 
        @Query("SELECT d FROM DocumentoCobranza d WHERE d.persona.id = :personaId")
        Optional<DocumentoCobranza> findByPersonaId(@Param("personaId") Long personaId);

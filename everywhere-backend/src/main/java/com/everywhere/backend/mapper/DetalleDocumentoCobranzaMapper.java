@@ -33,7 +33,10 @@ public class DetalleDocumentoCobranzaMapper {
         } 
         if (detalleDocumentoCobranza.getDocumentoCobranza() != null) {
             dto.setDocumentoCobranzaId(detalleDocumentoCobranza.getDocumentoCobranza().getId());
-            dto.setDocumentoCobranzaNumero(detalleDocumentoCobranza.getDocumentoCobranza().getNumero());
+            dto.setDocumentoCobranzaNumero(
+                String.format("%s-%09d", 
+                    detalleDocumentoCobranza.getDocumentoCobranza().getSerie(),
+                    detalleDocumentoCobranza.getDocumentoCobranza().getCorrelativo()));
         }
         
         return dto;

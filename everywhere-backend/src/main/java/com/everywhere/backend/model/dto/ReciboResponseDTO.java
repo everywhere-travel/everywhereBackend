@@ -1,22 +1,19 @@
 package com.everywhere.backend.model.dto;
 
-import lombok.Data;
-
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
-public class DocumentoCobranzaResponseDTO {
+import lombok.Data;
 
-    private Long id;
+@Data
+public class ReciboResponseDTO {
+    private Integer id;
     private String serie;
     private Integer correlativo;
     private LocalDate fechaEmision;
     private String observaciones;
     private String fileVenta;
-    private BigDecimal costoEnvio;
     private String moneda;
 
     private Integer cotizacionId;
@@ -24,6 +21,7 @@ public class DocumentoCobranzaResponseDTO {
     private Integer personaId;
     private Integer sucursalId;
     private Integer formaPagoId;
+    private Integer detalleDocumentoId;
 
     private String clienteNombre;
     private String clienteDocumento;
@@ -35,10 +33,8 @@ public class DocumentoCobranzaResponseDTO {
     private String personaJuridicaRuc;
     private String personaJuridicaRazonSocial;
 
-    private Integer detalleDocumentoId;
-
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private List<DetalleDocumentoCobranzaResponseDTO> detalles;
+    private List<DetalleReciboResponseDTO> detalles;
 }

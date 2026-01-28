@@ -2,7 +2,6 @@ package com.everywhere.backend.mapper;
 
 import com.everywhere.backend.model.dto.CotizacionConDetallesResponseDTO;
 import com.everywhere.backend.model.dto.DetalleDocumentoCobranzaResponseDTO;
-import com.everywhere.backend.model.dto.DocumentoCobranzaRequestDTO;
 import com.everywhere.backend.model.dto.DocumentoCobranzaResponseDTO;
 import com.everywhere.backend.model.dto.DocumentoCobranzaUpdateDTO;
 import com.everywhere.backend.model.entity.Cotizacion;
@@ -39,16 +38,13 @@ public class DocumentoCobranzaMapper {
         });
     }
 
-    public DocumentoCobranza toEntity(DocumentoCobranzaRequestDTO documentoCobranzaRequestDTO) {
-        return modelMapper.map(documentoCobranzaRequestDTO, DocumentoCobranza.class);
-    }
-
     // maneja la lógica de mapeo desde cotización a documento de cobranza
     public DocumentoCobranza fromCotizacion(CotizacionConDetallesResponseDTO cotizacionConDetallesResponseDTO,
-            String numeroDocumento) {
+            String serie, Integer correlativo) {
         DocumentoCobranza documentoCobranza = new DocumentoCobranza();
 
-        documentoCobranza.setNumero(numeroDocumento);
+        documentoCobranza.setSerie(serie);
+        documentoCobranza.setCorrelativo(correlativo);
         documentoCobranza.setMoneda(cotizacionConDetallesResponseDTO.getMoneda());
 
         Cotizacion cotizacionEntity = new Cotizacion();
@@ -73,15 +69,6 @@ public class DocumentoCobranzaMapper {
             documentoCobranza.setFormaPago(formaPago);
         }
         return documentoCobranza;
-    }
-
-    public DocumentoCobranzaRequestDTO toRequestDTO(DocumentoCobranza documentoCobranza) {
-        return modelMapper.map(documentoCobranza, DocumentoCobranzaRequestDTO.class);
-    }
-
-    public void updateEntityFromRequest(DocumentoCobranza documentoCobranza,
-            DocumentoCobranzaRequestDTO documentoCobranzaRequestDTO) {
-        modelMapper.map(documentoCobranzaRequestDTO, documentoCobranza);
     }
 
     public void updateEntityFromUpdateDTO(DocumentoCobranza documentoCobranza,
