@@ -9,13 +9,13 @@ public enum Role {
     GERENTE(1, "GERENTE", Map.ofEntries(
             entry("ALL_MODULES", Set.of("READ","CREATE","UPDATE","DELETE"))
     )),
-
-    /* 
+ 
     VENTAS(2, "VENTAS", Map.ofEntries(
             entry("CLIENTES", Set.of("CREATE","READ","UPDATE")),
             entry("VIAJEROS", Set.of("CREATE","READ","UPDATE","DELETE")),
             entry("VIAJEROS_FREC", Set.of("CREATE","READ","UPDATE","DELETE")),
             entry("COTIZACIONES", Set.of("CREATE","READ","UPDATE","DELETE")),
+            entry("RECIBOS", Set.of("CREATE","READ","UPDATE","DELETE")),
             entry("LIQUIDACIONES", Set.of("CREATE","READ","UPDATE","DELETE")),
             entry("PRODUCTOS", Set.of("READ")),
             entry("PROVEEDORES", Set.of("READ")),
@@ -23,16 +23,12 @@ public enum Role {
             entry("CARPETA", Set.of("CREATE","READ","UPDATE","DELETE"))
     )),
 
-     */
-    VENTAS(2, "VENTAS", Map.ofEntries(
-            entry("ALL_MODULES", Set.of("READ","CREATE","UPDATE","DELETE"))
-    )),
-
 
     ADMINISTRAR(3, "ADMINISTRAR", Map.ofEntries(
             entry("CLIENTES", Set.of("CREATE","READ","UPDATE")),
             entry("VIAJEROS", Set.of("CREATE","READ","UPDATE")),
             entry("COTIZACIONES", Set.of("READ")),
+            entry("RECIBOS", Set.of("READ")),
             entry("LIQUIDACIONES", Set.of("CREATE","READ","UPDATE")),
             entry("PRODUCTOS", Set.of("CREATE","READ","UPDATE","DELETE")),
             entry("PROVEEDORES", Set.of("CREATE","READ","UPDATE","DELETE")),
@@ -62,6 +58,7 @@ public enum Role {
             entry("CLIENTES", Set.of("CREATE","READ")),
             entry("VIAJEROS", Set.of("CREATE","READ")),
             entry("COTIZACIONES", Set.of("CREATE","READ","UPDATE")),// Control interno más fino
+            entry("RECIBOS", Set.of("CREATE","READ","UPDATE")),
             entry("LIQUIDACIONES", Set.of("CREATE","READ","DELETE")),// Control interno más fino
             entry("CARPETA", Set.of("CREATE","READ")),
             entry("PERSONAS", Set.of("CREATE","READ"))
@@ -72,6 +69,7 @@ public enum Role {
             entry("CLIENTES", Set.of("CREATE","READ","UPDATE","DELETE")),
             entry("VIAJEROS", Set.of("CREATE","READ","UPDATE","DELETE")),
             entry("COTIZACIONES", Set.of("CREATE","READ","UPDATE","DELETE")), // Control interno para permisos más finos
+            entry("RECIBOS", Set.of("CREATE","READ","UPDATE","DELETE")),
             entry("LIQUIDACIONES", Set.of("READ")),
             entry("PROVEEDORES", Set.of("READ")),
             entry("OPERADOR", Set.of("READ")),
