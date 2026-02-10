@@ -30,7 +30,8 @@ public class CotizacionController {
     @RequirePermission(module = "COTIZACIONES", permission = "CREATE")
     public ResponseEntity<CotizacionResponseDto> createWithPersona(
             @PathVariable Integer personaId, @RequestBody CotizacionRequestDto cotizacionRequestDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(cotizacionService.create(cotizacionRequestDto, personaId));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(cotizacionService.create(cotizacionRequestDto, personaId));
     }
 
     @GetMapping("/{id}")
@@ -41,7 +42,7 @@ public class CotizacionController {
 
     @GetMapping("/{id}/con-detalles")
     @RequirePermission(module = "COTIZACIONES", permission = "READ")
-    public ResponseEntity<CotizacionConDetallesResponseDTO> getCotizacionConDetalles(@PathVariable Integer id) { 
+    public ResponseEntity<CotizacionConDetallesResponseDTO> getCotizacionConDetalles(@PathVariable Integer id) {
         return ResponseEntity.ok(cotizacionService.findByIdWithDetalles(id));
     }
 
@@ -79,15 +80,38 @@ public class CotizacionController {
     @RequirePermission(module = "COTIZACIONES", permission = "READ")
     public ResponseEntity<Resource> generateDocx(@PathVariable Integer id) {
         ByteArrayInputStream docxStream = cotizacionService.generateDocx(id);
-        
+
         InputStreamResource resource = new InputStreamResource(docxStream);
-        
+
         String filename = "Cotizacion_" + id + ".docx";
-        
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+                .contentType(MediaType
+                        .parseMediaType("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
                 .body(resource);
+    }
+
+    // Endpoints para gestión de carpetas
+
+    @GetMapping("/carpeta/{carpetaId}")
+    @RequirePermission(module = "COTIZACIONES", permission = "READ")
+    public ResponseEntity<List<CotizacionResponseDto>> findByCarpeta(@PathVariable Integer carpetaId) {
+        return ResponseEntity.ok(cotizacionService.findByCarpeta(carpetaId));
+    }
+
+    @GetMapping("/sin-carpeta")
+    @RequirePermission(module = "COTIZACIONES", permission = "READ")
+    public ResponseEntity<List<CotizacionResponseDto>> findSinCarpeta() {
+        return ResponseEntity.ok(cotizacionService.findSinCarpeta());
+    }
+
+    @PatchMapping("/{id}/carpeta")
+    @RequirePermission(module = "COTIZACIONES", permission = "UPDATE")
+    public ResponseEntity<CotizacionResponseDto> updateCarpeta(
+            @PathVariable Integer id,
+            @RequestParam(required = false) Integer carpetaId) {
+        return ResponseEntity.ok(cotizacionService.updateCarpeta(id, carpetaId));
     }
 
 }

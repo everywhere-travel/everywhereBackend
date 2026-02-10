@@ -15,6 +15,8 @@ public interface CotizacionService {
     void delete(Integer id);
     CotizacionConDetallesResponseDTO findByIdWithDetalles(Integer id);
     List<CotizacionResponseDto> findCotizacionesSinLiquidacion();
-
     ByteArrayInputStream generateDocx(Integer cotizacionId);
+    List<CotizacionResponseDto> findByCarpeta(Integer carpetaId);
+    List<CotizacionResponseDto> findSinCarpeta();
+    CotizacionResponseDto updateCarpeta(Integer id, Integer carpetaId);
 }
