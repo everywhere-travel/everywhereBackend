@@ -13,4 +13,7 @@ public interface LiquidacionService {
     LiquidacionResponseDTO update(Integer id, LiquidacionRequestDTO liquidacionRequestDTO);
     void deleteById(Integer id);
     LiquidacionResponseDTO create(LiquidacionRequestDTO liquidacionRequestDTO, Integer cotizacionId);
+    List<LiquidacionResponseDTO> findByCarpeta(Integer carpetaId);
+    List<LiquidacionResponseDTO> findSinCarpeta();
+    LiquidacionResponseDTO updateCarpeta(Integer id, Integer carpetaId);
 }

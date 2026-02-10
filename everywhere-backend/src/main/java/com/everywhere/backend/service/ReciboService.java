@@ -14,4 +14,7 @@ public interface ReciboService {
     List<ReciboResponseDTO> findAll();
     ReciboResponseDTO findByCotizacionId(Integer cotizacionId);
     ReciboResponseDTO patchRecibo(Integer id, ReciboUpdateDTO reciboUpdateDTO);
+    List<ReciboResponseDTO> findByCarpeta(Integer carpetaId);
+    List<ReciboResponseDTO> findSinCarpeta();
+    ReciboResponseDTO updateCarpeta(Integer id, Integer carpetaId);
 }
