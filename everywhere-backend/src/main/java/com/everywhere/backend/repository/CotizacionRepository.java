@@ -23,4 +23,9 @@ public interface CotizacionRepository extends JpaRepository<Cotizacion, Integer>
     long countByEstadoCotizacionId(@Param("estado") int estado);
 
     List<Cotizacion> findByid(int id);
+
+    // Métodos para gestión de carpetas
+    List<Cotizacion> findByCarpetaId(Integer carpetaId);
+
+    List<Cotizacion> findByCarpetaIsNull();
 }

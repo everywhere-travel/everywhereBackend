@@ -13,6 +13,7 @@ public class ReciboResponseDTO {
     private Integer correlativo;
     private LocalDate fechaEmision;
     private String observaciones;
+    private LocalDate fechaVencimiento;
     private String fileVenta;
     private String moneda;
 
