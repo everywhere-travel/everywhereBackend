@@ -21,31 +21,31 @@ public class ViajeroController {
 
     @GetMapping
     @RequirePermission(module = "VIAJEROS", permission = "READ")
-    public ResponseEntity<List<ViajeroResponseDTO>> getAllViajeros() { 
+    public ResponseEntity<List<ViajeroResponseDTO>> getAllViajeros() {
         return ResponseEntity.ok(viajeroService.findAll());
     }
 
     @GetMapping("/nacionalidad")
     @RequirePermission(module = "VIAJEROS", permission = "READ")
     public ResponseEntity<List<ViajeroResponseDTO>> getViajeroByNacionalidad(@RequestParam String nacionalidad) {
-        return ResponseEntity.ok(viajeroService.findByNacionalidad(nacionalidad.trim())); 
+        return ResponseEntity.ok(viajeroService.findByNacionalidad(nacionalidad.trim()));
     }
 
     @GetMapping("/residencia")
     @RequirePermission(module = "VIAJEROS", permission = "READ")
-    public ResponseEntity<List<ViajeroResponseDTO>> getViajeroByResidencia(@RequestParam String residencia) { 
+    public ResponseEntity<List<ViajeroResponseDTO>> getViajeroByResidencia(@RequestParam String residencia) {
         return ResponseEntity.ok(viajeroService.findByResidencia(residencia.trim()));
     }
 
     @GetMapping("/{id}")
     @RequirePermission(module = "VIAJEROS", permission = "READ")
-    public ResponseEntity<ViajeroResponseDTO> getViajeroById(@PathVariable Integer id) { 
+    public ResponseEntity<ViajeroResponseDTO> getViajeroById(@PathVariable Integer id) {
         return ResponseEntity.ok(viajeroService.findById(id));
     }
 
     @PostMapping
     @RequirePermission(module = "VIAJEROS", permission = "CREATE")
-    public ResponseEntity<ViajeroResponseDTO> createViajero(@RequestBody ViajeroRequestDTO viajeroRequestDTO) { 
+    public ResponseEntity<ViajeroResponseDTO> createViajero(@RequestBody ViajeroRequestDTO viajeroRequestDTO) {
         return ResponseEntity.status(HttpStatus.CREATED).body(viajeroService.save(viajeroRequestDTO));
     }
 
@@ -63,7 +63,7 @@ public class ViajeroController {
     }
 
     @GetMapping("/con-persona-natural")
-    @RequirePermission(module = "VIAJEROS", permission = "DELETE")
+    @RequirePermission(module = "VIAJEROS", permission = "READ")
     public ResponseEntity<List<ViajeroConPersonaResponseDTO>> findAllWithPersonaNatural() {
         return ResponseEntity.ok(viajeroService.findAllWithPersonaNatural());
     }

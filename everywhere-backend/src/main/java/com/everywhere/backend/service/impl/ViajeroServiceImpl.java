@@ -14,7 +14,7 @@ import com.everywhere.backend.mapper.ViajeroMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
- 
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -98,6 +98,7 @@ public class ViajeroServiceImpl implements ViajeroService {
     @Override
     public List<ViajeroConPersonaResponseDTO> findAllWithPersonaNatural() {
         return viajeroRepository.findAll().stream()
+                .filter(viajero -> viajero.getPersonaNatural() != null)
                 .map(viajero -> ViajeroConPersonaResponseDTO.builder()
                         .id(viajero.getId())
                         .fechaNacimiento(viajero.getFechaNacimiento())
