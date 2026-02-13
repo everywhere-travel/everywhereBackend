@@ -1,6 +1,6 @@
 package com.everywhere.backend.util.pdf;
 
-import java.math.BigDecimal; 
+import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -36,7 +36,8 @@ public class ReciboPdfGenerator extends PdfGenerator<ReciboResponseDTO, DetalleR
 
     @Override
     protected String getNumeroDocumento(ReciboResponseDTO documentoDTO) {
-        // Concatenar serie y correlativo para formar el número completo (ej: R01-000000001)
+        // Concatenar serie y correlativo para formar el número completo (ej:
+        // R01-000000001)
         if (documentoDTO.getSerie() != null && documentoDTO.getCorrelativo() != null) {
             return String.format("%s-%09d", documentoDTO.getSerie(), documentoDTO.getCorrelativo());
         }
@@ -45,9 +46,9 @@ public class ReciboPdfGenerator extends PdfGenerator<ReciboResponseDTO, DetalleR
 
     @Override
     protected String getFechaEmision(ReciboResponseDTO documentoDTO) {
-        return documentoDTO.getFechaEmision() != null 
-            ? documentoDTO.getFechaEmision().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) 
-            : null;
+        return documentoDTO.getFechaEmision() != null
+                ? documentoDTO.getFechaEmision().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                : null;
     }
 
     @Override
@@ -106,6 +107,13 @@ public class ReciboPdfGenerator extends PdfGenerator<ReciboResponseDTO, DetalleR
     protected boolean showDisclaimer() {
         // Recibo no muestra el disclaimer de crédito fiscal
         return false;
+    }
+
+    @Override
+    protected String getFechaVencimiento(ReciboResponseDTO documentoDTO) {
+        return documentoDTO.getFechaVencimiento() != null
+                ? documentoDTO.getFechaVencimiento().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                : null;
     }
 
     @Override

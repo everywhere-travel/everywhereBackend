@@ -146,6 +146,18 @@ public abstract class PdfGenerator<T, D> {
         }
 
         /**
+         * Obtiene la fecha de vencimiento del documento (opcional).
+         * Por defecto retorna null. Sobrescribir en subclases que tengan fecha de
+         * vencimiento.
+         * 
+         * @param documentoDTO el documento
+         * @return String con la fecha de vencimiento formateada o null si no aplica
+         */
+        protected String getFechaVencimiento(T documentoDTO) {
+                return null;
+        }
+
+        /**
          * Formatea un número decimal con separadores de miles (comas)
          * 
          * @param value el valor a formatear
@@ -253,6 +265,16 @@ public abstract class PdfGenerator<T, D> {
                                 .setBorder(Border.NO_BORDER).setPadding(1));
                 innerTable.addCell(new Cell().add(new Paragraph(fechaEmision).setFontSize(9))
                                 .setBorder(Border.NO_BORDER).setPadding(1));
+
+                // Agregar fecha de vencimiento JUSTO DESPUÉS de fecha de emisión
+                String fechaVencimiento = getFechaVencimiento(documentoDTO);
+                if (fechaVencimiento != null) {
+                        innerTable.addCell(
+                                        new Cell().add(new Paragraph("Fecha de vencimiento:").setBold().setFontSize(9))
+                                                        .setBorder(Border.NO_BORDER).setPadding(1));
+                        innerTable.addCell(new Cell().add(new Paragraph(fechaVencimiento).setFontSize(9))
+                                        .setBorder(Border.NO_BORDER).setPadding(1));
+                }
 
                 innerTable.addCell(new Cell().add(new Paragraph("Señor(es):").setBold().setFontSize(9))
                                 .setBorder(Border.NO_BORDER).setPadding(1));

@@ -84,7 +84,8 @@ public class ReciboServiceImpl implements ReciboService {
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Persona jurídica no encontrada con ID: " + personaJuridicaId));
 
-            // Validar que la PersonaJuridica esté asociada a la PersonaNatural de la cotización
+            // Validar que la PersonaJuridica esté asociada a la PersonaNatural de la
+            // cotización
             if (cotizacion.getPersonas() != null) {
                 Integer personaId = cotizacion.getPersonas().getId();
                 PersonaNatural personaNatural = personaNaturalRepository.findByPersonasId(personaId)
@@ -286,7 +287,10 @@ public class ReciboServiceImpl implements ReciboService {
                     && authentication.getPrincipal() instanceof UserPrincipal) {
 
                 UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-                return userPrincipal.getUsername();
+
+                if (userPrincipal.getUser() != null && userPrincipal.getUser().getNombre() != null) {
+                    return userPrincipal.getUser().getNombre();
+                }
             }
         } catch (Exception e) {
             System.err.println("Error al obtener el usuario autenticado: " + e.getMessage());
