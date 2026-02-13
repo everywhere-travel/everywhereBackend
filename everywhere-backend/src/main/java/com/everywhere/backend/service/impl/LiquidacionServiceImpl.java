@@ -7,7 +7,7 @@ import com.everywhere.backend.model.dto.DetalleLiquidacionResponseDTO;
 import com.everywhere.backend.model.dto.DetalleLiquidacionSimpleDTO;
 import com.everywhere.backend.model.dto.DetalleCotizacionResponseDto;
 import com.everywhere.backend.model.entity.Carpeta;
-import com.everywhere.backend.model.entity.Cotizacion; 
+import com.everywhere.backend.model.entity.Cotizacion;
 import com.everywhere.backend.model.entity.DetalleLiquidacion;
 import com.everywhere.backend.model.entity.FormaPago;
 import com.everywhere.backend.model.dto.ObservacionLiquidacionResponseDTO;
@@ -67,21 +67,25 @@ public class LiquidacionServiceImpl implements LiquidacionService {
         if (!liquidacionRepository.existsById(id))
             throw new ResourceNotFoundException("Liquidación no encontrada con ID: " + id);
 
-        if (liquidacionRequestDTO.getCotizacionId() != null && 
-            !cotizacionRepository.existsById(liquidacionRequestDTO.getCotizacionId()))
-            throw new ResourceNotFoundException("Cotización no encontrada con ID: " + liquidacionRequestDTO.getCotizacionId());
-        
-        if (liquidacionRequestDTO.getProductoId() != null && 
-            !productoRepository.existsById(liquidacionRequestDTO.getProductoId()))
-            throw new ResourceNotFoundException("Producto no encontrado con ID: " + liquidacionRequestDTO.getProductoId());
+        if (liquidacionRequestDTO.getCotizacionId() != null &&
+                !cotizacionRepository.existsById(liquidacionRequestDTO.getCotizacionId()))
+            throw new ResourceNotFoundException(
+                    "Cotización no encontrada con ID: " + liquidacionRequestDTO.getCotizacionId());
 
-        if (liquidacionRequestDTO.getFormaPagoId() != null && 
-            !formaPagoRepository.existsById(liquidacionRequestDTO.getFormaPagoId()))
-            throw new ResourceNotFoundException("Forma de pago no encontrada con ID: " + liquidacionRequestDTO.getFormaPagoId());
+        if (liquidacionRequestDTO.getProductoId() != null &&
+                !productoRepository.existsById(liquidacionRequestDTO.getProductoId()))
+            throw new ResourceNotFoundException(
+                    "Producto no encontrado con ID: " + liquidacionRequestDTO.getProductoId());
 
-        if (liquidacionRequestDTO.getCarpetaId() != null && 
-            !carpetaRepository.existsById(liquidacionRequestDTO.getCarpetaId()))
-            throw new ResourceNotFoundException("Carpeta no encontrada con ID: " + liquidacionRequestDTO.getCarpetaId());
+        if (liquidacionRequestDTO.getFormaPagoId() != null &&
+                !formaPagoRepository.existsById(liquidacionRequestDTO.getFormaPagoId()))
+            throw new ResourceNotFoundException(
+                    "Forma de pago no encontrada con ID: " + liquidacionRequestDTO.getFormaPagoId());
+
+        if (liquidacionRequestDTO.getCarpetaId() != null &&
+                !carpetaRepository.existsById(liquidacionRequestDTO.getCarpetaId()))
+            throw new ResourceNotFoundException(
+                    "Carpeta no encontrada con ID: " + liquidacionRequestDTO.getCarpetaId());
 
         Liquidacion liquidacion = liquidacionRepository.findById(id).get();
         liquidacionMapper.updateEntityFromRequest(liquidacion, liquidacionRequestDTO);
@@ -90,7 +94,7 @@ public class LiquidacionServiceImpl implements LiquidacionService {
             Cotizacion cotizacion = cotizacionRepository.findById(liquidacionRequestDTO.getCotizacionId()).get();
             liquidacion.setCotizacion(cotizacion);
         }
-        
+
         if (liquidacionRequestDTO.getProductoId() != null) {
             Producto producto = productoRepository.findById(liquidacionRequestDTO.getProductoId()).get();
             liquidacion.setProducto(producto);
@@ -124,13 +128,15 @@ public class LiquidacionServiceImpl implements LiquidacionService {
 
         LiquidacionResponseDTO liquidacionResponseDTO = liquidacionMapper.toResponseDTO(liquidacion);
 
-        List<DetalleLiquidacionResponseDTO> detalleLiquidacionResponseDTOs = detalleLiquidacionService.findByLiquidacionId(id);
+        List<DetalleLiquidacionResponseDTO> detalleLiquidacionResponseDTOs = detalleLiquidacionService
+                .findByLiquidacionId(id);
         List<DetalleLiquidacionSimpleDTO> detalleLiquidacionSimpleDTOs = detalleLiquidacionResponseDTOs.stream()
                 .map(this::convertirADetalleSimple).toList();
 
-        List<ObservacionLiquidacionResponseDTO> observacionLiquidacionResponseDTOS = observacionLiquidacionService.findByLiquidacionId(id);
-        List<ObservacionLiquidacionSimpleDTO> observacionLiquidacionSimpleDTOs = 
-                observacionLiquidacionResponseDTOS.stream().map(this::convertirAObservacionSimple).toList();
+        List<ObservacionLiquidacionResponseDTO> observacionLiquidacionResponseDTOS = observacionLiquidacionService
+                .findByLiquidacionId(id);
+        List<ObservacionLiquidacionSimpleDTO> observacionLiquidacionSimpleDTOs = observacionLiquidacionResponseDTOS
+                .stream().map(this::convertirAObservacionSimple).toList();
 
         LiquidacionConDetallesResponseDTO liquidacionConDetallesResponseDTO = new LiquidacionConDetallesResponseDTO();
         liquidacionConDetallesResponseDTO.setId(liquidacionResponseDTO.getId());
@@ -148,7 +154,8 @@ public class LiquidacionServiceImpl implements LiquidacionService {
         return liquidacionConDetallesResponseDTO;
     }
 
-    private DetalleLiquidacionSimpleDTO convertirADetalleSimple(DetalleLiquidacionResponseDTO detalleLiquidacionResponseDTO) {
+    private DetalleLiquidacionSimpleDTO convertirADetalleSimple(
+            DetalleLiquidacionResponseDTO detalleLiquidacionResponseDTO) {
         DetalleLiquidacionSimpleDTO detalleLiquidacionSimpleDTO = new DetalleLiquidacionSimpleDTO();
         detalleLiquidacionSimpleDTO.setId(detalleLiquidacionResponseDTO.getId());
         detalleLiquidacionSimpleDTO.setTicket(detalleLiquidacionResponseDTO.getTicket());
@@ -177,20 +184,23 @@ public class LiquidacionServiceImpl implements LiquidacionService {
         if (!cotizacionRepository.existsById(cotizacionId))
             throw new ResourceNotFoundException("Cotización no encontrada con ID: " + cotizacionId);
 
-        if (liquidacionRequestDTO.getProductoId() != null && 
-            !productoRepository.existsById(liquidacionRequestDTO.getProductoId()))
-            throw new ResourceNotFoundException("Producto no encontrado con ID: " + liquidacionRequestDTO.getProductoId());
+        if (liquidacionRequestDTO.getProductoId() != null &&
+                !productoRepository.existsById(liquidacionRequestDTO.getProductoId()))
+            throw new ResourceNotFoundException(
+                    "Producto no encontrado con ID: " + liquidacionRequestDTO.getProductoId());
 
-        if (liquidacionRequestDTO.getFormaPagoId() != null && 
-            !formaPagoRepository.existsById(liquidacionRequestDTO.getFormaPagoId()))
-            throw new ResourceNotFoundException("Forma de pago no encontrada con ID: " + liquidacionRequestDTO.getFormaPagoId());
+        if (liquidacionRequestDTO.getFormaPagoId() != null &&
+                !formaPagoRepository.existsById(liquidacionRequestDTO.getFormaPagoId()))
+            throw new ResourceNotFoundException(
+                    "Forma de pago no encontrada con ID: " + liquidacionRequestDTO.getFormaPagoId());
 
-        if (liquidacionRequestDTO.getCarpetaId() != null && 
-            !carpetaRepository.existsById(liquidacionRequestDTO.getCarpetaId()))
-            throw new ResourceNotFoundException("Carpeta no encontrada con ID: " + liquidacionRequestDTO.getCarpetaId());
+        if (liquidacionRequestDTO.getCarpetaId() != null &&
+                !carpetaRepository.existsById(liquidacionRequestDTO.getCarpetaId()))
+            throw new ResourceNotFoundException(
+                    "Carpeta no encontrada con ID: " + liquidacionRequestDTO.getCarpetaId());
 
         Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId).get();
-        
+
         Liquidacion liquidacion = liquidacionMapper.toEntity(liquidacionRequestDTO);
         liquidacion.setCotizacion(cotizacion);
 
@@ -208,12 +218,12 @@ public class LiquidacionServiceImpl implements LiquidacionService {
             Carpeta carpeta = carpetaRepository.findById(liquidacionRequestDTO.getCarpetaId()).get();
             liquidacion.setCarpeta(carpeta);
         }
-        
+
         liquidacion = liquidacionRepository.save(liquidacion); // Guardar la liquidación primero para obtener el ID
         crearDetallesDesdeCotizacion(liquidacion, cotizacionId);
         return liquidacionMapper.toResponseDTO(liquidacion);
     }
-    
+
     /**
      * Método privado que crea los detalles de liquidación basándose en los detalles de la cotización.
      * Implementa la lógica de repartición: por cada detalle seleccionado de la cotización,
@@ -221,28 +231,31 @@ public class LiquidacionServiceImpl implements LiquidacionService {
      */
     private void crearDetallesDesdeCotizacion(Liquidacion liquidacion, Integer cotizacionId) {
         // Obtener todos los detalles de la cotizacion
-        List<DetalleCotizacionResponseDto> detallesCotizacion = detalleCotizacionService.findByCotizacionId(cotizacionId);
-        
+        List<DetalleCotizacionResponseDto> detallesCotizacion = detalleCotizacionService
+                .findByCotizacionId(cotizacionId);
+
         // Filtrar solo los detalles seleccionados
         List<DetalleCotizacionResponseDto> detallesSeleccionados = detallesCotizacion.stream()
                 .filter(detalle -> detalle.getSeleccionado() != null && detalle.getSeleccionado())
                 .toList();
-        
+
         // Por cada detalle seleccionado, crear N detalles de liquidación (donde N = cantidad)
         for (DetalleCotizacionResponseDto detalleCot : detallesSeleccionados) {
             int cantidad = detalleCot.getCantidad() != null ? detalleCot.getCantidad() : 1;
-            
+
             // Crear un detalle de liquidación por cada unidad de cantidad
             for (int i = 0; i < cantidad; i++) {
                 DetalleLiquidacion detalleLiq = new DetalleLiquidacion();
-                
+
                 // Asignar la liquidación
                 detalleLiq.setLiquidacion(liquidacion);
-                
+
                 // Mapear datos desde el detalle de cotización
-                detalleLiq.setCostoTicket(detalleCot.getPrecioHistorico() != null ? detalleCot.getPrecioHistorico() : BigDecimal.ZERO);
-                detalleLiq.setCargoServicio(detalleCot.getComision() != null ? detalleCot.getComision() : BigDecimal.ZERO);
-                
+                detalleLiq.setCostoTicket(
+                        detalleCot.getPrecioHistorico() != null ? detalleCot.getPrecioHistorico() : BigDecimal.ZERO);
+                detalleLiq.setCargoServicio(
+                        detalleCot.getComision() != null ? detalleCot.getComision() : BigDecimal.ZERO);
+
                 // Asignar producto y proveedor si existen
                 if (detalleCot.getProducto() != null) {
                     detalleLiq.setProducto(detalleCot.getProducto());
@@ -250,7 +263,7 @@ public class LiquidacionServiceImpl implements LiquidacionService {
                 if (detalleCot.getProveedor() != null) {
                     detalleLiq.setProveedor(detalleCot.getProveedor());
                 }
-                
+
                 // Inicializar otros campos con valores por defecto (se llenarán después)
                 detalleLiq.setTicket("");
                 detalleLiq.setValorVenta(BigDecimal.ZERO);
@@ -261,13 +274,13 @@ public class LiquidacionServiceImpl implements LiquidacionService {
                 detalleLiq.setPagoPaxPEN(BigDecimal.ZERO);
                 // Viajero y Operador se quedan null para ser asignados después
                 
-                // Guardar el detalle
                 detalleLiquidacionRepository.save(detalleLiq);
             }
         }
     }
 
-    private ObservacionLiquidacionSimpleDTO convertirAObservacionSimple(ObservacionLiquidacionResponseDTO observacionLiquidacionResponseDTO) {
+    private ObservacionLiquidacionSimpleDTO convertirAObservacionSimple(
+            ObservacionLiquidacionResponseDTO observacionLiquidacionResponseDTO) {
         ObservacionLiquidacionSimpleDTO observacionLiquidacionSimpleDTO = new ObservacionLiquidacionSimpleDTO();
         observacionLiquidacionSimpleDTO.setId(observacionLiquidacionResponseDTO.getId());
         observacionLiquidacionSimpleDTO.setDescripcion(observacionLiquidacionResponseDTO.getDescripcion());
@@ -277,5 +290,43 @@ public class LiquidacionServiceImpl implements LiquidacionService {
         observacionLiquidacionSimpleDTO.setCreado(observacionLiquidacionResponseDTO.getCreado());
         observacionLiquidacionSimpleDTO.setActualizado(observacionLiquidacionResponseDTO.getActualizado());
         return observacionLiquidacionSimpleDTO;
+    }
+
+    // Implementación de métodos para gestión de carpetas
+
+    @Override
+    public List<LiquidacionResponseDTO> findByCarpeta(Integer carpetaId) {
+        if (!carpetaRepository.existsById(carpetaId))
+            throw new ResourceNotFoundException("Carpeta no encontrada con ID: " + carpetaId);
+
+        return liquidacionRepository.findByCarpetaId(carpetaId).stream()
+                .map(liquidacionMapper::toResponseDTO)
+                .toList();
+    }
+
+    @Override
+    public List<LiquidacionResponseDTO> findSinCarpeta() {
+        return liquidacionRepository.findByCarpetaIsNull().stream()
+                .map(liquidacionMapper::toResponseDTO)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public LiquidacionResponseDTO updateCarpeta(Integer id, Integer carpetaId) {
+        Liquidacion liquidacion = liquidacionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Liquidación no encontrada con ID: " + id));
+
+        if (carpetaId != null) {
+            // Asociar a una carpeta
+            Carpeta carpeta = carpetaRepository.findById(carpetaId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Carpeta no encontrada con ID: " + carpetaId));
+            liquidacion.setCarpeta(carpeta);
+        } else {
+            // Desasociar de la carpeta
+            liquidacion.setCarpeta(null);
+        }
+
+        return liquidacionMapper.toResponseDTO(liquidacionRepository.save(liquidacion));
     }
 }
