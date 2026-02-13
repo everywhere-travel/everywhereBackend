@@ -14,4 +14,7 @@ public interface DocumentoCobranzaService {
     List<DocumentoCobranzaResponseDTO> findAll();
     DocumentoCobranzaResponseDTO findByCotizacionId(Integer cotizacionId);
     DocumentoCobranzaResponseDTO patchDocumento(Long id, DocumentoCobranzaUpdateDTO documentoCobranzaUpdateDTO);
+    List<DocumentoCobranzaResponseDTO> findByCarpeta(Integer carpetaId);
+    List<DocumentoCobranzaResponseDTO> findSinCarpeta();
+    DocumentoCobranzaResponseDTO updateCarpeta(Long id, Integer carpetaId);
 }

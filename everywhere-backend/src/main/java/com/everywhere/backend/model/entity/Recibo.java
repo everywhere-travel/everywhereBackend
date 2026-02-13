@@ -36,8 +36,11 @@ public class Recibo {
     @JdbcTypeCode(SqlTypes.LONGNVARCHAR)
     private String observaciones;
 
+    @Column(name = "recibo_fec_ven_tmp")
+    private LocalDate fechaVencimiento;
+
     @Column(name = "recibo_file_ven_vac")
-    private String fileVenta; 
+    private String fileVenta;
 
     @Column(name = "recibo_mon_vac")
     private String moneda;

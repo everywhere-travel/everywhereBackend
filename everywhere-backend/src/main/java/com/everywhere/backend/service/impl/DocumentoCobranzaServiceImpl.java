@@ -20,6 +20,8 @@ import com.everywhere.backend.repository.DetalleDocumentoRepository;
 import com.everywhere.backend.repository.DocumentoCobranzaRepository;
 import com.everywhere.backend.repository.FormaPagoRepository;
 import com.everywhere.backend.repository.NaturalJuridicoRepository;
+import com.everywhere.backend.model.entity.Carpeta;
+import com.everywhere.backend.repository.CarpetaRepository;
 import com.everywhere.backend.security.UserPrincipal;
 import com.everywhere.backend.service.CotizacionService;
 import com.everywhere.backend.service.DetalleCotizacionService;
@@ -55,6 +57,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     private final NaturalJuridicoRepository naturalJuridicoRepository;
     private final PersonaNaturalRepository personaNaturalRepository;
     private final DetalleCotizacionService detalleCotizacionService;
+    private final CarpetaRepository carpetaRepository;
     private final com.everywhere.backend.util.pdf.DocumentoCobranzaPdfGenerator documentoCobranzaPdfGenerator;
 
     @Override
@@ -74,7 +77,8 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         System.out.println("=== GENERANDO DOCUMENTO ===");
         System.out.println("Serie: " + serieCorrelativo[0]);
         System.out.println("Correlativo: " + serieCorrelativo[1]);
-        DocumentoCobranza documentoCobranza = documentoCobranzaMapper.fromCotizacion(cotizacion, serieCorrelativo[0], Integer.parseInt(serieCorrelativo[1]));
+        DocumentoCobranza documentoCobranza = documentoCobranzaMapper.fromCotizacion(cotizacion, serieCorrelativo[0],
+                Integer.parseInt(serieCorrelativo[1]));
 
         // Validar y setear PersonaJuridica si fue proporcionada
         if (personaJuridicaId != null) {
@@ -127,8 +131,9 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
         documentoCobranzaRepository.findByIdWithDetalles(documentoId)
                 .ifPresent(d -> documentoCobranza.setDetalles(d.getDetalles()));
-        
-        DocumentoCobranzaResponseDTO documentoCobranzaResponseDTO = documentoCobranzaMapper.toResponseDTO(documentoCobranza);
+
+        DocumentoCobranzaResponseDTO documentoCobranzaResponseDTO = documentoCobranzaMapper
+                .toResponseDTO(documentoCobranza);
         String userName = getAuthenticatedUserName();
         return documentoCobranzaPdfGenerator.generatePdf(documentoCobranzaResponseDTO, userName);
     }
@@ -176,8 +181,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         documentoCobranzaMapper.updateEntityFromUpdateDTO(documentoCobranza, documentoCobranzaUpdateDTO);
 
         // ========== LÓGICA MUTUAMENTE EXCLUYENTE: DetalleDocumento XOR PersonaJuridica
-        // ==========
-        // Si se envía detalleDocumentoId, usar documento personal y LIMPIAR empresa
+        // ========== Si se envía detalleDocumentoId, usar documento personal y LIMPIAR empresa
         if (documentoCobranzaUpdateDTO.getDetalleDocumentoId() != null) {
             DetalleDocumento detalleDocumento = detalleDocumentoRepository
                     .findById(documentoCobranzaUpdateDTO.getDetalleDocumentoId()).get();
@@ -192,8 +196,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                     .orElseThrow(() -> new ResourceNotFoundException("Persona jurídica no encontrada con ID: "
                             + documentoCobranzaUpdateDTO.getPersonaJuridicaId()));
 
-            // Validar que la PersonaJuridica esté asociada a la PersonaNatural del
-            // documento
+            // Validar que la PersonaJuridica esté asociada a la PersonaNatural del documento
             if (documentoCobranza.getPersona() != null) {
                 Integer personaId = documentoCobranza.getPersona().getId();
                 PersonaNatural personaNatural = personaNaturalRepository.findByPersonasId(personaId)
@@ -232,7 +235,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Forma de pago no encontrada con ID: " + documentoCobranzaUpdateDTO.getFormaPagoId()));
             documentoCobranza.setFormaPago(formaPago);
-            System.out.println("✅ FormaPago actualizada: " + formaPago.getDescripcion());
+            System.out.println("FormaPago actualizada: " + formaPago.getDescripcion());
         }
 
         return documentoCobranzaMapper.toResponseDTO(documentoCobranzaRepository.save(documentoCobranza));
@@ -241,23 +244,23 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     // ========== MÉTODOS PRIVADOS ==========
     private String[] generateNextDocumentNumber() {
         Optional<DocumentoCobranza> lastDocOpt = documentoCobranzaRepository.findTopByOrderByIdDesc();
-        
+
         if (lastDocOpt.isPresent()) {
             DocumentoCobranza lastDoc = lastDocOpt.get();
             String lastSerie = lastDoc.getSerie();
             Integer lastCorrelativo = lastDoc.getCorrelativo();
-            
+
             // Si correlativo llegó al máximo, incrementa serie
             if (lastCorrelativo >= 999999999) {
                 int serieNum = Integer.parseInt(lastSerie.substring(2)) + 1;
-                return new String[]{"DC" + String.format("%02d", serieNum), "1"};
+                return new String[] { "DC" + String.format("%02d", serieNum), "1" };
             }
             // Incrementa correlativo
-            return new String[]{lastSerie, String.valueOf(lastCorrelativo + 1)};
+            return new String[] { lastSerie, String.valueOf(lastCorrelativo + 1) };
         }
-        
+
         // Primer documento
-        return new String[]{"DC01", "1"};
+        return new String[] { "DC01", "1" };
     }
 
     private List<DocumentoCobranzaResponseDTO> mapToResponseList(List<DocumentoCobranza> documentos) {
@@ -267,8 +270,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     /**
      * Obtiene el nombre del usuario autenticado actualmente
      * 
-     * @return Nombre del usuario autenticado o "Usuario desconocido" si no hay
-     *         autenticación
+     * @return Nombre del usuario autenticado o "Usuario desconocido" si no hay autenticación
      */
     private String getAuthenticatedUserName() {
         try {
@@ -300,8 +302,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                 .filter(detalle -> detalle.getSeleccionado() != null && detalle.getSeleccionado())
                 .toList();
 
-        // Por cada detalle seleccionado, crear N detalles de documento de cobranza
-        // (donde N = cantidad)
+        // Por cada detalle seleccionado, crear N detalles de documento de cobranza (donde N = cantidad)
         for (DetalleCotizacionResponseDto detalleCot : detallesSeleccionados) {
             int cantidad = detalleCot.getCantidad() != null ? detalleCot.getCantidad() : 1;
 
@@ -329,5 +330,34 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                 detalleDocumentoCobranzaRepository.save(detalleDoc);
             }
         }
+    }
+
+    // Implementación de métodos para gestión de carpetas
+
+    @Override
+    public List<DocumentoCobranzaResponseDTO> findByCarpeta(Integer carpetaId) {
+        return mapToResponseList(documentoCobranzaRepository.findByCarpetaId(carpetaId));
+    }
+
+    @Override
+    public List<DocumentoCobranzaResponseDTO> findSinCarpeta() {
+        return mapToResponseList(documentoCobranzaRepository.findByCarpetaIsNull());
+    }
+
+    @Override
+    @Transactional
+    public DocumentoCobranzaResponseDTO updateCarpeta(Long id, Integer carpetaId) {
+        DocumentoCobranza documentoCobranza = documentoCobranzaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Documento de cobranza no encontrado con ID: " + id));
+
+        if (carpetaId != null) {
+            Carpeta carpeta = carpetaRepository.findById(carpetaId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Carpeta no encontrada con ID: " + carpetaId));
+            documentoCobranza.setCarpeta(carpeta);
+        } else {
+            documentoCobranza.setCarpeta(null);
+        }
+
+        return documentoCobranzaMapper.toResponseDTO(documentoCobranzaRepository.save(documentoCobranza));
     }
 }

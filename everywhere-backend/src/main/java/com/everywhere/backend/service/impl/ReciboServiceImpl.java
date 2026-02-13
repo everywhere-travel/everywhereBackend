@@ -21,6 +21,8 @@ import com.everywhere.backend.repository.ReciboRepository;
 import com.everywhere.backend.repository.FormaPagoRepository;
 import com.everywhere.backend.repository.NaturalJuridicoRepository;
 import com.everywhere.backend.repository.ProductoRepository;
+import com.everywhere.backend.model.entity.Carpeta;
+import com.everywhere.backend.repository.CarpetaRepository;
 import com.everywhere.backend.security.UserPrincipal;
 import com.everywhere.backend.service.CotizacionService;
 import com.everywhere.backend.service.DetalleCotizacionService;
@@ -57,6 +59,7 @@ public class ReciboServiceImpl implements ReciboService {
     private final PersonaNaturalRepository personaNaturalRepository;
     private final DetalleCotizacionService detalleCotizacionService;
     private final ProductoRepository productoRepository;
+    private final CarpetaRepository carpetaRepository;
     private final com.everywhere.backend.util.pdf.ReciboPdfGenerator reciboPdfGenerator;
 
     @Override
@@ -72,7 +75,8 @@ public class ReciboServiceImpl implements ReciboService {
         CotizacionConDetallesResponseDTO cotizacion = cotizacionService.findByIdWithDetalles(cotizacionId);
 
         String[] serieCorrelativo = generateNextDocumentNumber();
-        Recibo recibo = reciboMapper.fromCotizacion(cotizacion, serieCorrelativo[0], Integer.parseInt(serieCorrelativo[1]));
+        Recibo recibo = reciboMapper.fromCotizacion(cotizacion, serieCorrelativo[0],
+                Integer.parseInt(serieCorrelativo[1]));
 
         // Validar y setear PersonaJuridica si fue proporcionada
         if (personaJuridicaId != null) {
@@ -80,7 +84,8 @@ public class ReciboServiceImpl implements ReciboService {
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Persona jurídica no encontrada con ID: " + personaJuridicaId));
 
-            // Validar que la PersonaJuridica esté asociada a la PersonaNatural de la cotización
+            // Validar que la PersonaJuridica esté asociada a la PersonaNatural de la
+            // cotización
             if (cotizacion.getPersonas() != null) {
                 Integer personaId = cotizacion.getPersonas().getId();
                 PersonaNatural personaNatural = personaNaturalRepository.findByPersonasId(personaId)
@@ -124,7 +129,7 @@ public class ReciboServiceImpl implements ReciboService {
 
         reciboRepository.findByIdWithDetalles(reciboId)
                 .ifPresent(r -> recibo.setDetalleRecibo(r.getDetalleRecibo()));
-        
+
         ReciboResponseDTO reciboResponseDTO = reciboMapper.toResponseDTO(recibo);
         String userName = getAuthenticatedUserName();
         return reciboPdfGenerator.generatePdf(reciboResponseDTO, userName);
@@ -229,19 +234,19 @@ public class ReciboServiceImpl implements ReciboService {
     // ========== MÉTODOS PRIVADOS ==========
     private String[] generateNextDocumentNumber() {
         Optional<Recibo> lastReciboOpt = reciboRepository.findTopByOrderByIdDesc();
-        
+
         if (lastReciboOpt.isPresent()) {
             Recibo lastRecibo = lastReciboOpt.get();
             String lastSerie = lastRecibo.getSerie();
             Integer lastCorrelativo = lastRecibo.getCorrelativo();
-            
+
             if (lastSerie != null && lastCorrelativo != null) {
                 // Incrementar correlativo
                 int nextCorrelativo = lastCorrelativo + 1;
                 return new String[] { lastSerie, String.valueOf(nextCorrelativo) };
             }
         }
-        
+
         // Primer recibo: serie R01, correlativo 1
         return new String[] { "R01", "1" };
     }
@@ -292,5 +297,34 @@ public class ReciboServiceImpl implements ReciboService {
         }
 
         return "Usuario desconocido";
+    }
+
+    // Implementación de métodos para gestión de carpetas
+
+    @Override
+    public List<ReciboResponseDTO> findByCarpeta(Integer carpetaId) {
+        return mapToResponseList(reciboRepository.findByCarpetaId(carpetaId));
+    }
+
+    @Override
+    public List<ReciboResponseDTO> findSinCarpeta() {
+        return mapToResponseList(reciboRepository.findByCarpetaIsNull());
+    }
+
+    @Override
+    @Transactional
+    public ReciboResponseDTO updateCarpeta(Integer id, Integer carpetaId) {
+        Recibo recibo = reciboRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Recibo no encontrado con ID: " + id));
+
+        if (carpetaId != null) {
+            Carpeta carpeta = carpetaRepository.findById(carpetaId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Carpeta no encontrada con ID: " + carpetaId));
+            recibo.setCarpeta(carpeta);
+        } else {
+            recibo.setCarpeta(null);
+        }
+
+        return reciboMapper.toResponseDTO(reciboRepository.save(recibo));
     }
 }
