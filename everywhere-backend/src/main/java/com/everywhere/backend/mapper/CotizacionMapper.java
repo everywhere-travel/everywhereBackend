@@ -36,7 +36,30 @@ public class CotizacionMapper {
     }
     
     public void updateEntityFromRequest(Cotizacion cotizacion, CotizacionRequestDto cotizacionRequestDto) {
-        modelMapper.map(cotizacionRequestDto, cotizacion);
+        if (cotizacionRequestDto.getCantAdultos() != null) {
+            cotizacion.setCantAdultos(cotizacionRequestDto.getCantAdultos());
+        }
+        if (cotizacionRequestDto.getCantNinos() != null) {
+            cotizacion.setCantNinos(cotizacionRequestDto.getCantNinos());
+        }
+        if (cotizacionRequestDto.getFechaVencimiento() != null) {
+            cotizacion.setFechaVencimiento(cotizacionRequestDto.getFechaVencimiento());
+        }
+        if (cotizacionRequestDto.getOrigenDestino() != null) {
+            cotizacion.setOrigenDestino(cotizacionRequestDto.getOrigenDestino());
+        }
+        if (cotizacionRequestDto.getFechaSalida() != null) {
+            cotizacion.setFechaSalida(cotizacionRequestDto.getFechaSalida());
+        }
+        if (cotizacionRequestDto.getFechaRegreso() != null) {
+            cotizacion.setFechaRegreso(cotizacionRequestDto.getFechaRegreso());
+        }
+        if (cotizacionRequestDto.getMoneda() != null) {
+            cotizacion.setMoneda(cotizacionRequestDto.getMoneda());
+        }
+        if (cotizacionRequestDto.getObservacion() != null) {
+            cotizacion.setObservacion(cotizacionRequestDto.getObservacion());
+        }
     }
 
     public CotizacionConDetallesResponseDTO toResponseWithDetalles(CotizacionResponseDto cotizacionResponseDto, 

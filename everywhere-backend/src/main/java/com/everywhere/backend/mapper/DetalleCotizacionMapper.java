@@ -36,6 +36,23 @@ public class DetalleCotizacionMapper {
     }
 
     public void updateEntityFromRequest(DetalleCotizacion detalleCotizacion, DetalleCotizacionRequestDto detalleCotizacionRequestDto) {
-        modelMapper.map(detalleCotizacionRequestDto, detalleCotizacion);
+        if (detalleCotizacionRequestDto.getCantidad() != null) {
+            detalleCotizacion.setCantidad(detalleCotizacionRequestDto.getCantidad());
+        }
+        if (detalleCotizacionRequestDto.getUnidad() != null) {
+            detalleCotizacion.setUnidad(detalleCotizacionRequestDto.getUnidad());
+        }
+        if (detalleCotizacionRequestDto.getDescripcion() != null) {
+            detalleCotizacion.setDescripcion(detalleCotizacionRequestDto.getDescripcion());
+        }
+        if (detalleCotizacionRequestDto.getComision() != null) {
+            detalleCotizacion.setComision(detalleCotizacionRequestDto.getComision());
+        }
+        if (detalleCotizacionRequestDto.getPrecioHistorico() != null) {
+            detalleCotizacion.setPrecioHistorico(detalleCotizacionRequestDto.getPrecioHistorico());
+        }
+        if (detalleCotizacionRequestDto.getSeleccionado() != null) {
+            detalleCotizacion.setSeleccionado(detalleCotizacionRequestDto.getSeleccionado());
+        }
     }
 }
