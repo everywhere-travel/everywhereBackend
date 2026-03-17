@@ -3,8 +3,11 @@ package com.everywhere.backend.model.entity;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -36,8 +39,14 @@ public class Proveedor {
     private LocalDateTime actualizado;
 
     @OneToMany(mappedBy = "proveedor", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("proveedor")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<ProveedorContacto> contactos;
 
     @OneToMany(mappedBy = "proveedor", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("proveedor")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<ProveedorColaborador> colaboradores;
 }
