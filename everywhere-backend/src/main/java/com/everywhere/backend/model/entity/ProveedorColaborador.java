@@ -2,6 +2,7 @@ package com.everywhere.backend.model.entity;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -45,5 +46,6 @@ public class ProveedorColaborador {
 
     @ManyToOne
     @JoinColumn(name = "prov_id_int")
+    @JsonIgnoreProperties({ "contactos", "colaboradores" })
     private Proveedor proveedor;
 }

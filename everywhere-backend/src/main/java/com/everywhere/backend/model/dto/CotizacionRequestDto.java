@@ -7,8 +7,8 @@ import java.time.LocalDateTime;
 
 @Data
 public class CotizacionRequestDto {
-    private int cantAdultos;
-    private int cantNinos;
+    private Integer cantAdultos;
+    private Integer cantNinos;
     private LocalDateTime fechaVencimiento;
     private String origenDestino;
     private LocalDate fechaSalida;
