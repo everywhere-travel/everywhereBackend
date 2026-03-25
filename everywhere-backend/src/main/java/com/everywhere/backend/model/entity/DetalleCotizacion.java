@@ -62,4 +62,8 @@ public class DetalleCotizacion {
     @ManyToOne
     @JoinColumn(name = "prov_id_int")
     private Proveedor proveedor;
+
+    @ManyToOne
+    @JoinColumn(name = "opr_id_int", nullable = true)
+    private Operador operador;
 }
