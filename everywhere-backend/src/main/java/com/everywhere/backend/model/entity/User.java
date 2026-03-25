@@ -37,4 +37,8 @@ public class User {
     @JoinColumn(name = "rol_id", nullable = false)
     private Role role;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "suc_id_int", nullable = true)
+    private Sucursal sucursal;
+
 }

@@ -78,4 +78,22 @@ public class UserServiceImpl implements UserService {
         User user = getUserbyId(userId);
         return userMapper.toUserBasicDTO(user);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserProfileDTO getUserProfile(Integer userId) {
+        User user = getUserbyId(userId);
+        return userMapper.toUserProfileDTO(user);
+    }
+
+    @Override
+    @Transactional
+    public UserProfileDTO updateUserName(Integer userId, String name) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre no puede estar vacío");
+        }
+        User user = getUserbyId(userId);
+        user.setNombre(name.trim());
+        return userMapper.toUserProfileDTO(userRepository.save(user));
+    }
 }

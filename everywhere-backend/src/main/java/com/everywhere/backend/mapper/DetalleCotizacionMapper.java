@@ -22,6 +22,7 @@ public class DetalleCotizacionMapper {
                 mapper.skip(DetalleCotizacion::setCotizacion);
                 mapper.skip(DetalleCotizacion::setProducto);
                 mapper.skip(DetalleCotizacion::setProveedor);
+                mapper.skip(DetalleCotizacion::setOperador);
             });
     }
 
