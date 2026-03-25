@@ -50,4 +50,23 @@ public class UserMapper {
         userBasicDTO.setName(user.getNombre()); // Usar email como identificador
         return userBasicDTO;
     }
+
+    public UserProfileDTO toUserProfileDTO(User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("El usuario no puede ser nulo");
+        }
+
+        UserProfileDTO profile = new UserProfileDTO();
+        profile.setId(user.getId());
+        profile.setName(user.getNombre());
+        profile.setEmail(user.getEmail());
+        profile.setRole(user.getRole() != null ? user.getRole().getName() : null);
+
+        if (user.getSucursal() != null) {
+            SucursalResponseDTO sucursal = modelMapper.map(user.getSucursal(), SucursalResponseDTO.class);
+            profile.setSucursal(sucursal);
+        }
+
+        return profile;
+    }
 }

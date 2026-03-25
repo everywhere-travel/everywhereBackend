@@ -16,4 +16,5 @@ public class DetalleCotizacionRequestDto {
     private Integer categoriaId;
     private Integer productoId;
     private Integer proveedorId;
+    private Integer operadorId;
 }

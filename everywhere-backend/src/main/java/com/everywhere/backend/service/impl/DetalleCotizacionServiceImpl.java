@@ -23,6 +23,7 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
     private final CategoriaRepository categoriaRepository;
     private final ProductoRepository productoRepository;
     private final ProveedorRepository proveedorRepository;
+    private final OperadorRepository operadorRepository;
     private final DetalleCotizacionMapper detalleCotizacionMapper;
 
     @Override
@@ -72,6 +73,12 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
             detalleCotizacion.setProveedor(proveedorRepository.findById(detalleCotizacionRequestDto.getProveedorId()).get());
         }
 
+        if (detalleCotizacionRequestDto.getOperadorId() != null) {
+            if (!operadorRepository.existsById(detalleCotizacionRequestDto.getOperadorId()))
+                throw new ResourceNotFoundException("Operador no encontrado con ID: " + detalleCotizacionRequestDto.getOperadorId());
+            detalleCotizacion.setOperador(operadorRepository.findById(detalleCotizacionRequestDto.getOperadorId()).get());
+        }
+
         return detalleCotizacionMapper.toResponse(detalleCotizacionRepository.save(detalleCotizacion));
     }
 
@@ -99,6 +106,12 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
             if (!proveedorRepository.existsById(detalleCotizacionRequestDto.getProveedorId()))
                 throw new ResourceNotFoundException("Proveedor no encontrado con ID: " + detalleCotizacionRequestDto.getProveedorId());
             detalleCotizacion.setProveedor(proveedorRepository.findById(detalleCotizacionRequestDto.getProveedorId()).get());
+        }
+
+        if (detalleCotizacionRequestDto.getOperadorId() != null) {
+            if (!operadorRepository.existsById(detalleCotizacionRequestDto.getOperadorId()))
+                throw new ResourceNotFoundException("Operador no encontrado con ID: " + detalleCotizacionRequestDto.getOperadorId());
+            detalleCotizacion.setOperador(operadorRepository.findById(detalleCotizacionRequestDto.getOperadorId()).get());
         }
 
         return detalleCotizacionMapper.toResponse(detalleCotizacionRepository.save(detalleCotizacion));
