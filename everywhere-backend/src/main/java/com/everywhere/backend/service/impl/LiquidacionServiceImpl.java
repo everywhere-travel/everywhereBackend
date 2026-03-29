@@ -159,9 +159,13 @@ public class LiquidacionServiceImpl implements LiquidacionService {
         DetalleLiquidacionSimpleDTO detalleLiquidacionSimpleDTO = new DetalleLiquidacionSimpleDTO();
         detalleLiquidacionSimpleDTO.setId(detalleLiquidacionResponseDTO.getId());
         detalleLiquidacionSimpleDTO.setTicket(detalleLiquidacionResponseDTO.getTicket());
+        detalleLiquidacionSimpleDTO.setDocumentoCobro(detalleLiquidacionResponseDTO.getDocumentoCobro());
         detalleLiquidacionSimpleDTO.setCostoTicket(detalleLiquidacionResponseDTO.getCostoTicket());
         detalleLiquidacionSimpleDTO.setCargoServicio(detalleLiquidacionResponseDTO.getCargoServicio());
         detalleLiquidacionSimpleDTO.setValorVenta(detalleLiquidacionResponseDTO.getValorVenta());
+        detalleLiquidacionSimpleDTO.setFeeEmision(detalleLiquidacionResponseDTO.getFeeEmision());
+        detalleLiquidacionSimpleDTO.setDocumentoFee(detalleLiquidacionResponseDTO.getDocumentoFee());
+        detalleLiquidacionSimpleDTO.setComision(detalleLiquidacionResponseDTO.getComision());
         detalleLiquidacionSimpleDTO.setFacturaCompra(detalleLiquidacionResponseDTO.getFacturaCompra());
         detalleLiquidacionSimpleDTO.setBoletaPasajero(detalleLiquidacionResponseDTO.getBoletaPasajero());
         detalleLiquidacionSimpleDTO.setMontoDescuento(detalleLiquidacionResponseDTO.getMontoDescuento());
