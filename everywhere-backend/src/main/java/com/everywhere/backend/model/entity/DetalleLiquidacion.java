@@ -22,6 +22,9 @@ public class DetalleLiquidacion {
     @Column(name = "dtliq_tick_vac")
     private String ticket;
 
+    @Column(name = "dtliq_doc_cobr_vac")
+    private String documentoCobro;
+
     @Column(name = "dtliq_cost_tick_dc")
     private BigDecimal costoTicket;
 
@@ -30,6 +33,15 @@ public class DetalleLiquidacion {
 
     @Column(name = "dtliq_val_vent_dc")
     private BigDecimal valorVenta;
+
+    @Column(name = "dtliq_fee_emision_vac")
+    private String feeEmision;
+
+    @Column(name = "dtliq_doc_fee_vac")
+    private String documentoFee;
+
+    @Column(name = "dtliq_comision_vac")
+    private String comision;
 
     @Column(name = "dtliq_fac_comp_vac")
     private String facturaCompra;
