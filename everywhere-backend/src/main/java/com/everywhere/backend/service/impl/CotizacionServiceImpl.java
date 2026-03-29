@@ -7,6 +7,7 @@ import com.everywhere.backend.model.entity.*;
 import com.everywhere.backend.repository.*;
 import com.everywhere.backend.service.CotizacionService;
 import com.everywhere.backend.service.DetalleCotizacionService;
+import com.everywhere.backend.service.HistorialCotizacionService;
 
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,7 @@ public class CotizacionServiceImpl implements CotizacionService {
     private final PersonaRepository personasRepository;
     private final DetalleCotizacionService detalleCotizacionService;
     private final PersonaNaturalRepository personaNaturalRepository;
+    private final HistorialCotizacionService historialCotizacionService;
 
     // Diccionario de tipos de productos
     private static final Map<String, String> DICCIONARIO_PRODUCTOS = Map.of(
@@ -94,7 +96,11 @@ public class CotizacionServiceImpl implements CotizacionService {
             cotizacion.setCarpeta(carpeta);
         }
 
-        return cotizacionMapper.toResponse(cotizacionRepository.save(cotizacion));
+        Cotizacion savedCotizacion = cotizacionRepository.save(cotizacion);
+        registrarHistorialSiTieneEstado(savedCotizacion,
+            "Registro inicial del estado de la cotización");
+
+        return cotizacionMapper.toResponse(savedCotizacion);
     }
 
     @Override
@@ -112,6 +118,10 @@ public class CotizacionServiceImpl implements CotizacionService {
     public CotizacionResponseDto update(Integer id, CotizacionRequestDto cotizacionRequestDto) {
         Cotizacion cotizacion = cotizacionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cotización no encontrada con ID: " + id));
+
+        Integer estadoAnteriorId = cotizacion.getEstadoCotizacion() != null
+            ? cotizacion.getEstadoCotizacion().getId()
+            : null;
 
         cotizacionMapper.updateEntityFromRequest(cotizacion, cotizacionRequestDto);
 
@@ -150,7 +160,17 @@ public class CotizacionServiceImpl implements CotizacionService {
             cotizacion.setCarpeta(carpeta);
         }
 
-        return cotizacionMapper.toResponse(cotizacionRepository.save(cotizacion));
+        Cotizacion updatedCotizacion = cotizacionRepository.save(cotizacion);
+        Integer estadoActualId = updatedCotizacion.getEstadoCotizacion() != null
+            ? updatedCotizacion.getEstadoCotizacion().getId()
+            : null;
+
+        if (!Objects.equals(estadoAnteriorId, estadoActualId)) {
+            registrarHistorialSiTieneEstado(updatedCotizacion,
+                "Cambio de estado de cotización registrado automáticamente");
+        }
+
+        return cotizacionMapper.toResponse(updatedCotizacion);
     }
 
     @Override
@@ -193,6 +213,17 @@ public class CotizacionServiceImpl implements CotizacionService {
 
     private List<CotizacionResponseDto> mapToResponseList(List<Cotizacion> cotizaciones) {
         return cotizaciones.stream().map(cotizacionMapper::toResponse).toList();
+    }
+
+    private void registrarHistorialSiTieneEstado(Cotizacion cotizacion, String observacion) {
+        if (cotizacion.getEstadoCotizacion() == null) {
+            return;
+        }
+
+        historialCotizacionService.registrarCambioEstado(
+                cotizacion.getId(),
+                cotizacion.getEstadoCotizacion().getId(),
+                observacion);
     }
 
     private Map<String, Object> agruparDetallesPorTipoProducto(List<DetalleCotizacionSimpleDTO> detalles) {
