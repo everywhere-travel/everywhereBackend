@@ -8,10 +8,15 @@ import com.everywhere.backend.service.LiquidacionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 
 @RestController
@@ -44,6 +49,19 @@ public class LiquidacionController {
     @RequirePermission(module = "LIQUIDACIONES", permission = "READ")
     public ResponseEntity<LiquidacionConDetallesResponseDTO> getLiquidacionConDetalles(@PathVariable Integer id) {
         return ResponseEntity.ok(liquidacionService.findByIdWithDetalles(id));
+    }
+
+    @GetMapping("/{id}/generar-excel")
+    @RequirePermission(module = "LIQUIDACIONES", permission = "READ")
+    public ResponseEntity<Resource> generateExcel(@PathVariable Integer id) {
+        ByteArrayInputStream excelStream = liquidacionService.generateExcel(id);
+        InputStreamResource resource = new InputStreamResource(excelStream);
+        String filename = "Liquidacion_" + id + ".xlsx";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(resource);
     }
 
     @DeleteMapping("/{id}")
