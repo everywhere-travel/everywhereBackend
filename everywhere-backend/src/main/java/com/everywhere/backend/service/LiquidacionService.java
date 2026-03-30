@@ -4,6 +4,7 @@ import com.everywhere.backend.model.dto.LiquidacionRequestDTO;
 import com.everywhere.backend.model.dto.LiquidacionResponseDTO;
 import com.everywhere.backend.model.dto.LiquidacionConDetallesResponseDTO;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 
 public interface LiquidacionService {
@@ -16,4 +17,5 @@ public interface LiquidacionService {
     List<LiquidacionResponseDTO> findByCarpeta(Integer carpetaId);
     List<LiquidacionResponseDTO> findSinCarpeta();
     LiquidacionResponseDTO updateCarpeta(Integer id, Integer carpetaId);
+    ByteArrayInputStream generateExcel(Integer liquidacionId);
 }
