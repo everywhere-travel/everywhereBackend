@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 public class CotizacionResponseDto {
 
     private int id;
+    private String nombreCotizacion;
     private String codigoCotizacion;
     private int cantAdultos;
     private int cantNinos;

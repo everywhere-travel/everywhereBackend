@@ -22,6 +22,9 @@ public class Cotizacion {
     @Column(name = "cot_id_int")
     private int id;
 
+    @Column(name = "cot_nomb_vac")
+    private String nombreCotizacion;
+
     @Column(name = "cot_num_vac")
     private String codigoCotizacion;
 

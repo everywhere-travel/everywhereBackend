@@ -20,6 +20,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,6 +51,8 @@ public class CotizacionServiceImpl implements CotizacionService {
             "TUR", "Tours",
             "SEG", "Seguros",
             "OTR", "Otros servicios");
+
+    private static final DateTimeFormatter DOCX_FECHA_EMISION_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy',' HH:mm:ss");
 
     @Override
     public CotizacionResponseDto create(CotizacionRequestDto cotizacionRequestDto, Integer personaId) {
@@ -167,7 +173,7 @@ public class CotizacionServiceImpl implements CotizacionService {
 
         if (!Objects.equals(estadoAnteriorId, estadoActualId)) {
             registrarHistorialSiTieneEstado(updatedCotizacion,
-                "Cambio de estado de cotización registrado automáticamente");
+                "Actualización registrado automáticamente");
         }
 
         return cotizacionMapper.toResponse(updatedCotizacion);
@@ -263,12 +269,7 @@ public class CotizacionServiceImpl implements CotizacionService {
             List<DetalleCotizacionSimpleDTO> detallesDelTipo = entry.getValue();
 
             BigDecimal importeTotalGrupo = detallesDelTipo.stream()
-                    .map(detalle -> {
-                        BigDecimal precio = detalle.getPrecioHistorico() != null ? detalle.getPrecioHistorico()
-                                : BigDecimal.ZERO;
-                        Integer cantidad = detalle.getCantidad() != null ? detalle.getCantidad() : 1;
-                        return precio.multiply(BigDecimal.valueOf(cantidad));
-                    })
+                    .map(this::calcularImporteDetalle)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             importeTotalFijos = importeTotalFijos.add(importeTotalGrupo);
@@ -292,12 +293,7 @@ public class CotizacionServiceImpl implements CotizacionService {
             List<DetalleCotizacionSimpleDTO> detallesDeCategoria = entry.getValue();
 
             BigDecimal importeTotalCategoria = detallesDeCategoria.stream()
-                    .map(detalle -> {
-                        BigDecimal precio = detalle.getPrecioHistorico() != null ? detalle.getPrecioHistorico()
-                                : BigDecimal.ZERO;
-                        Integer cantidad = detalle.getCantidad() != null ? detalle.getCantidad() : 1;
-                        return precio.multiply(BigDecimal.valueOf(cantidad));
-                    })
+                    .map(this::calcularImporteDetalle)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             Map<String, Object> grupo = new LinkedHashMap<>();
@@ -310,10 +306,16 @@ public class CotizacionServiceImpl implements CotizacionService {
             gruposOpciones.add(grupo);
         }
 
+        BigDecimal importeGrupoMasEconomico = gruposOpciones.stream()
+                .map(grupo -> (BigDecimal) grupo.get("importeTotal"))
+                .filter(Objects::nonNull)
+                .min(BigDecimal::compareTo)
+                .orElse(BigDecimal.ZERO);
+
         resultado.put("detallesFijos", detallesFijos);
         resultado.put("gruposProductosFijos", gruposProductosFijos);
         resultado.put("gruposOpciones", gruposOpciones);
-        resultado.put("importeTotalGeneral", importeTotalFijos); // Solo suma productos FIJOS
+        resultado.put("importeTotalGeneral", importeTotalFijos.add(importeGrupoMasEconomico));
 
         return resultado;
     }
@@ -347,16 +349,44 @@ public class CotizacionServiceImpl implements CotizacionService {
             XWPFDocument document = new XWPFDocument(templateStream);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-            // 1. Título de la cotización
+            // 1. Encabezado superior
+            XWPFParagraph headingParagraph = document.createParagraph();
+            headingParagraph.setAlignment(ParagraphAlignment.CENTER);
+            headingParagraph.setSpacingBefore(300);
+            headingParagraph.setSpacingAfter(20);
+
+            XWPFRun headingRun = headingParagraph.createRun();
+            headingRun.setText("COTIZACIÓN");
+            headingRun.setBold(true);
+            headingRun.setFontSize(17);
+
+            // 2. Título de la cotización (nombre)
             XWPFParagraph titleParagraph = document.createParagraph();
             titleParagraph.setAlignment(ParagraphAlignment.CENTER);
-            titleParagraph.setSpacingBefore(300);
-            titleParagraph.setSpacingAfter(300);
+            titleParagraph.setSpacingBefore(0);
+            titleParagraph.setSpacingAfter(80);
 
             XWPFRun titleRun = titleParagraph.createRun();
-            titleRun.setText("COTIZACIÓN N° " + cotizacion.getCodigoCotizacion());
+            titleRun.setText(resolveDocxTitle(cotizacion));
             titleRun.setBold(true);
             titleRun.setFontSize(18);
+
+            XWPFParagraph durationParagraph = document.createParagraph();
+            durationParagraph.setAlignment(ParagraphAlignment.CENTER);
+            durationParagraph.setSpacingAfter(60);
+
+            XWPFRun durationRun = durationParagraph.createRun();
+            durationRun.setText(resolveDuracionViaje(cotizacion));
+            durationRun.setBold(true);
+            durationRun.setFontSize(12);
+
+            XWPFParagraph routeParagraph = document.createParagraph();
+            routeParagraph.setAlignment(ParagraphAlignment.CENTER);
+            routeParagraph.setSpacingAfter(80);
+
+            XWPFRun routeRun = routeParagraph.createRun();
+            routeRun.setText("Destino: " + resolveRutaCotizacion(cotizacion));
+            routeRun.setFontSize(11);
 
             // 2. Información general de la cotización
             addCotizacionInfo(document, cotizacion);
@@ -368,17 +398,17 @@ public class CotizacionServiceImpl implements CotizacionService {
             addTodosLosDetallesTable(document, detallesFijos);
 
             // 4. Tablas agrupadas de productos FIJOS por tipo
-            addDetallesAgrupadosPorTipo(document, datosAgrupados);
+            // addDetallesAgrupadosPorTipo(document, datosAgrupados);
 
             // 5. Sección de OPCIONES (categorías no FIJAS)
-            addOpcionesPorCategoria(document, datosAgrupados);
+            addOpcionesPorCategoriaHotel(document, datosAgrupados);
 
             // 6. NUEVA: Tabla de Tarifas de Vuelo (solo si hay productos TKT)
             if (tieneVuelos) {
                 addTablaTarifasVuelo(document);
             }
 
-            // 7. Sección de Importe a Pagar (total solo de productos FIJOS)
+            // 7. Sección de Importe a Pagar (total de cotización más económica)
             int totalPersonas = cotizacion.getCantAdultos() + cotizacion.getCantNinos();
 
             // Debug: Si totalPersonas es 0, usar 1 para evitar división por cero
@@ -407,14 +437,13 @@ public class CotizacionServiceImpl implements CotizacionService {
 
     private void addCotizacionInfo(XWPFDocument document, CotizacionConDetallesResponseDTO cotizacion) {
         XWPFParagraph infoParagraph = document.createParagraph();
-        infoParagraph.setSpacingBefore(200);
-        infoParagraph.setSpacingAfter(200);
+        infoParagraph.setSpacingBefore(0);
+        infoParagraph.setSpacingAfter(120);
 
         XWPFRun infoRun = infoParagraph.createRun();
-        infoRun.setText("Código: " + cotizacion.getCodigoCotizacion());
+        infoRun.setText("Fecha Emisión: " + formatFechaEmision(cotizacion.getFechaEmision()));
         infoRun.addBreak();
-        infoRun.setText("Fecha Emisión: "
-                + (cotizacion.getFechaEmision() != null ? cotizacion.getFechaEmision().toString() : "N/A"));
+        infoRun.setText("Fecha Vencimiento: " + formatFechaEmision(cotizacion.getFechaVencimiento()));
         infoRun.addBreak();
 
         // Obtener nombre completo del cliente
@@ -451,10 +480,57 @@ public class CotizacionServiceImpl implements CotizacionService {
         }
         infoRun.setText("Cliente: " + clienteInfo);
         infoRun.addBreak();
-        infoRun.setText("Ruta: " + (cotizacion.getOrigenDestino() != null ? cotizacion.getOrigenDestino() : "N/A"));
-        infoRun.addBreak();
         infoRun.setText("Adultos: " + cotizacion.getCantAdultos() + " | Niños: " + cotizacion.getCantNinos());
         infoRun.setFontSize(11);
+    }
+
+    private String resolveDocxTitle(CotizacionConDetallesResponseDTO cotizacion) {
+        if (cotizacion.getNombreCotizacion() != null && !cotizacion.getNombreCotizacion().trim().isEmpty()) {
+            return cotizacion.getNombreCotizacion().trim();
+        }
+
+        if (cotizacion.getCodigoCotizacion() != null && !cotizacion.getCodigoCotizacion().trim().isEmpty()) {
+            return "Cotización " + cotizacion.getCodigoCotizacion().trim();
+        }
+
+        return "Cotización";
+    }
+
+    private String resolveDuracionViaje(CotizacionConDetallesResponseDTO cotizacion) {
+        LocalDate fechaSalida = cotizacion.getFechaSalida();
+        LocalDate fechaRegreso = cotizacion.getFechaRegreso();
+
+        if (fechaSalida == null || fechaRegreso == null) {
+            return "0 DIAS / 0 NOCHES";
+        }
+
+        long noches = ChronoUnit.DAYS.between(fechaSalida, fechaRegreso);
+        if (noches < 0) {
+            noches = 0;
+        }
+
+        long dias = noches + 1;
+        return dias + " DIAS / " + noches + " NOCHES";
+    }
+
+    private String resolveRutaCotizacion(CotizacionConDetallesResponseDTO cotizacion) {
+        return cotizacion.getOrigenDestino() != null && !cotizacion.getOrigenDestino().trim().isEmpty()
+                ? cotizacion.getOrigenDestino().trim()
+                : "N/A";
+    }
+
+    private String formatFechaEmision(LocalDateTime fechaEmision) {
+        if (fechaEmision == null) {
+            return "N/A";
+        }
+        return fechaEmision.format(DOCX_FECHA_EMISION_FORMATTER);
+    }
+
+    private BigDecimal calcularImporteDetalle(DetalleCotizacionSimpleDTO detalle) {
+        BigDecimal precio = detalle.getPrecioHistorico() != null ? detalle.getPrecioHistorico() : BigDecimal.ZERO;
+        BigDecimal comision = detalle.getComision() != null ? detalle.getComision() : BigDecimal.ZERO;
+        Integer cantidad = detalle.getCantidad() != null ? detalle.getCantidad() : 1;
+        return precio.add(comision).multiply(BigDecimal.valueOf(cantidad));
     }
 
     private void addTodosLosDetallesTable(XWPFDocument document, List<DetalleCotizacionSimpleDTO> detalles) {
@@ -462,11 +538,11 @@ public class CotizacionServiceImpl implements CotizacionService {
             return;
         }
 
-        // Título "Todos los Productos"
+        // Título "Productos"
         XWPFParagraph titleParagraph = document.createParagraph();
         titleParagraph.setSpacingBefore(200);
         XWPFRun titleRun = titleParagraph.createRun();
-        titleRun.setText("TODOS LOS PRODUCTOS");
+        titleRun.setText("PRODUCTOS");
         titleRun.setBold(true);
         titleRun.setFontSize(14);
 
@@ -475,48 +551,52 @@ public class CotizacionServiceImpl implements CotizacionService {
 
         // Encabezados de la tabla
         XWPFTableRow headerRow = table.getRow(0);
-        headerRow.getCell(0).setText("Tipo");
-        headerRow.addNewTableCell().setText("Proveedor");
-        headerRow.addNewTableCell().setText("Cantidad");
-        headerRow.addNewTableCell().setText("Precio Unit.");
-        headerRow.addNewTableCell().setText("Total");
+        headerRow.addNewTableCell().setText("Tipo");
+        headerRow.getCell(0).setText("Cantidad");
+        headerRow.addNewTableCell().setText("Operador");
+        //Las columnas de precio unitario y total se omiten en esta tabla general por reglas de negocio
+        //headerRow.addNewTableCell().setText("Precio Unit.");
+        //headerRow.addNewTableCell().setText("Total");
 
         // Agregar detalles
         for (DetalleCotizacionSimpleDTO detalle : detalles) {
             XWPFTableRow row = table.createRow();
+
+            // Cantidad
+            row.getCell(0).setText(detalle.getCantidad() != null ? detalle.getCantidad().toString() : "0");
 
             // Tipo de producto
             String tipo = "N/A";
             if (detalle.getProducto() != null && detalle.getProducto().getTipo() != null) {
                 tipo = detalle.getProducto().getTipo();
             }
-            row.getCell(0).setText(tipo);
+            row.getCell(1).setText(tipo);
 
-            // Proveedor
-            String proveedor = "N/A";
-            if (detalle.getProveedor() != null && detalle.getProveedor().getNombre() != null) {
-                proveedor = detalle.getProveedor().getNombre();
+            // Operador
+            String operador = "N/A";
+            if (detalle.getOperador() != null && detalle.getOperador().getNombre() != null) {
+                operador = detalle.getOperador().getNombre();
             }
-            row.getCell(1).setText(proveedor);
+            row.getCell(2).setText(operador);
 
-            row.getCell(2).setText(detalle.getCantidad() != null ? detalle.getCantidad().toString() : "0");
-            row.getCell(3)
-                    .setText(detalle.getPrecioHistorico() != null ? String.format("%.2f", detalle.getPrecioHistorico())
-                            : "0.00");
+            //row.getCell(3)
+            //        .setText(detalle.getPrecioHistorico() != null ? String.format("%.2f", detalle.getPrecioHistorico().add(detalle.getComision()))
+            //                : "0.00");
 
             // Calcular total: cantidad * precio
-            BigDecimal total = BigDecimal.ZERO;
-            if (detalle.getCantidad() != null && detalle.getPrecioHistorico() != null) {
-                total = detalle.getPrecioHistorico().multiply(BigDecimal.valueOf(detalle.getCantidad()));
-            }
-            row.getCell(4).setText(String.format("%.2f", total));
+            //BigDecimal total = BigDecimal.ZERO;
+            //if (detalle.getCantidad() != null && detalle.getPrecioHistorico() != null && detalle.getComision() != null) {
+            //    total = detalle.getPrecioHistorico().multiply(BigDecimal.valueOf(detalle.getCantidad()));
+            //}
+            //row.getCell(4).setText(String.format("%.2f", total));
         }
 
         XWPFParagraph spaceParagraph = document.createParagraph();
         spaceParagraph.setSpacingAfter(200);
     }
 
-    @SuppressWarnings("unchecked")
+    // Esta función se mantiene pero se comenta para no mostrar tablas agrupadas por tipo de producto, solo la tabla general. Se puede reactivar si se desea mostrar ambas secciones (general y agrupada).
+    /*@SuppressWarnings("unchecked")
     private void addDetallesAgrupadosPorTipo(XWPFDocument document, Map<String, Object> datosAgrupados) {
         List<Map<String, Object>> gruposProductos = (List<Map<String, Object>>) datosAgrupados
                 .get("gruposProductosFijos");
@@ -547,7 +627,7 @@ public class CotizacionServiceImpl implements CotizacionService {
             // Encabezados
             XWPFTableRow headerRow = table.getRow(0);
             headerRow.getCell(0).setText("Descripción");
-            headerRow.addNewTableCell().setText("Proveedor");
+            headerRow.addNewTableCell().setText("Operador");
             headerRow.addNewTableCell().setText("Cantidad");
             headerRow.addNewTableCell().setText("Precio Unit.");
             headerRow.addNewTableCell().setText("Total");
@@ -557,12 +637,12 @@ public class CotizacionServiceImpl implements CotizacionService {
                 XWPFTableRow row = table.createRow();
                 row.getCell(0).setText(detalle.getDescripcion() != null ? detalle.getDescripcion() : "");
 
-                // Proveedor
-                String proveedor = "N/A";
-                if (detalle.getProveedor() != null && detalle.getProveedor().getNombre() != null) {
-                    proveedor = detalle.getProveedor().getNombre();
+                // Operador
+                String operador = "N/A";
+                if (detalle.getOperador() != null && detalle.getOperador().getNombre() != null) {
+                    operador = detalle.getOperador().getNombre();
                 }
-                row.getCell(1).setText(proveedor);
+                row.getCell(1).setText(operador);
 
                 row.getCell(2).setText(detalle.getCantidad() != null ? detalle.getCantidad().toString() : "0");
                 row.getCell(3)
@@ -591,9 +671,9 @@ public class CotizacionServiceImpl implements CotizacionService {
             spaceParagraph.setSpacingAfter(100);
         }
     }
-
+    */
     @SuppressWarnings("unchecked")
-    private void addOpcionesPorCategoria(XWPFDocument document, Map<String, Object> datosAgrupados) {
+    private void addOpcionesPorCategoriaHotel(XWPFDocument document, Map<String, Object> datosAgrupados) {
         List<Map<String, Object>> gruposOpciones = (List<Map<String, Object>>) datosAgrupados.get("gruposOpciones");
 
         if (gruposOpciones == null || gruposOpciones.isEmpty()) {
@@ -605,14 +685,13 @@ public class CotizacionServiceImpl implements CotizacionService {
         mainTitleParagraph.setSpacingBefore(400);
         mainTitleParagraph.setSpacingAfter(200);
         XWPFRun mainTitleRun = mainTitleParagraph.createRun();
-        mainTitleRun.setText("OPCIONES");
+        mainTitleRun.setText("HOTELERÍA");
         mainTitleRun.setBold(true);
         mainTitleRun.setFontSize(16);
 
         for (Map<String, Object> grupo : gruposOpciones) {
             String nombreCategoria = (String) grupo.get("nombreCategoria");
             List<DetalleCotizacionSimpleDTO> detalles = (List<DetalleCotizacionSimpleDTO>) grupo.get("detalles");
-            BigDecimal importeTotal = (BigDecimal) grupo.get("importeTotal");
             String color = (String) grupo.get("color");
 
             // Subtítulo de la categoría
@@ -633,7 +712,7 @@ public class CotizacionServiceImpl implements CotizacionService {
             headerRow.getCell(0).setText("Descripción");
             headerRow.getCell(0).setColor(color);
             XWPFTableCell proveedorCell = headerRow.addNewTableCell();
-            proveedorCell.setText("Proveedor");
+            proveedorCell.setText("Operador");
             proveedorCell.setColor(color);
             XWPFTableCell cantidadCell = headerRow.addNewTableCell();
             cantidadCell.setText("Cantidad");
@@ -653,11 +732,11 @@ public class CotizacionServiceImpl implements CotizacionService {
                 row.getCell(0).setText(detalle.getDescripcion() != null ? detalle.getDescripcion() : "");
                 row.getCell(0).setColor(color);
 
-                String proveedor = "N/A";
-                if (detalle.getProveedor() != null && detalle.getProveedor().getNombre() != null) {
-                    proveedor = detalle.getProveedor().getNombre();
+                String operador = "N/A";
+                if (detalle.getOperador() != null && detalle.getOperador().getNombre() != null) {
+                    operador = detalle.getOperador().getNombre();
                 }
-                row.getCell(1).setText(proveedor);
+                row.getCell(1).setText(operador);
                 row.getCell(1).setColor(color);
 
                 row.getCell(2).setText(detalle.getCantidad() != null ? detalle.getCantidad().toString() : "0");
@@ -665,80 +744,23 @@ public class CotizacionServiceImpl implements CotizacionService {
 
                 row.getCell(3)
                         .setText(detalle.getPrecioHistorico() != null
-                                ? String.format("%.2f", detalle.getPrecioHistorico())
-                                : "0.00");
+                        ? "USD " + String.format("%.2f", detalle.getPrecioHistorico().add(detalle.getComision()))
+                        : "USD 0.00");
                 row.getCell(3).setColor(color);
 
                 BigDecimal total = BigDecimal.ZERO;
-                if (detalle.getCantidad() != null && detalle.getPrecioHistorico() != null) {
-                    total = detalle.getPrecioHistorico().multiply(BigDecimal.valueOf(detalle.getCantidad()));
+                if (detalle.getCantidad() != null && detalle.getPrecioHistorico() != null && detalle.getComision() != null) {
+                    total = detalle.getPrecioHistorico().add(detalle.getComision()).multiply(BigDecimal.valueOf(detalle.getCantidad()));
                 }
-                row.getCell(4).setText(String.format("%.2f", total));
+                row.getCell(4).setText("USD " + String.format("%.2f", total));
                 row.getCell(4).setColor(color);
             }
-
-            // Cuadro con importe total de la categoría
-            XWPFParagraph totalParagraph = document.createParagraph();
-            totalParagraph.setSpacingBefore(100);
-            totalParagraph.setSpacingAfter(100);
-            XWPFRun totalRun = totalParagraph.createRun();
-            totalRun.setText("Importe Total " + nombreCategoria + ": USD " + String.format("%.2f", importeTotal));
-            totalRun.setBold(true);
-            totalRun.setFontSize(12);
-            totalRun.setColor("DC2626");
 
             XWPFParagraph spaceParagraph = document.createParagraph();
             spaceParagraph.setSpacingAfter(100);
         }
     }
-
-    private void addImporteAPagar(XWPFDocument document, Map<String, Object> datosAgrupados) {
-        // Título "Pagos"
-        XWPFParagraph titleParagraph = document.createParagraph();
-        titleParagraph.setSpacingBefore(300);
-        XWPFRun titleRun = titleParagraph.createRun();
-        titleRun.setText("Pagos");
-        titleRun.setBold(true);
-        titleRun.setFontSize(14);
-
-        // Obtener el importe total general
-        BigDecimal importeTotalGeneral = (BigDecimal) datosAgrupados.get("importeTotalGeneral");
-        double total = importeTotalGeneral != null ? importeTotalGeneral.doubleValue() : 0.0;
-
-        // Crear tabla para "Importe a Pagar" centrada y ancho completo
-        XWPFTable table = document.createTable(2, 1);
-        table.setWidth("100%"); // Ancho completo
-
-        // Centrar la tabla
-        table.getCTTbl().addNewTblPr().addNewJc()
-                .setVal(org.openxmlformats.schemas.wordprocessingml.x2006.main.STJcTable.CENTER);
-
-        // Fila superior roja: IMPORTE A PAGAR
-        XWPFTableRow row1 = table.getRow(0);
-        XWPFTableCell cell1 = row1.getCell(0);
-        cell1.setColor("DC2626"); // Rojo
-        XWPFParagraph p1 = cell1.getParagraphs().get(0);
-        p1.setAlignment(ParagraphAlignment.CENTER); // Centrar texto
-        XWPFRun r1 = p1.createRun();
-        r1.setText("IMPORTE A PAGAR");
-        r1.setBold(true);
-        r1.setColor("FFFFFF"); // Blanco
-        r1.setFontSize(14);
-
-        // Fila inferior: Detalles
-        XWPFTableRow row2 = table.getRow(1);
-        XWPFTableCell cell2 = row2.getCell(0);
-        XWPFParagraph p2 = cell2.getParagraphs().get(0);
-        p2.setAlignment(ParagraphAlignment.CENTER); // Centrar texto
-        XWPFRun r2 = p2.createRun();
-        r2.setText("USD. " + String.format("%.2f", total));
-        r2.setBold(true);
-        r2.setFontSize(16);
-
-        XWPFParagraph spaceParagraph = document.createParagraph();
-        spaceParagraph.setSpacingAfter(200);
-    }
-
+    
     private void addImporteAPagarConPersonas(XWPFDocument document, Map<String, Object> datosAgrupados,
             int cantidadPersonas) {
         // Título "Pagos"
@@ -785,21 +807,26 @@ public class CotizacionServiceImpl implements CotizacionService {
         XWPFTableCell cell2 = row2.getCell(0);
         XWPFParagraph p2 = cell2.getParagraphs().get(0);
         p2.setAlignment(ParagraphAlignment.CENTER); // Centrar texto
-        XWPFRun r2 = p2.createRun();
-        r2.setText("USD. " + String.format("%.2f", total));
-        r2.setBold(true);
-        r2.setFontSize(16);
-        r2.addBreak();
-
-        // Mostrar precio por persona solo si hay personas
+        XWPFRun rTotal = p2.createRun();
+        // Primero mostrar el precio total por la cantidad de personas
         if (cantidadPersonas > 0) {
-            r2.setText(
-                    "Precio por " + cantidadPersonas + " persona(s): USD " + String.format("%.2f", precioPorPersona));
+            rTotal.setText("Precio por " + cantidadPersonas + " persona(s): USD " + String.format("%.2f", total));
         } else {
-            r2.setText("Precio por persona: N/A (cantidad de personas no especificada)");
+            rTotal.setText("Precio por cantidad de personas: N/A");
         }
-        r2.setBold(false);
-        r2.setFontSize(12);
+        rTotal.setBold(true);
+        rTotal.setFontSize(16);
+        rTotal.addBreak();
+
+        // Debajo mostrar el precio por persona
+        XWPFRun rPersona = p2.createRun();
+        if (cantidadPersonas > 0) {
+            rPersona.setText("Precio por persona: USD " + String.format("%.2f", precioPorPersona));
+        } else {
+            rPersona.setText("Precio por persona: N/A (cantidad de personas no especificada)");
+        }
+        rPersona.setBold(false);
+        rPersona.setFontSize(12);
 
         XWPFParagraph spaceParagraph = document.createParagraph();
         spaceParagraph.setSpacingAfter(200);
@@ -1119,16 +1146,13 @@ public class CotizacionServiceImpl implements CotizacionService {
         Cotizacion cotizacion = cotizacionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cotizacion no encontrada con ID: " + id));
 
-        if (carpetaId != null) {
-            // Asociar a una carpeta
+        if (carpetaId != null) { // Asociar a una carpeta
             Carpeta carpeta = carpetaRepository.findById(carpetaId)
                     .orElseThrow(() -> new ResourceNotFoundException("Carpeta no encontrada con ID: " + carpetaId));
             cotizacion.setCarpeta(carpeta);
         } else {
-            // Desasociar de la carpeta
             cotizacion.setCarpeta(null);
         }
-
         return cotizacionMapper.toResponse(cotizacionRepository.save(cotizacion));
     }
 }
