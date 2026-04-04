@@ -36,6 +36,9 @@ public class CotizacionMapper {
     }
     
     public void updateEntityFromRequest(Cotizacion cotizacion, CotizacionRequestDto cotizacionRequestDto) {
+        if (cotizacionRequestDto.getNombreCotizacion() != null) {
+            cotizacion.setNombreCotizacion(cotizacionRequestDto.getNombreCotizacion());
+        }
         if (cotizacionRequestDto.getCantAdultos() != null) {
             cotizacion.setCantAdultos(cotizacionRequestDto.getCantAdultos());
         }

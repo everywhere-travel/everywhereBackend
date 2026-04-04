@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 @Data
 public class CotizacionRequestDto {
+    private String nombreCotizacion;
     private Integer cantAdultos;
     private Integer cantNinos;
     private LocalDateTime fechaVencimiento;
