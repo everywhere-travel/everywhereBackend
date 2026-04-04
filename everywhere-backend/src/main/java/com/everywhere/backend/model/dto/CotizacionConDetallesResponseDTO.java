@@ -11,6 +11,7 @@ import java.util.List;
 public class CotizacionConDetallesResponseDTO {
 
     private int id;
+    private String nombreCotizacion;
     private String codigoCotizacion;
     private int cantAdultos;
     private int cantNinos;
