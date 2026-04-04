@@ -52,14 +52,14 @@ public enum Role {
             entry("PROVEEDORES", Set.of("CREATE","READ","UPDATE","DELETE")),
             entry("OPERADOR", Set.of("CREATE","READ","UPDATE","DELETE")),
             entry("PERSONAS", Set.of("CREATE","READ","UPDATE","DELETE"))
-    )),  // <-- Cerrar Map.ofEntries y agregar coma para continuar con el siguiente enum
+    )),
 
     VENTAS_JUNIOR(7, "VENTAS_JUNIOR", Map.ofEntries(
             entry("CLIENTES", Set.of("CREATE","READ")),
             entry("VIAJEROS", Set.of("CREATE","READ")),
-            entry("COTIZACIONES", Set.of("CREATE","READ","UPDATE")),// Control interno más fino
+            entry("COTIZACIONES", Set.of("CREATE","READ","UPDATE")),
             entry("RECIBOS", Set.of("CREATE","READ","UPDATE")),
-            entry("LIQUIDACIONES", Set.of("CREATE","READ","DELETE")),// Control interno más fino
+            entry("LIQUIDACIONES", Set.of("CREATE","READ","DELETE")),
             entry("CARPETA", Set.of("CREATE","READ")),
             entry("PERSONAS", Set.of("CREATE","READ"))
 
@@ -68,7 +68,7 @@ public enum Role {
     GERENTE_ARGENTINA(8, "GERENTE_ARGENTINA", Map.ofEntries(
             entry("CLIENTES", Set.of("CREATE","READ","UPDATE","DELETE")),
             entry("VIAJEROS", Set.of("CREATE","READ","UPDATE","DELETE")),
-            entry("COTIZACIONES", Set.of("CREATE","READ","UPDATE","DELETE")), // Control interno para permisos más finos
+            entry("COTIZACIONES", Set.of("CREATE","READ","UPDATE","DELETE")),
             entry("RECIBOS", Set.of("CREATE","READ","UPDATE","DELETE")),
             entry("LIQUIDACIONES", Set.of("READ")),
             entry("PROVEEDORES", Set.of("READ")),
