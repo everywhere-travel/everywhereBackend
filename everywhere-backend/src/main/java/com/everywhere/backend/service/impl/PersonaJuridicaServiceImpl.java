@@ -29,9 +29,12 @@ public class PersonaJuridicaServiceImpl implements PersonaJuridicaService {
 
     @Override
     public List<PersonaJuridicaResponseDTO> findAll() {
-        return personaJuridicaRepository.findAll().stream().map(personaJuridicaMapper::toResponseDTO).toList();
+        // Usamos el nuevo método para traer los 100 últimos
+        return personaJuridicaRepository.findTop100ByOrderByIdDesc()
+                .stream()
+                .map(personaJuridicaMapper::toResponseDTO) // Usamos tu mapper original
+                .toList();
     }
-
     @Override
     public PersonaJuridicaResponseDTO findById(Integer id) {
         PersonaJuridica personaJuridica = personaJuridicaRepository.findById(id)
