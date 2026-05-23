@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,9 +37,14 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
     private final PersonaNaturalMapper personaNaturalMapper;
     private final PersonaMapper personaMapper;
 
+   
     @Override
     public List<PersonaNaturalResponseDTO> findAll() {
-        return personaNaturalRepository.findAll().stream().map(personaNaturalMapper::toResponseDTO).toList();
+        // Usamos el nuevo método para traer los 100 últimos
+        return personaNaturalRepository.findTop100ByOrderByIdDesc()
+                .stream()
+                .map(personaNaturalMapper::toResponseDTO) // Usamos tu mapper original
+                .toList();
     }
 
     @Override

@@ -20,4 +20,5 @@ public interface PersonaJuridicaRepository extends JpaRepository<PersonaJuridica
     List<PersonaJuridica> findByRazonSocialIgnoreCase(String razonSocial);
     Optional<PersonaJuridica> findByPersonasId(Integer personaId);
     Optional<PersonaJuridica> findByRucIgnoreCaseAndIdNot(String ruc, Integer id);
+    List<PersonaJuridica> findTop100ByOrderByIdDesc();
 }
