@@ -61,6 +61,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // Permitir acceso público a las rutas de login y registro
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/debug/**").permitAll()
                         // Swagger / OpenAPI - todas las rutas necesarias
                         .requestMatchers("/swagger-ui.html").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
