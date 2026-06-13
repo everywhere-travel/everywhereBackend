@@ -2,7 +2,6 @@ package com.everywhere.backend.model.dto;
 
 import lombok.Data;
 
-import java.util.Map;
 import java.util.Set;
 
 @Data
@@ -11,5 +10,6 @@ public class AuthResponseDTO {
     private String token;
     private String name;
     private String role;
-    private Map<String, Set<String>> permissions;
+    // Formato: ["CLIENTES:READ", "COTIZACIONES:CREATE", "ALL_MODULES:DELETE", ...]
+    private Set<String> permissions;
 }

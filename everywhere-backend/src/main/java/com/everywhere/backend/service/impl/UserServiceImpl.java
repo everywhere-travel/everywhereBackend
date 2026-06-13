@@ -6,11 +6,16 @@ import com.everywhere.backend.mapper.UserMapper;
 import com.everywhere.backend.model.dto.*;
 
 import com.everywhere.backend.model.entity.User;
+import com.everywhere.backend.model.entity.Role;
+import com.everywhere.backend.model.entity.Sucursal;
+import com.everywhere.backend.repository.RoleRepository;
+import com.everywhere.backend.repository.SucursalRepository;
 import com.everywhere.backend.repository.UserRepository;
 import com.everywhere.backend.security.TokenProvider;
 import com.everywhere.backend.security.UserPrincipal;
 import com.everywhere.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -25,9 +30,12 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final SucursalRepository sucursalRepository;
     private final UserMapper userMapper;
     private final AuthenticationManager authenticationManager;
     private final TokenProvider tokenProvider;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public AuthResponseDTO login(LoginDTO loginDTO) {
@@ -95,5 +103,70 @@ public class UserServiceImpl implements UserService {
         User user = getUserbyId(userId);
         user.setNombre(name.trim());
         return userMapper.toUserProfileDTO(userRepository.save(user));
+    }
+
+    @Override
+    @Transactional
+    public UserResponseDTO createUser(UserRequestDTO request) {
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("El email ya está en uso");
+        }
+
+        User user = new User();
+        user.setNombre(request.getNombre());
+        user.setEmail(request.getEmail());
+
+        String rawPassword = request.getPassword() != null && !request.getPassword().isEmpty() ? request.getPassword() : "123456";
+        user.setPassword(passwordEncoder.encode(rawPassword));
+
+        Role role = roleRepository.findById(request.getRoleId())
+                .orElseThrow(() -> new IllegalArgumentException("Rol no encontrado"));
+        user.setRole(role);
+
+        if (request.getSucursalId() != null) {
+            Sucursal sucursal = sucursalRepository.findById(request.getSucursalId())
+                    .orElseThrow(() -> new IllegalArgumentException("Sucursal no encontrada"));
+            user.setSucursal(sucursal);
+        }
+
+        return userMapper.toUserResponseDTO(userRepository.save(user));
+    }
+
+    @Override
+    @Transactional
+    public UserResponseDTO updateUser(Integer userId, UserRequestDTO request) {
+        User user = getUserbyId(userId);
+
+        if (!user.getEmail().equals(request.getEmail()) && userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("El email ya está en uso por otro usuario");
+        }
+
+        user.setNombre(request.getNombre());
+        user.setEmail(request.getEmail());
+
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
+        Role role = roleRepository.findById(request.getRoleId())
+                .orElseThrow(() -> new IllegalArgumentException("Rol no encontrado"));
+        user.setRole(role);
+
+        if (request.getSucursalId() != null) {
+            Sucursal sucursal = sucursalRepository.findById(request.getSucursalId())
+                    .orElseThrow(() -> new IllegalArgumentException("Sucursal no encontrada"));
+            user.setSucursal(sucursal);
+        } else {
+            user.setSucursal(null);
+        }
+
+        return userMapper.toUserResponseDTO(userRepository.save(user));
+    }
+
+    @Override
+    @Transactional
+    public void deleteUser(Integer userId) {
+        User user = getUserbyId(userId);
+        userRepository.delete(user);
     }
 }

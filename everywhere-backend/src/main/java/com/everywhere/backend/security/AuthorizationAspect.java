@@ -1,6 +1,5 @@
 package com.everywhere.backend.security;
 
-import com.everywhere.backend.model.enums.Role;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -10,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import org.aspectj.lang.reflect.MethodSignature;
+
 @Aspect
 @Component
 @RequiredArgsConstructor
@@ -18,28 +19,27 @@ public class AuthorizationAspect {
 
     private final AuthorizationService authorizationService;
 
-    @Around("@annotation(requirePermission)")
-    public Object checkPermission(ProceedingJoinPoint joinPoint, RequirePermission requirePermission) throws Throwable {
+    @Around("@annotation(com.everywhere.backend.security.RequirePermission)")
+    public Object checkPermission(ProceedingJoinPoint joinPoint) throws Throwable {
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        RequirePermission requirePermission = signature.getMethod().getAnnotation(RequirePermission.class);
+        
         String module = requirePermission.module();
         String permission = requirePermission.permission();
 
-        log.info("Verificando permisos para módulo: {} y permiso: {}", module, permission);
+        String currentRole = authorizationService.getCurrentUserRoleName();
+        log.info("Verificando permisos — módulo: '{}', acción: '{}', rol actual: '{}'", module, permission, currentRole);
 
-        Role currentRole = authorizationService.getCurrentUserRole();
-        if (currentRole != null) {
-            log.info("Usuario actual tiene rol: {}", currentRole.getName());
-            log.info("Módulos disponibles: {}", currentRole.getModulePermissions().keySet());
-            log.info("Permisos por módulo: {}", currentRole.getModulePermissions());
-        }
-
-        if (!authorizationService.hasPermission(module, permission)) {
-            log.warn("Acceso denegado para módulo: {} y permiso: {} con rol: {}",
-                    module, permission, currentRole != null ? currentRole.getName() : "NULL");
+        try {
+            authorizationService.hasPermission(module, permission);
+        } catch (Exception e) {
+            log.warn("Acceso denegado — módulo: '{}', acción: '{}', rol: '{}'", module, permission, currentRole);
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("No tienes permisos para realizar esta acción en el módulo: " + module);
         }
 
-        log.info("Acceso permitido para módulo: {} y permiso: {}", module, permission);
+        log.info("Acceso permitido — módulo: '{}', acción: '{}'", module, permission);
         return joinPoint.proceed();
     }
 }
+

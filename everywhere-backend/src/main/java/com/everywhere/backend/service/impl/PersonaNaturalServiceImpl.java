@@ -39,9 +39,20 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
 
    
     @Override
+    @Transactional(readOnly = true)
     public List<PersonaNaturalResponseDTO> findAll() {
-        // Usamos el nuevo método para traer los 100 últimos
-        return personaNaturalRepository.findTop100ByOrderByIdDesc()
+        // 1. Obtener solo los IDs de los últimos 100 registros (consulta rápida sin joins)
+        List<Integer> ids = personaNaturalRepository.findTop100ByOrderByIdDesc()
+                .stream()
+                .map(PersonaNatural::getId)
+                .toList();
+
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+
+        // 2. Traer las entidades completas usando los IDs con JOIN FETCH
+        return personaNaturalRepository.findConDetalles(ids)
                 .stream()
                 .map(personaNaturalMapper::toResponseDTO) // Usamos tu mapper original
                 .toList();
