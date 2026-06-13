@@ -41,10 +41,12 @@ public class Personas {
 
     @OneToMany(mappedBy = "persona", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonManagedReference
+    @org.hibernate.annotations.BatchSize(size = 100)
     private List<TelefonoPersona> telefonos;
 
     @OneToMany(mappedBy = "persona", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonManagedReference
+    @org.hibernate.annotations.BatchSize(size = 100)
     private List<CorreoPersona> correos;
 
 

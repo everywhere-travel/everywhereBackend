@@ -28,9 +28,20 @@ public class PersonaJuridicaServiceImpl implements PersonaJuridicaService {
     private final PersonaMapper personaMapper;
 
     @Override
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<PersonaJuridicaResponseDTO> findAll() {
-        // Usamos el nuevo método para traer los 100 últimos
-        return personaJuridicaRepository.findTop100ByOrderByIdDesc()
+        // 1. Obtener solo los IDs de los últimos 100 registros (consulta rápida sin joins)
+        List<Integer> ids = personaJuridicaRepository.findTop100ByOrderByIdDesc()
+                .stream()
+                .map(PersonaJuridica::getId)
+                .toList();
+
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+
+        // 2. Traer las entidades completas usando los IDs con JOIN FETCH
+        return personaJuridicaRepository.findConDetalles(ids)
                 .stream()
                 .map(personaJuridicaMapper::toResponseDTO) // Usamos tu mapper original
                 .toList();

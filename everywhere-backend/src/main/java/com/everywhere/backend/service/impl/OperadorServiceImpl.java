@@ -16,6 +16,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@org.springframework.transaction.annotation.Transactional(readOnly = true)
 public class OperadorServiceImpl implements OperadorService {
 
     private final OperadorRepository operadorRepository;
