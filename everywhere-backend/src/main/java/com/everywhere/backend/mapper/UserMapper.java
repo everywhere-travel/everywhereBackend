@@ -2,15 +2,19 @@ package com.everywhere.backend.mapper;
 
 import com.everywhere.backend.model.dto.*;
 import com.everywhere.backend.model.entity.User;
-import com.everywhere.backend.model.enums.Role;
+import com.everywhere.backend.repository.RolePermissionRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 @Component
 @RequiredArgsConstructor
 public class UserMapper {
+
     private final ModelMapper modelMapper;
+    private final RolePermissionRepository rolePermissionRepository;
 
     // Convierte LoginDTO a User entity (para autenticación)
     public User toUserEntity(LoginDTO loginDTO) {
@@ -32,12 +36,13 @@ public class UserMapper {
         authResponseDTO.setId(user.getId());
         authResponseDTO.setToken(token);
         
-        Role role = Role.fromName(user.getRole().getName()); // Obtener rol como enum para acceder a permisos
-        authResponseDTO.setRole(role.getName());
-
-        authResponseDTO.setPermissions(role.getModulePermissions()); // Cargar permisos desde el rol, no desde el usuario
+        authResponseDTO.setRole(user.getRole().getName());
         authResponseDTO.setName(user.getNombre()); // Usar email como nombre temporal
-        authResponseDTO.setPermissions(role.getModulePermissions());
+
+        // Cargar permisos desde BD en formato plano: "MODULO:ACCION"
+        Set<String> permissions = rolePermissionRepository
+                .findPermissionNamesByRoleId(user.getRole().getId());
+        authResponseDTO.setPermissions(permissions);
 
         return authResponseDTO;
     }
@@ -68,5 +73,33 @@ public class UserMapper {
         }
 
         return profile;
+    }
+
+    public UserResponseDTO toUserResponseDTO(User user) {
+        if (user == null) {
+            return null;
+        }
+        UserResponseDTO dto = new UserResponseDTO();
+        dto.setId(user.getId());
+        dto.setNombre(user.getNombre());
+        dto.setEmail(user.getEmail());
+        dto.setCreado(user.getCreado());
+        dto.setActualizado(user.getActualizado());
+
+        if (user.getRole() != null) {
+            RoleResponseDTO roleDto = new RoleResponseDTO();
+            roleDto.setId(user.getRole().getId());
+            roleDto.setName(user.getRole().getName());
+            roleDto.setCreatedAt(user.getRole().getCreatedAt());
+            roleDto.setUpdatedAt(user.getRole().getUpdatedAt());
+            roleDto.setPermissions(rolePermissionRepository.findPermissionNamesByRoleId(user.getRole().getId()));
+            dto.setRole(roleDto);
+        }
+
+        if (user.getSucursal() != null) {
+            dto.setSucursal(modelMapper.map(user.getSucursal(), SucursalResponseDTO.class));
+        }
+
+        return dto;
     }
 }

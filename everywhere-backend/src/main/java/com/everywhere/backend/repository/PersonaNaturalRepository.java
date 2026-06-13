@@ -27,5 +27,9 @@ public interface PersonaNaturalRepository extends JpaRepository<PersonaNatural, 
     Optional<PersonaNatural> findByDocumentoIgnoreCaseAndIdNot(String documento, Integer id);
     @Query("SELECT COUNT(pn) FROM PersonaNatural pn WHERE pn.categoriaPersona.id = :categoriaId")
     long countByCategoriaPersonaId(@Param("categoriaId") Integer categoriaId);
+
+    @Query("SELECT pn FROM PersonaNatural pn JOIN FETCH pn.personas LEFT JOIN FETCH pn.categoriaPersona LEFT JOIN FETCH pn.viajero WHERE pn.id IN :ids ORDER BY pn.id DESC")
+    List<PersonaNatural> findConDetalles(@Param("ids") List<Integer> ids);
+    
     List<PersonaNatural> findTop100ByOrderByIdDesc();
 }
