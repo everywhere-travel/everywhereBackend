@@ -1,18 +1,30 @@
 package com.everywhere.backend.service.impl;
 
 import com.everywhere.backend.exceptions.BadRequestException;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.mapper.SucursalMapper;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.dto.SucursalRequestDTO;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.dto.SucursalResponseDTO;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.entity.Sucursal;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.repository.SucursalRepository;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.service.SucursalService;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import lombok.RequiredArgsConstructor;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import org.springframework.dao.DataIntegrityViolationException;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import org.springframework.stereotype.Service;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 import java.util.List;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 @Service
 @RequiredArgsConstructor
@@ -118,5 +130,10 @@ public class SucursalServiceImpl implements SucursalService {
 
     private List<SucursalResponseDTO> mapToResponseList(List<Sucursal> sucursales) {
         return sucursales.stream().map(sucursalMapper::toResponseDTO).toList();
+    }
+
+    @Override
+    public List<DropdownResponseDTO> getDropdown() {
+        return sucursalRepository.findDropdown();
     }
 }

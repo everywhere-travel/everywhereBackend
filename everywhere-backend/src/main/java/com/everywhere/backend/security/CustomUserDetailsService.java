@@ -2,6 +2,7 @@ package com.everywhere.backend.security;
 
 import com.everywhere.backend.exceptions.UnauthorizedAccessException;
 import com.everywhere.backend.model.entity.User;
+import com.everywhere.backend.model.entity.Role;
 import com.everywhere.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,6 +27,10 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         if (user.getRole() == null) {
             throw new UnauthorizedAccessException("El usuario no tiene un rol asignado. Contacte al administrador.");
+        }
+
+        if (Boolean.FALSE.equals(user.getEstado())) {
+            throw new org.springframework.security.authentication.DisabledException("El usuario se encuentra deshabilitado. Contacte al administrador.");
         }
 
         GrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().getName());

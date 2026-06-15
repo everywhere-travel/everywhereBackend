@@ -96,9 +96,9 @@ public class GlobalExceptionHandler {
             
             userFriendlyMessage = String.format("No se puede eliminar este registro porque está siendo utilizado por %s. " +
                     "Primero debe eliminar las referencias asociadas.", tableName);
-        } else if (detailedMessage != null && detailedMessage.toLowerCase().contains("duplicate") || 
-                   (detailedMessage != null && detailedMessage.toLowerCase().contains("ya existe"))) {
-            userFriendlyMessage = detailedMessage;
+        } else if (detailedMessage != null && (detailedMessage.toLowerCase().contains("duplicate") || 
+                   detailedMessage.toLowerCase().contains("ya existe"))) {
+            userFriendlyMessage = "Ya existe un registro con estos datos. No se permiten duplicados.";
         } else {
             userFriendlyMessage = "No se puede completar la operación debido a restricciones de integridad de datos.";
         }

@@ -2,6 +2,7 @@ package com.everywhere.backend.service;
 
 import com.everywhere.backend.model.dto.ProveedorRequestDTO;
 import com.everywhere.backend.model.dto.ProveedorResponseDTO;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 import java.util.List;
 
@@ -12,4 +13,6 @@ public interface ProveedorService {
     ProveedorResponseDTO getById(Integer id);
     List<ProveedorResponseDTO> getAll();
     void delete(Integer id);
+
+    List<DropdownResponseDTO> getDropdown();
 }

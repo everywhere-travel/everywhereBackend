@@ -1,18 +1,30 @@
 package com.everywhere.backend.service.impl;
 
 import com.everywhere.backend.exceptions.ConflictException;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.mapper.EstadoCotizacionMapper;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.dto.EstadoCotizacionRequestDTO;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.dto.EstadoCotizacionResponseDTO;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.entity.EstadoCotizacion;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.repository.CotizacionRepository;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.repository.EstadoCotizacionRepository;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.service.EstadoCotizacionService;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import lombok.RequiredArgsConstructor;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import org.springframework.stereotype.Service;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 import java.util.List;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 @Service
 @RequiredArgsConstructor
@@ -69,5 +81,10 @@ public class EstadoCotizacionServiceImpl implements EstadoCotizacionService {
 
     private List<EstadoCotizacionResponseDTO> mapToResponseList(List<EstadoCotizacion> estadosCotizacion) {
         return estadosCotizacion.stream().map(estadoCotizacionMapper::toResponseDTO).toList();
+    }
+
+    @Override
+    public List<DropdownResponseDTO> getDropdown() {
+        return estadoCotizacionRepository.findDropdown();
     }
 }

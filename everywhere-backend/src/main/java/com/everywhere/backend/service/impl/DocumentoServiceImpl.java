@@ -1,18 +1,28 @@
 package com.everywhere.backend.service.impl;
 
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
-import com.everywhere.backend.mapper.DocumentoMapper; 
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
+import com.everywhere.backend.mapper.DocumentoMapper;
+import com.everywhere.backend.model.dto.DropdownResponseDTO; 
 import com.everywhere.backend.model.dto.DocumentoRequestDto;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.dto.DocumentoResponseDto;
-import com.everywhere.backend.model.entity.Documento; 
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
+import com.everywhere.backend.model.entity.Documento;
+import com.everywhere.backend.model.dto.DropdownResponseDTO; 
 import com.everywhere.backend.repository.DocumentoRepository;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.service.DocumentoService;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 import lombok.RequiredArgsConstructor;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 import org.springframework.stereotype.Service;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 import java.util.List;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 @Service
 @RequiredArgsConstructor
@@ -58,5 +68,10 @@ public class DocumentoServiceImpl implements DocumentoService {
 
     private List<DocumentoResponseDto> mapToResponseList(List<Documento> documentos) {
         return documentos.stream().map(documentoMapper::toResponseDTO).toList();
+    }
+
+    @Override
+    public List<DropdownResponseDTO> getDropdown() {
+        return documentoRepository.findDropdown();
     }
 }

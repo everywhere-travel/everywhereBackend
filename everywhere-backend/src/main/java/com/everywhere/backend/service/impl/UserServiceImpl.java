@@ -115,6 +115,7 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         user.setNombre(request.getNombre());
         user.setEmail(request.getEmail());
+        user.setEstado(true);
 
         String rawPassword = request.getPassword() != null && !request.getPassword().isEmpty() ? request.getPassword() : "123456";
         user.setPassword(passwordEncoder.encode(rawPassword));
@@ -160,6 +161,14 @@ public class UserServiceImpl implements UserService {
             user.setSucursal(null);
         }
 
+        return userMapper.toUserResponseDTO(userRepository.save(user));
+    }
+
+    @Override
+    @Transactional
+    public UserResponseDTO toggleUserStatus(Integer userId) {
+        User user = getUserbyId(userId);
+        user.setEstado(user.getEstado() == null ? true : !user.getEstado());
         return userMapper.toUserResponseDTO(userRepository.save(user));
     }
 

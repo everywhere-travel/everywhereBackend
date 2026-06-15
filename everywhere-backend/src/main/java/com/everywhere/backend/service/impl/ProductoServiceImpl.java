@@ -15,6 +15,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import java.util.stream.Collectors; 
 
 @Service
@@ -92,4 +93,9 @@ public class ProductoServiceImpl implements ProductoService {
                 .collect(Collectors.toList());
     }
 
+
+    @Override
+    public List<DropdownResponseDTO> getDropdown() {
+        return productoRepository.findDropdown();
+    }
 }
