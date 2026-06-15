@@ -1,7 +1,9 @@
 package com.everywhere.backend.repository;
 
 import com.everywhere.backend.model.entity.Sucursal;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -18,4 +20,7 @@ public interface SucursalRepository extends JpaRepository<Sucursal, Integer> {
     boolean existsByEmail(String email);
 
     boolean existsByDescripcion(String descripcion);
+
+    @Query("SELECT new com.everywhere.backend.model.dto.DropdownResponseDTO(e.id, e.descripcion) FROM Sucursal e")
+    List<DropdownResponseDTO> findDropdown();
 }

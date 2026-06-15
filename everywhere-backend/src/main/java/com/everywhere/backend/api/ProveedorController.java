@@ -1,15 +1,24 @@
 package com.everywhere.backend.api;
 
 import com.everywhere.backend.model.dto.ProveedorRequestDTO;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.dto.ProveedorResponseDTO;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
-import com.everywhere.backend.service.ProveedorService; 
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
+import com.everywhere.backend.service.ProveedorService;
+import com.everywhere.backend.model.dto.DropdownResponseDTO; 
 import lombok.RequiredArgsConstructor;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import org.springframework.http.HttpStatus;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import org.springframework.http.ResponseEntity;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import org.springframework.web.bind.annotation.*;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 import java.util.List;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 @RestController
 @RequestMapping("/proveedores")
@@ -49,5 +58,10 @@ public class ProveedorController {
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         proveedorService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/dropdown")
+    public ResponseEntity<List<DropdownResponseDTO>> getDropdown() {
+        return ResponseEntity.ok(proveedorService.getDropdown());
     }
 }

@@ -42,7 +42,7 @@ public class FormaPagoController {
     @GetMapping("/descripcion")
     @RequirePermission(module = "FORMA-PAGO", permission = "READ")
     public ResponseEntity<List<FormaPagoResponseDTO>> getFormasPagoByDescripcion(@RequestParam String descripcion) { 
-        return ResponseEntity.ok(formaPagoService.findByDescripcion(descripcion));
+        return ResponseEntity.ok(formaPagoService.findByDescripcionContaining(descripcion));
     }
 
     @PostMapping
@@ -54,7 +54,7 @@ public class FormaPagoController {
     @PatchMapping("/{id}")
     @RequirePermission(module = "FORMA-PAGO", permission = "UPDATE")
     public ResponseEntity<FormaPagoResponseDTO> updateFormaPago(@PathVariable Integer id, @Valid @RequestBody FormaPagoRequestDTO formaPagoRequestDTO) { 
-        return ResponseEntity.ok(formaPagoService.update(id, formaPagoRequestDTO));
+        return ResponseEntity.ok(formaPagoService.patch(id, formaPagoRequestDTO));
     }
 
     @DeleteMapping("/{id}")
@@ -62,5 +62,10 @@ public class FormaPagoController {
     public ResponseEntity<Void> deleteFormaPago(@PathVariable Integer id) {
         formaPagoService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/dropdown")
+    public ResponseEntity<List<com.everywhere.backend.model.dto.DropdownResponseDTO>> getDropdown() {
+        return ResponseEntity.ok(formaPagoService.getDropdown());
     }
 }
