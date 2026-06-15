@@ -1,21 +1,34 @@
 package com.everywhere.backend.service.impl;
 
 import com.everywhere.backend.exceptions.ConflictException;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.mapper.FormaPagoMapper;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.dto.FormaPagoRequestDTO;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.dto.FormaPagoResponseDTO;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.entity.FormaPago;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.repository.CotizacionRepository;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.repository.FormaPagoRepository;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.service.FormaPagoService;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 import lombok.RequiredArgsConstructor;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
-import com.everywhere.backend.exceptions.ResourceNotFoundException; 
+import com.everywhere.backend.exceptions.ResourceNotFoundException;
+import com.everywhere.backend.model.dto.DropdownResponseDTO; 
 import org.springframework.dao.DataIntegrityViolationException;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import org.springframework.stereotype.Service;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 import java.util.List;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 @Service
 @RequiredArgsConstructor
@@ -43,7 +56,7 @@ public class FormaPagoServiceImpl implements FormaPagoService {
     }
 
     @Override
-    public List<FormaPagoResponseDTO> findByDescripcion(String descripcion) {
+    public List<FormaPagoResponseDTO> findByDescripcionContaining(String descripcion) {
         return mapToResponseList(formaPagoRepository.findByDescripcionContainingIgnoreCase(descripcion));
     }
 
@@ -54,7 +67,7 @@ public class FormaPagoServiceImpl implements FormaPagoService {
     }
 
     @Override
-    public FormaPagoResponseDTO update(Integer id, FormaPagoRequestDTO formaPagoRequestDTO) {
+    public FormaPagoResponseDTO patch(Integer id, FormaPagoRequestDTO formaPagoRequestDTO) {
         if (!formaPagoRepository.existsById(id))
             throw new ResourceNotFoundException("Forma de pago no encontrada con ID: " + id);
 
@@ -94,5 +107,10 @@ public class FormaPagoServiceImpl implements FormaPagoService {
 
     private List<FormaPagoResponseDTO> mapToResponseList(List<FormaPago> formasPago) {
         return formasPago.stream().map(formaPagoMapper::toResponseDTO).toList();
+    }
+
+    @Override
+    public List<DropdownResponseDTO> getDropdown() {
+        return formaPagoRepository.findDropdown();
     }
 }

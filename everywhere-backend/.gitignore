@@ -35,3 +35,6 @@ build/
 ### Enviroment ####
 .env
 
+# Configuración de IDE
+.idea/
+

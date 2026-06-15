@@ -13,6 +13,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 @Service
 @RequiredArgsConstructor
@@ -76,5 +77,10 @@ public class OperadorServiceImpl implements OperadorService {
 
     private List<OperadorResponseDTO> mapToResponseList(List<Operador> operadores) {
         return operadores.stream().map(operadorMapper::toResponseDTO).toList();
+    }
+
+    @Override
+    public List<DropdownResponseDTO> getDropdown() {
+        return operadorRepository.findDropdown();
     }
 }

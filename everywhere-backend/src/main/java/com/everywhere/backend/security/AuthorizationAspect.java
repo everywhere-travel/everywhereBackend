@@ -33,13 +33,14 @@ public class AuthorizationAspect {
         try {
             authorizationService.hasPermission(module, permission);
         } catch (Exception e) {
-            log.warn("Acceso denegado — módulo: '{}', acción: '{}', rol: '{}'", module, permission, currentRole);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("No tienes permisos para realizar esta acción en el módulo: " + module);
+            log.warn("Acceso denegado - módulo: '{}', acción: '{}', rol: '{}'", module, permission, currentRole);
+            throw new org.springframework.web.server.ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "No tienes permisos para realizar esta acción en el módulo: " + module
+            );
         }
 
-        log.info("Acceso permitido — módulo: '{}', acción: '{}'", module, permission);
+        log.info("Acceso permitido - módulo: '{}', acción: '{}'", module, permission);
         return joinPoint.proceed();
     }
 }
-
