@@ -2,6 +2,7 @@ package com.everywhere.backend.service;
 
 import com.everywhere.backend.model.dto.SucursalRequestDTO;
 import com.everywhere.backend.model.dto.SucursalResponseDTO;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 import java.util.List;
 
@@ -18,4 +19,6 @@ public interface SucursalService {
     SucursalResponseDTO update(Integer id, SucursalRequestDTO sucursalRequestDTO);
     void deleteById(Integer id);
     SucursalResponseDTO cambiarEstado(Integer id, Boolean estado);
+
+    List<DropdownResponseDTO> getDropdown();
 }

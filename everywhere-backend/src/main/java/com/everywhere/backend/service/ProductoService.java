@@ -4,6 +4,7 @@ import com.everywhere.backend.model.dto.ProductoRequestDTO;
 import com.everywhere.backend.model.dto.ProductoResponseDTO;
 
 import java.util.List;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 public interface ProductoService {
 
@@ -12,4 +13,6 @@ public interface ProductoService {
     ProductoResponseDTO getById(Integer id);
     List<ProductoResponseDTO> getAll();
     void delete(Integer id);
+
+    List<DropdownResponseDTO> getDropdown();
 }

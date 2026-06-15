@@ -77,4 +77,10 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
+
+    @RequirePermission(module = "USUARIOS", permission = "UPDATE")
+    @PatchMapping("/{id}/toggle-status")
+    public ResponseEntity<UserResponseDTO> toggleUserStatus(@PathVariable Integer id) {
+        return ResponseEntity.ok(userService.toggleUserStatus(id));
+    }
 }
