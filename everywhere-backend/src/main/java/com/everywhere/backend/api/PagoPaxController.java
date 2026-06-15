@@ -23,7 +23,7 @@ public class PagoPaxController {
      * Crear un nuevo pago pax
      */
     @PostMapping
-    @RequirePermission(module = "PAGOS_PAX", permission = "CREATE")
+    @RequirePermission(module = "LIQUIDACIONES", permission = "CREATE")
     public ResponseEntity<PagoPaxResponseDTO> createPagoPax(@Valid @RequestBody PagoPaxRequestDTO requestDTO) {
         PagoPaxResponseDTO responseDTO = pagoPaxService.create(requestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
@@ -33,7 +33,7 @@ public class PagoPaxController {
      * Obtener todos los pagos pax
      */
     @GetMapping
-    @RequirePermission(module = "PAGOS_PAX", permission = "READ")
+    @RequirePermission(module = "LIQUIDACIONES", permission = "READ")
     public ResponseEntity<List<PagoPaxResponseDTO>> getAllPagosPax() {
         return ResponseEntity.ok(pagoPaxService.findAll());
     }
@@ -42,7 +42,7 @@ public class PagoPaxController {
      * Obtener un pago pax por ID
      */
     @GetMapping("/{id}")
-    @RequirePermission(module = "PAGOS_PAX", permission = "READ")
+    @RequirePermission(module = "LIQUIDACIONES", permission = "READ")
     public ResponseEntity<PagoPaxResponseDTO> getPagoPaxById(@PathVariable Integer id) {
         return ResponseEntity.ok(pagoPaxService.findById(id));
     }
@@ -51,7 +51,7 @@ public class PagoPaxController {
      * Obtener todos los pagos pax de una liquidación
      */
     @GetMapping("/liquidacion/{liquidacionId}")
-    @RequirePermission(module = "PAGOS_PAX", permission = "READ")
+    @RequirePermission(module = "LIQUIDACIONES", permission = "READ")
     public ResponseEntity<List<PagoPaxResponseDTO>> getPagosPaxByLiquidacion(@PathVariable Integer liquidacionId) {
         return ResponseEntity.ok(pagoPaxService.findByLiquidacionId(liquidacionId));
     }
@@ -60,7 +60,7 @@ public class PagoPaxController {
      * Actualizar un pago pax existente
      */
     @PatchMapping("/{id}")
-    @RequirePermission(module = "PAGOS_PAX", permission = "UPDATE")
+    @RequirePermission(module = "LIQUIDACIONES", permission = "UPDATE")
     public ResponseEntity<PagoPaxResponseDTO> updatePagoPax(
             @PathVariable Integer id,
             @Valid @RequestBody PagoPaxRequestDTO requestDTO) {
@@ -71,7 +71,7 @@ public class PagoPaxController {
      * Eliminar un pago pax
      */
     @DeleteMapping("/{id}")
-    @RequirePermission(module = "PAGOS_PAX", permission = "DELETE")
+    @RequirePermission(module = "LIQUIDACIONES", permission = "DELETE")
     public ResponseEntity<Void> deletePagoPax(@PathVariable Integer id) {
         pagoPaxService.delete(id);
         return ResponseEntity.noContent().build();
