@@ -18,5 +18,6 @@ public interface UserService {
 
     UserResponseDTO createUser(UserRequestDTO request);
     UserResponseDTO updateUser(Integer userId, UserRequestDTO request);
+    UserResponseDTO toggleUserStatus(Integer userId);
     void deleteUser(Integer userId);
 }

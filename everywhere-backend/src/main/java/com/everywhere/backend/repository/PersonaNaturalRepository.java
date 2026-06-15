@@ -9,8 +9,14 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.EntityGraph;
+
 @Repository
 public interface PersonaNaturalRepository extends JpaRepository<PersonaNatural, Integer> {
+
+    @Override
+    @EntityGraph(attributePaths = {"personas", "viajero", "categoriaPersona"})
+    List<PersonaNatural> findAll();
     Optional<PersonaNatural> findByDocumentoIgnoreCase(String documento);
     Optional<PersonaNatural> findByPersonasId(Integer personaId);
 
@@ -31,5 +37,6 @@ public interface PersonaNaturalRepository extends JpaRepository<PersonaNatural, 
     @Query("SELECT pn FROM PersonaNatural pn JOIN FETCH pn.personas LEFT JOIN FETCH pn.categoriaPersona LEFT JOIN FETCH pn.viajero WHERE pn.id IN :ids ORDER BY pn.id DESC")
     List<PersonaNatural> findConDetalles(@Param("ids") List<Integer> ids);
     
+    @EntityGraph(attributePaths = {"personas", "viajero", "categoriaPersona"})
     List<PersonaNatural> findTop100ByOrderByIdDesc();
 }
