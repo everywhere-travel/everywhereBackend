@@ -20,13 +20,13 @@ public class    TelefonoPersonaController {
     private final TelefonoPersonaService telefonoPersonaService;
 
     @GetMapping("/personas/{personaId}")
-    @RequirePermission(module = "PERSONAS", permission = "READ")
+    @RequirePermission(module = "CLIENTES", permission = "READ")
     public ResponseEntity<List<TelefonoPersonaResponseDTO>> findByPersonaId(@PathVariable Integer personaId) {
         return ResponseEntity.ok(telefonoPersonaService.findByPersonaId(personaId));
     }
 
     @GetMapping("/personas/{personaId}/telefono/{telefonoId}")
-    @RequirePermission(module = "PERSONAS", permission = "READ")
+    @RequirePermission(module = "CLIENTES", permission = "READ")
     public ResponseEntity<TelefonoPersonaResponseDTO> findById(@PathVariable Integer personaId, @PathVariable Integer telefonoId) {
         return telefonoPersonaService.findById(telefonoId, personaId)
                 .map(ResponseEntity::ok)
@@ -34,14 +34,14 @@ public class    TelefonoPersonaController {
     }
 
     @PostMapping("/personas/{personaId}")
-    @RequirePermission(module = "PERSONAS", permission = "CREATE")
+    @RequirePermission(module = "CLIENTES", permission = "CREATE")
     public ResponseEntity<TelefonoPersonaResponseDTO> create(@PathVariable Integer personaId,
                                                              @RequestBody @Valid TelefonoPersonaRequestDTO telefonoPersonaRequestDTO) {
         return new ResponseEntity<>(telefonoPersonaService.save(telefonoPersonaRequestDTO, personaId), HttpStatus.CREATED);
     }
 
     @PatchMapping("/personas/{personaId}/telefono/{telefonoId}")
-    @RequirePermission(module = "PERSONAS", permission = "UPDATE")
+    @RequirePermission(module = "CLIENTES", permission = "UPDATE")
     public ResponseEntity<TelefonoPersonaResponseDTO> update(@PathVariable Integer personaId,
                                                              @PathVariable Integer telefonoId,
                                                              @RequestBody  TelefonoPersonaRequestDTO telefonoPersonaRequestDTO) {
@@ -49,7 +49,7 @@ public class    TelefonoPersonaController {
     }
 
     @DeleteMapping("/personas/{personaId}/telefono/{telefonoId}")
-    @RequirePermission(module = "PERSONAS", permission = "DELETE")
+    @RequirePermission(module = "CLIENTES", permission = "DELETE")
     public ResponseEntity<Void> delete(@PathVariable Integer personaId, @PathVariable Integer telefonoId) {
         telefonoPersonaService.deleteById(telefonoId, personaId);
         return ResponseEntity.noContent().build();

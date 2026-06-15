@@ -20,31 +20,31 @@ public class CategoriaController {
 	private final CategoriaService categoriaService;
 
 	@GetMapping
-    @RequirePermission(module = "CATEGORIA", permission = "READ")
+    @RequirePermission(module = "CATEGORIA_PRODUCTO", permission = "READ")
 	public List<CategoriaResponseDto> getAll() {
 		return categoriaService.findAll();
 	}
 
 	@GetMapping("/{id}")
-    @RequirePermission(module = "CATEGORIA", permission = "READ")
+    @RequirePermission(module = "CATEGORIA_PRODUCTO", permission = "READ")
 	public ResponseEntity<CategoriaResponseDto> getById(@PathVariable int id) {
 		return ResponseEntity.ok(categoriaService.findById(id));
 	}
 
 	@PostMapping
-    @RequirePermission(module = "CATEGORIA", permission = "CREATE")
+    @RequirePermission(module = "CATEGORIA_PRODUCTO", permission = "CREATE")
 	public ResponseEntity<CategoriaResponseDto> create(@RequestBody CategoriaRequestDto categoriaRequestDto) {
 		return ResponseEntity.status(HttpStatus.CREATED).body(categoriaService.create(categoriaRequestDto));
 	}
 
 	@PatchMapping("/{id}")
-    @RequirePermission(module = "CATEGORIA", permission = "UPDATE")
+    @RequirePermission(module = "CATEGORIA_PRODUCTO", permission = "UPDATE")
 	public ResponseEntity<CategoriaResponseDto> patch(@PathVariable int id, @RequestBody CategoriaRequestDto categoriaRequestDto) {
 		return ResponseEntity.ok(categoriaService.patch(id, categoriaRequestDto));
 	}
 
 	@DeleteMapping("/{id}")
-    @RequirePermission(module = "CATEGORIA", permission = "DELETE")
+    @RequirePermission(module = "CATEGORIA_PRODUCTO", permission = "DELETE")
 	public ResponseEntity<Void> delete(@PathVariable int id) {
 		categoriaService.delete(id);
 		return ResponseEntity.noContent().build();

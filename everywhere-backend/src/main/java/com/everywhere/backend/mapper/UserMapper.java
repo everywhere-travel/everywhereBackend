@@ -85,6 +85,7 @@ public class UserMapper {
         dto.setEmail(user.getEmail());
         dto.setCreado(user.getCreado());
         dto.setActualizado(user.getActualizado());
+        dto.setEstado(user.getEstado());
 
         if (user.getRole() != null) {
             RoleResponseDTO roleDto = new RoleResponseDTO();

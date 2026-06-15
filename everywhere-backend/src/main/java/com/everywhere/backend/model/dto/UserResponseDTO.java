@@ -12,4 +12,5 @@ public class UserResponseDTO {
     private SucursalResponseDTO sucursal;
     private LocalDateTime creado;
     private LocalDateTime actualizado;
+    private Boolean estado;
 }
