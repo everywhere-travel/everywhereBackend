@@ -2,16 +2,19 @@ package com.everywhere.backend.api;
 
 import com.everywhere.backend.model.dto.DocumentoCobranzaResponseDTO;
 import com.everywhere.backend.model.dto.DocumentoCobranzaUpdateDTO;
+import com.everywhere.backend.model.dto.SaldoDocumentoCobranzaDTO;
 import com.everywhere.backend.security.RequirePermission;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import com.everywhere.backend.service.DocumentoCobranzaService;
+import com.everywhere.backend.service.ReciboService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -20,6 +23,7 @@ import java.util.List;
 public class DocumentoCobranzaController {
 
     private final DocumentoCobranzaService documentoCobranzaService;
+    private final ReciboService reciboService;
 
     @PostMapping
     @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "CREATE")
@@ -70,5 +74,24 @@ public class DocumentoCobranzaController {
             @PathVariable Long id,
             @RequestParam(required = false) Integer carpetaId) {
         return ResponseEntity.ok(documentoCobranzaService.updateCarpeta(id, carpetaId));
+    }
+
+    /**
+     * Retorna el saldo del Documento de Cobranza:
+     * totalDeuda, totalPagado y saldoPendiente.
+     */
+    @GetMapping("/{id}/saldo")
+    @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "READ")
+    public ResponseEntity<SaldoDocumentoCobranzaDTO> getSaldo(@PathVariable Long id) {
+        DocumentoCobranzaResponseDTO documento = documentoCobranzaService.findById(id);
+
+        SaldoDocumentoCobranzaDTO saldo = new SaldoDocumentoCobranzaDTO();
+        saldo.setDocumentoCobranzaId(documento.getId());
+        saldo.setDocumentoCobranzaNumero(documento.getSerie() + "-" + documento.getCorrelativo());
+        saldo.setTotalDeuda(documento.getTotalDeuda() != null ? documento.getTotalDeuda() : BigDecimal.ZERO);
+        saldo.setTotalPagado(documento.getTotalPagado() != null ? documento.getTotalPagado() : BigDecimal.ZERO);
+        saldo.setSaldoPendiente(documento.getSaldoPendiente() != null ? documento.getSaldoPendiente() : BigDecimal.ZERO);
+
+        return ResponseEntity.ok(saldo);
     }
 }

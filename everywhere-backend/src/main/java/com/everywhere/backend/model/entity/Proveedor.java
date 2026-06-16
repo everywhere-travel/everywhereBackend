@@ -49,4 +49,8 @@ public class Proveedor {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<ProveedorColaborador> colaboradores;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "acc_id_int", referencedColumnName = "acc_id_int")
+    private CuentaContable cuentaContable;
 }
