@@ -1,6 +1,5 @@
 package com.everywhere.backend.service.impl;
 
-import com.everywhere.backend.model.dto.CotizacionConDetallesResponseDTO;
 import com.everywhere.backend.model.dto.ReciboResponseDTO;
 import com.everywhere.backend.model.dto.ReciboUpdateDTO;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
@@ -15,28 +14,26 @@ import com.everywhere.backend.model.entity.Sucursal;
 import com.everywhere.backend.repository.SucursalRepository;
 import com.everywhere.backend.model.entity.DetalleRecibo;
 import com.everywhere.backend.model.entity.DetalleDocumento;
+import com.everywhere.backend.model.entity.DetalleDocumentoCobranza;
 import com.everywhere.backend.repository.DetalleReciboRepository;
 import com.everywhere.backend.repository.DetalleDocumentoRepository;
 import com.everywhere.backend.repository.ReciboRepository;
 import com.everywhere.backend.repository.FormaPagoRepository;
 import com.everywhere.backend.repository.NaturalJuridicoRepository;
-import com.everywhere.backend.repository.ProductoRepository;
 import com.everywhere.backend.model.entity.Carpeta;
 import com.everywhere.backend.repository.CarpetaRepository;
 import com.everywhere.backend.security.UserPrincipal;
-import com.everywhere.backend.service.CotizacionService;
-import com.everywhere.backend.service.DetalleCotizacionService;
+import com.everywhere.backend.service.AsientoContableService;
 import com.everywhere.backend.service.ReciboService;
-import com.everywhere.backend.model.dto.DetalleCotizacionResponseDto;
-import com.everywhere.backend.model.entity.Producto;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.dao.DataIntegrityViolationException;
+import com.everywhere.backend.model.entity.DocumentoCobranza;
+import com.everywhere.backend.repository.DocumentoCobranzaRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.everywhere.backend.repository.DetalleDocumentoCobranzaRepository;
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
 import java.util.List;
@@ -47,7 +44,6 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class ReciboServiceImpl implements ReciboService {
 
-    private final CotizacionService cotizacionService;
     private final ReciboRepository reciboRepository;
     private final DetalleReciboRepository detalleReciboRepository;
     private final DetalleDocumentoRepository detalleDocumentoRepository;
@@ -57,66 +53,61 @@ public class ReciboServiceImpl implements ReciboService {
     private final FormaPagoRepository formaPagoRepository;
     private final NaturalJuridicoRepository naturalJuridicoRepository;
     private final PersonaNaturalRepository personaNaturalRepository;
-    private final DetalleCotizacionService detalleCotizacionService;
-    private final ProductoRepository productoRepository;
     private final CarpetaRepository carpetaRepository;
     private final com.everywhere.backend.util.pdf.ReciboPdfGenerator reciboPdfGenerator;
+    private final DocumentoCobranzaRepository documentoCobranzaRepository;
+    private final DetalleDocumentoCobranzaRepository detalleDocumentoCobranzaRepository;
+    private final AsientoContableService asientoContableService;
 
     @Override
     @Transactional
-    public ReciboResponseDTO createRecibo(Integer cotizacionId, Integer personaJuridicaId, Integer sucursalId) {
-        if (cotizacionId == null)
-            throw new IllegalArgumentException("El ID de la cotización no puede ser nulo");
+    public ReciboResponseDTO createRecibo(Integer documentoCobranzaId, Integer personaJuridicaId, Integer sucursalId, BigDecimal montoPago) {
+        if (documentoCobranzaId == null) {
+            throw new IllegalArgumentException("El ID del documento de cobranza no puede ser nulo");
+        }
 
-        if (reciboRepository.findByCotizacionId(cotizacionId).isPresent())
-            throw new DataIntegrityViolationException(
-                    "Ya existe un recibo para la cotización ID: " + cotizacionId);
+        Long documentoId = documentoCobranzaId.longValue();
 
-        CotizacionConDetallesResponseDTO cotizacion = cotizacionService.findByIdWithDetalles(cotizacionId);
+        DocumentoCobranza documentoCobranza = documentoCobranzaRepository.findById(documentoId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Documento de cobranza no encontrado con ID: " + documentoCobranzaId));
 
         String[] serieCorrelativo = generateNextDocumentNumber();
-        Recibo recibo = reciboMapper.fromCotizacion(cotizacion, serieCorrelativo[0],
-                Integer.parseInt(serieCorrelativo[1]));
 
-        // Validar y setear PersonaJuridica si fue proporcionada
+        Recibo recibo = new Recibo();
+        recibo.setSerie(serieCorrelativo[0]);
+        recibo.setCorrelativo(Integer.parseInt(serieCorrelativo[1]));
+
+        recibo.setDocumentoCobranza(documentoCobranza);
+        recibo.setCotizacion(documentoCobranza.getCotizacion());
+        recibo.setPersona(documentoCobranza.getPersona());
+        recibo.setPersonaJuridica(documentoCobranza.getPersonaJuridica());
+        recibo.setSucursal(documentoCobranza.getSucursal());
+        recibo.setFormaPago(documentoCobranza.getFormaPago());
+        recibo.setMoneda(documentoCobranza.getMoneda());
+        recibo.setCarpeta(documentoCobranza.getCarpeta());
+        recibo.setFechaEmision(documentoCobranza.getFechaEmision());
+
         if (personaJuridicaId != null) {
             PersonaJuridica personaJuridica = personaJuridicaRepository.findById(personaJuridicaId)
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Persona jurídica no encontrada con ID: " + personaJuridicaId));
-
-            // Validar que la PersonaJuridica esté asociada a la PersonaNatural de la
-            // cotización
-            if (cotizacion.getPersonas() != null) {
-                Integer personaId = cotizacion.getPersonas().getId();
-                PersonaNatural personaNatural = personaNaturalRepository.findByPersonasId(personaId)
-                        .orElse(null);
-
-                if (personaNatural != null) {
-                    boolean relacionExiste = naturalJuridicoRepository
-                            .findByPersonaNaturalIdAndPersonaJuridicaId(personaNatural.getId(), personaJuridicaId)
-                            .isPresent();
-
-                    if (!relacionExiste) {
-                        throw new IllegalArgumentException("La persona jurídica ID " + personaJuridicaId +
-                                " no está asociada a la persona natural de la cotización");
-                    }
-                }
-            }
-
             recibo.setPersonaJuridica(personaJuridica);
         }
 
-        // Validar y setear Sucursal si fue proporcionada
         if (sucursalId != null) {
             Sucursal sucursal = sucursalRepository.findById(sucursalId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada con ID: " + sucursalId));
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Sucursal no encontrada con ID: " + sucursalId));
             recibo.setSucursal(sucursal);
         }
 
         recibo = reciboRepository.save(recibo);
 
-        // Crear detalles desde cotización
-        crearDetallesDesdeCotizacion(recibo, cotizacionId);
+        crearDetallesDesdeDocumentoCobranza(recibo, documentoId, montoPago, documentoCobranza);
+
+        // Generar asiento contable: Caja/Banco (DEBE) vs Clientes (HABER)
+        asientoContableService.generarAsientoPorRecibo(recibo);
 
         return reciboMapper.toResponseDTO(recibo);
     }
@@ -156,11 +147,24 @@ public class ReciboServiceImpl implements ReciboService {
     }
 
     @Override
-    public ReciboResponseDTO findByCotizacionId(Integer cotizacionId) {
-        Recibo recibo = reciboRepository.findByCotizacionId(cotizacionId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Recibo no encontrado para cotización ID: " + cotizacionId));
-        return reciboMapper.toResponseDTO(recibo);
+    public List<ReciboResponseDTO> findByDocumentoCobranzaId(Integer documentoCobranzaId) {
+        Long documentoId = documentoCobranzaId.longValue();
+        List<Recibo> recibos = reciboRepository.findByDocumentoCobranzaId(documentoId);
+        if (recibos.isEmpty()) {
+            throw new ResourceNotFoundException(
+                    "No se encontraron recibos para el documento de cobranza ID: " + documentoCobranzaId);
+        }
+        return mapToResponseList(recibos);
+    }
+
+    @Override
+    public List<ReciboResponseDTO> findByCotizacionId(Integer cotizacionId) {
+        List<Recibo> recibos = reciboRepository.findByCotizacionId(cotizacionId);
+        if (recibos.isEmpty()) {
+            throw new ResourceNotFoundException(
+                    "No se encontraron recibos para la cotización ID: " + cotizacionId);
+        }
+        return mapToResponseList(recibos);
     }
 
     @Override
@@ -241,7 +245,6 @@ public class ReciboServiceImpl implements ReciboService {
             Integer lastCorrelativo = lastRecibo.getCorrelativo();
 
             if (lastSerie != null && lastCorrelativo != null) {
-                // Incrementar correlativo
                 int nextCorrelativo = lastCorrelativo + 1;
                 return new String[] { lastSerie, String.valueOf(nextCorrelativo) };
             }
@@ -252,27 +255,37 @@ public class ReciboServiceImpl implements ReciboService {
     }
 
     @Transactional
-    private void crearDetallesDesdeCotizacion(Recibo recibo, Integer cotizacionId) {
-        List<DetalleCotizacionResponseDto> detallesCotizacion = detalleCotizacionService
-                .findByCotizacionId(cotizacionId);
-
-        for (DetalleCotizacionResponseDto detalleCotizacion : detallesCotizacion) {
+    private void crearDetallesDesdeDocumentoCobranza(Recibo recibo, Long documentoCobranzaId, BigDecimal montoPago, DocumentoCobranza documentoCobranza) {
+        if (montoPago != null && montoPago.compareTo(BigDecimal.ZERO) > 0) {
             DetalleRecibo detalleRecibo = new DetalleRecibo();
             detalleRecibo.setRecibo(recibo);
-            detalleRecibo.setCantidad(detalleCotizacion.getCantidad() != null ? detalleCotizacion.getCantidad() : 0);
-            detalleRecibo.setDescripcion(detalleCotizacion.getDescripcion());
-            detalleRecibo.setPrecio(
-                    detalleCotizacion.getPrecioHistorico() != null ? detalleCotizacion.getPrecioHistorico()
-                            : BigDecimal.ZERO);
-
-            if (detalleCotizacion.getProducto() != null && detalleCotizacion.getProducto().getId() > 0) {
-                Producto producto = productoRepository.findById(detalleCotizacion.getProducto().getId())
-                        .orElseThrow(() -> new ResourceNotFoundException(
-                                "Producto no encontrado con ID: " + detalleCotizacion.getProducto().getId()));
-                detalleRecibo.setProducto(producto);
-            }
-
+            detalleRecibo.setCantidad(1);
+            
+            String serie = documentoCobranza.getSerie() != null ? documentoCobranza.getSerie() + "-" : "";
+            String correlativo = documentoCobranza.getCorrelativo() != null ? String.valueOf(documentoCobranza.getCorrelativo()) : "S/N";
+            detalleRecibo.setDescripcion("Pago a cuenta de Documento de Cobranza " + serie + correlativo);
+            
+            detalleRecibo.setPrecio(montoPago);
             detalleReciboRepository.save(detalleRecibo);
+        } else {
+            List<DetalleDocumentoCobranza> detallesDocumento = detalleDocumentoCobranzaRepository
+                    .findByDocumentoCobranzaId(documentoCobranzaId);
+
+            for (DetalleDocumentoCobranza detalleDocumento : detallesDocumento) {
+                DetalleRecibo detalleRecibo = new DetalleRecibo();
+
+                detalleRecibo.setRecibo(recibo);
+                detalleRecibo.setCantidad(detalleDocumento.getCantidad() != null ? detalleDocumento.getCantidad() : 1);
+                detalleRecibo.setDescripcion(detalleDocumento.getDescripcion());
+                detalleRecibo
+                        .setPrecio(detalleDocumento.getPrecio() != null ? detalleDocumento.getPrecio() : BigDecimal.ZERO);
+
+                if (detalleDocumento.getProducto() != null) {
+                    detalleRecibo.setProducto(detalleDocumento.getProducto());
+                }
+
+                detalleReciboRepository.save(detalleRecibo);
+            }
         }
     }
 
@@ -299,7 +312,7 @@ public class ReciboServiceImpl implements ReciboService {
         return "Usuario desconocido";
     }
 
-    // Implementación de métodos para gestión de carpetas
+    // ========== GESTIÓN DE CARPETAS ==========
 
     @Override
     public List<ReciboResponseDTO> findByCarpeta(Integer carpetaId) {
@@ -326,5 +339,24 @@ public class ReciboServiceImpl implements ReciboService {
         }
 
         return reciboMapper.toResponseDTO(reciboRepository.save(recibo));
+    }
+
+    @Override
+    public BigDecimal calcularTotalPagado(Integer documentoCobranzaId) {
+        Long documentoId = documentoCobranzaId.longValue();
+        List<Recibo> recibos = reciboRepository.findByDocumentoCobranzaId(documentoId);
+
+        BigDecimal totalPagado = BigDecimal.ZERO;
+        for (Recibo recibo : recibos) {
+            List<DetalleRecibo> detalles = detalleReciboRepository.findByReciboId(recibo.getId());
+            for (DetalleRecibo detalle : detalles) {
+                BigDecimal cantidad = detalle.getCantidad() != null
+                        ? BigDecimal.valueOf(detalle.getCantidad())
+                        : BigDecimal.ZERO;
+                BigDecimal precio = detalle.getPrecio() != null ? detalle.getPrecio() : BigDecimal.ZERO;
+                totalPagado = totalPagado.add(cantidad.multiply(precio));
+            }
+        }
+        return totalPagado;
     }
 }

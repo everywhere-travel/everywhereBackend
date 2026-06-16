@@ -53,8 +53,8 @@ public class Recibo {
     @Column(name = "recibo_updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @OneToOne
-    @JoinColumn(name = "cot_id_int", unique = true)
+    @ManyToOne
+    @JoinColumn(name = "cot_id_int")
     private Cotizacion cotizacion;
 
     @ManyToOne
@@ -88,5 +88,9 @@ public class Recibo {
     @OneToMany(mappedBy = "recibo", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<DetalleRecibo> detalleRecibo;
+
+    @ManyToOne
+    @JoinColumn(name = "doc_co_id_int")
+    private DocumentoCobranza documentoCobranza;
 
 }
