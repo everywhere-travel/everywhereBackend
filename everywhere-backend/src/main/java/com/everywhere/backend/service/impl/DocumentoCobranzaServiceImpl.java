@@ -35,7 +35,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.everywhere.backend.service.AsientoContableService;
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
 import java.util.List;
@@ -62,7 +62,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     private final DetalleCotizacionService detalleCotizacionService;
     private final CarpetaRepository carpetaRepository;
     private final com.everywhere.backend.util.pdf.DocumentoCobranzaPdfGenerator documentoCobranzaPdfGenerator;
-
+    private final AsientoContableService asientoContableService;
     @Override
     @Transactional
     public DocumentoCobranzaResponseDTO createDocumentoCobranza(Integer cotizacionId, Integer personaJuridicaId,
@@ -120,6 +120,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         // Crear detalles desde cotización con repartición por cantidad
         crearDetallesDesdeCotizacion(documentoCobranza, cotizacionId);
 
+        asientoContableService.generarAsientoPorDocumentoCobranza(documentoCobranza);
         return documentoCobranzaMapper.toResponseDTO(documentoCobranza);
     }
 
@@ -237,7 +238,10 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
             documentoCobranza.setFormaPago(formaPago);
         }
 
-        return documentoCobranzaMapper.toResponseDTO(documentoCobranzaRepository.save(documentoCobranza));
+        documentoCobranza = documentoCobranzaRepository.save(documentoCobranza);
+        asientoContableService.actualizarAsientoPorDocumentoCobranza(documentoCobranza);
+        
+        return documentoCobranzaMapper.toResponseDTO(documentoCobranza);
     }
 
     // ========== MÉTODOS PRIVADOS ==========
@@ -314,46 +318,65 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
         return "Usuario desconocido";
     }
+    
+private void crearDetallesDesdeCotizacion(DocumentoCobranza documentoCobranza, Integer cotizacionId) {
 
-    private void crearDetallesDesdeCotizacion(DocumentoCobranza documentoCobranza, Integer cotizacionId) {
-        // Obtener todos los detalles de la cotización
-        List<DetalleCotizacionResponseDto> detallesCotizacion = detalleCotizacionService
-                .findByCotizacionId(cotizacionId);
+    List<DetalleCotizacionResponseDto> detallesCotizacion =
+            detalleCotizacionService.findByCotizacionId(cotizacionId);
 
-        // Filtrar solo los detalles seleccionados
-        List<DetalleCotizacionResponseDto> detallesSeleccionados = detallesCotizacion.stream()
-                .filter(detalle -> detalle.getSeleccionado() != null && detalle.getSeleccionado())
-                .toList();
+    List<DetalleCotizacionResponseDto> detallesSeleccionados =
+            detallesCotizacion.stream()
+                    .filter(detalle ->
+                            detalle.getSeleccionado() != null
+                                    && detalle.getSeleccionado())
+                    .toList();
 
-        // Por cada detalle seleccionado, crear N detalles de documento de cobranza (donde N = cantidad)
-        for (DetalleCotizacionResponseDto detalleCot : detallesSeleccionados) {
-            int cantidad = detalleCot.getCantidad() != null ? detalleCot.getCantidad() : 1;
+    for (DetalleCotizacionResponseDto detalleCot : detallesSeleccionados) {
 
-            // Crear un detalle de documento de cobranza por cada unidad de cantidad
-            for (int i = 0; i < cantidad; i++) {
-                DetalleDocumentoCobranza detalleDoc = new DetalleDocumentoCobranza();
+        int cantidad = detalleCot.getCantidad() != null
+                ? detalleCot.getCantidad()
+                : 1;
 
-                // Asignar el documento de cobranza
-                detalleDoc.setDocumentoCobranza(documentoCobranza);
+        for (int i = 0; i < cantidad; i++) {
 
-                // Mapear datos desde el detalle de cotización
-                detalleDoc.setCantidad(1); // Cada registro individual tiene cantidad = 1
-                detalleDoc.setDescripcion(detalleCot.getDescripcion());
-                detalleDoc.setPrecio(
-                        detalleCot.getPrecioHistorico() != null ? detalleCot.getPrecioHistorico() : BigDecimal.ZERO);
+            DetalleDocumentoCobranza detalleDoc =
+                    new DetalleDocumentoCobranza();
 
-                // Asignar producto si existe
-                if (detalleCot.getProducto() != null) {
-                    Producto producto = new Producto();
-                    producto.setId(detalleCot.getProducto().getId());
-                    detalleDoc.setProducto(producto);
-                }
+            detalleDoc.setDocumentoCobranza(documentoCobranza);
 
-                // Guardar el detalle
-                detalleDocumentoCobranzaRepository.save(detalleDoc);
+            detalleDoc.setCantidad(1);
+
+            detalleDoc.setDescripcion(
+                    detalleCot.getDescripcion()
+            );
+
+            BigDecimal precioHistorico =
+                    detalleCot.getPrecioHistorico() != null
+                            ? detalleCot.getPrecioHistorico()
+                            : BigDecimal.ZERO;
+
+            BigDecimal comision =
+                    detalleCot.getComision() != null
+                            ? detalleCot.getComision()
+                            : BigDecimal.ZERO;
+
+            // Precio final que paga el cliente
+            detalleDoc.setPrecio(
+                    precioHistorico.add(comision)
+            );
+
+            if (detalleCot.getProducto() != null) {
+                Producto producto = new Producto();
+                producto.setId(
+                        detalleCot.getProducto().getId()
+                );
+                detalleDoc.setProducto(producto);
             }
+
+            detalleDocumentoCobranzaRepository.save(detalleDoc);
         }
     }
+}
 
     // Implementación de métodos para gestión de carpetas
 

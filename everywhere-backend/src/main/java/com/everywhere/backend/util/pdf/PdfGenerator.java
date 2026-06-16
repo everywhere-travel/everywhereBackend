@@ -158,6 +158,13 @@ public abstract class PdfGenerator<T, D> {
         }
 
         /**
+         * Hook for adding extra rows to the totals table (e.g., remaining balance).
+         */
+        protected void addExtraTotalsRows(Table totalsTable, T documentoDTO) {
+                // Default is no-op
+        }
+
+        /**
          * Formatea un número decimal con separadores de miles (comas)
          * 
          * @param value el valor a formatear
@@ -492,6 +499,8 @@ public abstract class PdfGenerator<T, D> {
                 totalsTable.addCell(new Cell().add(new Paragraph("$ " + totalStr).setFontSize(9))
                                 .setBorder(new com.itextpdf.layout.borders.SolidBorder(1))
                                 .setTextAlignment(TextAlignment.RIGHT));
+
+                addExtraTotalsRows(totalsTable, documentoDTO);
 
                 document.add(totalsTable);
                 document.add(new Paragraph("\n"));

@@ -88,5 +88,8 @@ public class DocumentoCobranza {
     @OneToMany(mappedBy = "documentoCobranza", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<DetalleDocumentoCobranza> detalles;
+
+    @OneToMany(mappedBy = "documentoCobranza")
+    private List<Recibo> recibos;
     
 }

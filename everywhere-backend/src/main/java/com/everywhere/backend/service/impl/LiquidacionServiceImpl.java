@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Function;
+import com.everywhere.backend.service.AsientoContableService;
 
 @Service
 @RequiredArgsConstructor
@@ -74,6 +75,7 @@ public class LiquidacionServiceImpl implements LiquidacionService {
     private final PagoPaxService pagoPaxService;
     private final FormaPagoRepository formaPagoRepository;
     private final ProductoRepository productoRepository;
+    private final AsientoContableService asientoContableService;
 
     @Override
     public List<LiquidacionResponseDTO> findAll() {
@@ -93,56 +95,59 @@ public class LiquidacionServiceImpl implements LiquidacionService {
     }
 
     @Override
-    @Transactional
-    public LiquidacionResponseDTO update(Integer id, LiquidacionRequestDTO liquidacionRequestDTO) {
-        if (!liquidacionRepository.existsById(id))
-            throw new ResourceNotFoundException("Liquidación no encontrada con ID: " + id);
+@Transactional
+public LiquidacionResponseDTO update(Integer id, LiquidacionRequestDTO liquidacionRequestDTO) {
+    if (!liquidacionRepository.existsById(id))
+        throw new ResourceNotFoundException("Liquidación no encontrada con ID: " + id);
 
-        if (liquidacionRequestDTO.getCotizacionId() != null &&
-                !cotizacionRepository.existsById(liquidacionRequestDTO.getCotizacionId()))
-            throw new ResourceNotFoundException(
-                    "Cotización no encontrada con ID: " + liquidacionRequestDTO.getCotizacionId());
+    if (liquidacionRequestDTO.getCotizacionId() != null &&
+            !cotizacionRepository.existsById(liquidacionRequestDTO.getCotizacionId()))
+        throw new ResourceNotFoundException(
+                "Cotización no encontrada con ID: " + liquidacionRequestDTO.getCotizacionId());
 
-        if (liquidacionRequestDTO.getProductoId() != null &&
-                !productoRepository.existsById(liquidacionRequestDTO.getProductoId()))
-            throw new ResourceNotFoundException(
-                    "Producto no encontrado con ID: " + liquidacionRequestDTO.getProductoId());
+    if (liquidacionRequestDTO.getProductoId() != null &&
+            !productoRepository.existsById(liquidacionRequestDTO.getProductoId()))
+        throw new ResourceNotFoundException(
+                "Producto no encontrado con ID: " + liquidacionRequestDTO.getProductoId());
 
-        if (liquidacionRequestDTO.getFormaPagoId() != null &&
-                !formaPagoRepository.existsById(liquidacionRequestDTO.getFormaPagoId()))
-            throw new ResourceNotFoundException(
-                    "Forma de pago no encontrada con ID: " + liquidacionRequestDTO.getFormaPagoId());
+    if (liquidacionRequestDTO.getFormaPagoId() != null &&
+            !formaPagoRepository.existsById(liquidacionRequestDTO.getFormaPagoId()))
+        throw new ResourceNotFoundException(
+                "Forma de pago no encontrada con ID: " + liquidacionRequestDTO.getFormaPagoId());
 
-        if (liquidacionRequestDTO.getCarpetaId() != null &&
-                !carpetaRepository.existsById(liquidacionRequestDTO.getCarpetaId()))
-            throw new ResourceNotFoundException(
-                    "Carpeta no encontrada con ID: " + liquidacionRequestDTO.getCarpetaId());
+    if (liquidacionRequestDTO.getCarpetaId() != null &&
+            !carpetaRepository.existsById(liquidacionRequestDTO.getCarpetaId()))
+        throw new ResourceNotFoundException(
+                "Carpeta no encontrada con ID: " + liquidacionRequestDTO.getCarpetaId());
 
-        Liquidacion liquidacion = liquidacionRepository.findById(id).get();
-        liquidacionMapper.updateEntityFromRequest(liquidacion, liquidacionRequestDTO);
+    Liquidacion liquidacion = liquidacionRepository.findById(id).get();
 
-        if (liquidacionRequestDTO.getCotizacionId() != null) {
-            Cotizacion cotizacion = cotizacionRepository.findById(liquidacionRequestDTO.getCotizacionId()).get();
-            liquidacion.setCotizacion(cotizacion);
-        }
+    liquidacionMapper.updateEntityFromRequest(liquidacion, liquidacionRequestDTO);
 
-        if (liquidacionRequestDTO.getProductoId() != null) {
-            Producto producto = productoRepository.findById(liquidacionRequestDTO.getProductoId()).get();
-            liquidacion.setProducto(producto);
-        }
-
-        if (liquidacionRequestDTO.getFormaPagoId() != null) {
-            FormaPago formaPago = formaPagoRepository.findById(liquidacionRequestDTO.getFormaPagoId()).get();
-            liquidacion.setFormaPago(formaPago);
-        }
-
-        if (liquidacionRequestDTO.getCarpetaId() != null) {
-            Carpeta carpeta = carpetaRepository.findById(liquidacionRequestDTO.getCarpetaId()).get();
-            liquidacion.setCarpeta(carpeta);
-        }
-
-        return liquidacionMapper.toResponseDTO(liquidacionRepository.save(liquidacion));
+    if (liquidacionRequestDTO.getCotizacionId() != null) {
+        Cotizacion cotizacion = cotizacionRepository.findById(liquidacionRequestDTO.getCotizacionId()).get();
+        liquidacion.setCotizacion(cotizacion);
     }
+
+    if (liquidacionRequestDTO.getProductoId() != null) {
+        Producto producto = productoRepository.findById(liquidacionRequestDTO.getProductoId()).get();
+        liquidacion.setProducto(producto);
+    }
+
+    if (liquidacionRequestDTO.getFormaPagoId() != null) {
+        FormaPago formaPago = formaPagoRepository.findById(liquidacionRequestDTO.getFormaPagoId()).get();
+        liquidacion.setFormaPago(formaPago);
+    }
+
+    if (liquidacionRequestDTO.getCarpetaId() != null) {
+        Carpeta carpeta = carpetaRepository.findById(liquidacionRequestDTO.getCarpetaId()).get();
+        liquidacion.setCarpeta(carpeta);
+    }
+
+    Liquidacion liquidacionGuardada = liquidacionRepository.save(liquidacion);
+
+    return liquidacionMapper.toResponseDTO(liquidacionGuardada);
+}
 
     @Override
     @Transactional
@@ -239,11 +244,11 @@ public class LiquidacionServiceImpl implements LiquidacionService {
                 sumDetalles(liquidacion.getDetalles(), DetalleLiquidacionSimpleDTO::getValorVenta), moneyStyle);
         addResumenMoneyValue(sheet, rowIndex++, "Total Monto Descuento",
                 sumDetalles(liquidacion.getDetalles(), DetalleLiquidacionSimpleDTO::getMontoDescuento), moneyStyle);
-        addResumenMoneyValue(sheet, rowIndex++, "Total Pagos PAX USD",
+        addResumenMoneyValue(sheet, rowIndex++, "Total Pagos a Proveedor USD",
                 sumPagosPaxByMoneda(pagosPax, "USD"), moneyStyle);
-        addResumenMoneyValue(sheet, rowIndex++, "Total Pagos PAX PEN",
+        addResumenMoneyValue(sheet, rowIndex++, "Total Pagos a Proveedor PEN",
                 sumPagosPaxByMoneda(pagosPax, "PEN"), moneyStyle);
-        addResumenValue(sheet, rowIndex, "Cantidad de Pagos PAX", toText(pagosPax == null ? 0 : pagosPax.size()));
+        addResumenValue(sheet, rowIndex, "Cantidad de Pagos a Proveedores", toText(pagosPax == null ? 0 : pagosPax.size()));
 
         autoSizeColumns(sheet, 2);
     }
@@ -357,7 +362,7 @@ public class LiquidacionServiceImpl implements LiquidacionService {
             List<PagoPaxResponseDTO> pagosPax,
             CellStyle headerStyle,
             CellStyle moneyStyle) {
-        Sheet sheet = workbook.createSheet("Pagos PAX");
+        Sheet sheet = workbook.createSheet("Pagos Proveedor");
         String[] headers = {
                 "#",
                 "Monto",
@@ -591,9 +596,12 @@ public class LiquidacionServiceImpl implements LiquidacionService {
             liquidacion.setCarpeta(carpeta);
         }
 
-        liquidacion = liquidacionRepository.save(liquidacion); // Guardar la liquidación primero para obtener el ID
-        crearDetallesDesdeCotizacion(liquidacion, cotizacionId);
-        return liquidacionMapper.toResponseDTO(liquidacion);
+liquidacion = liquidacionRepository.save(liquidacion);
+crearDetallesDesdeCotizacion(liquidacion, cotizacionId);
+
+asientoContableService.generarAsientoPorLiquidacion(liquidacion);
+
+return liquidacionMapper.toResponseDTO(liquidacion);
     }
 
     /**
