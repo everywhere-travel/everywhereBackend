@@ -5,8 +5,12 @@ import com.everywhere.backend.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import jakarta.mail.internet.MimeMessage;
+import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -20,14 +24,36 @@ public class EmailServiceImpl implements EmailService {
     private String fromEmail;
 
     @Override
-    public void sendEmail(EmailRequestDTO emailRequest) {
+    public void sendEmail(EmailRequestDTO emailRequest, List<MultipartFile> files) {
         log.info("Iniciando envío de correo a: {}", emailRequest.getTo());
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
-            message.setTo(emailRequest.getTo());
-            message.setSubject(emailRequest.getSubject());
-            message.setText(emailRequest.getBody());
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            helper.setFrom(fromEmail);
+            
+            if (emailRequest.getTo() != null && !emailRequest.getTo().isEmpty()) {
+                helper.setTo(emailRequest.getTo().split("\\s*,\\s*"));
+            }
+            
+            if (emailRequest.getCc() != null && !emailRequest.getCc().isEmpty()) {
+                helper.setCc(emailRequest.getCc().split("\\s*,\\s*"));
+            }
+            
+            if (emailRequest.getBcc() != null && !emailRequest.getBcc().isEmpty()) {
+                helper.setBcc(emailRequest.getBcc().split("\\s*,\\s*"));
+            }
+
+            helper.setSubject(emailRequest.getSubject());
+            helper.setText(emailRequest.getBody(), false);
+
+            if (files != null) {
+                for (MultipartFile file : files) {
+                    if (file != null && !file.isEmpty() && file.getOriginalFilename() != null) {
+                        helper.addAttachment(file.getOriginalFilename(), file);
+                    }
+                }
+            }
 
             mailSender.send(message);
             log.info("Correo enviado exitosamente a: {}", emailRequest.getTo());

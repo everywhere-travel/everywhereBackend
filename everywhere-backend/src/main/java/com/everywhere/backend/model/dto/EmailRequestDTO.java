@@ -11,6 +11,10 @@ public class EmailRequestDTO {
     @Email(message = "El correo de destino debe tener un formato válido")
     private String to;
     
+    private String cc;
+    
+    private String bcc;
+    
     @NotBlank(message = "El asunto es obligatorio")
     private String subject;
     
