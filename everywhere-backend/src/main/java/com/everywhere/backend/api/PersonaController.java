@@ -2,6 +2,7 @@ package com.everywhere.backend.api;
 
 import com.everywhere.backend.model.dto.PersonaRequestDTO;
 import com.everywhere.backend.model.dto.PersonaResponseDTO;
+import com.everywhere.backend.model.dto.PersonaTablaDTO;
 import com.everywhere.backend.model.dto.PersonaDisplayDto;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.PersonaService;
@@ -10,7 +11,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -25,6 +30,27 @@ public class PersonaController {
     @RequirePermission(module = "CLIENTES", permission = "READ")
     public ResponseEntity<List<PersonaResponseDTO>> getAllPersonas() { 
         return ResponseEntity.ok(personaService.findAll());
+    }
+
+    @GetMapping("/page")
+    @RequirePermission(module = "CLIENTES", permission = "READ")
+    public ResponseEntity<Page<PersonaTablaDTO>> getPersonasPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id,desc") String[] sort,
+            @RequestParam(required = false) String searchTerm,
+            @RequestParam(required = false) String typeFilter) {
+        
+        Direction direction = Direction.fromString(sort[1]);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sort[0]));
+        
+        return ResponseEntity.ok(personaService.findPersonasPage(searchTerm, typeFilter, pageable));
+    }
+
+    @GetMapping("/stats")
+    @RequirePermission(module = "CLIENTES", permission = "READ")
+    public ResponseEntity<java.util.Map<String, Long>> getPersonaStats() {
+        return ResponseEntity.ok(personaService.getPersonaStats());
     }
 
     @GetMapping("/{id}")

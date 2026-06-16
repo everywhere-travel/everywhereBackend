@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 
 import java.util.List;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -78,6 +79,12 @@ public class ReciboMapper {
     }
 
     public ReciboResponseDTO toResponseDTO(Recibo recibo) {
+        return toResponseDTO(recibo, null, null);
+    }
+
+    public ReciboResponseDTO toResponseDTO(Recibo recibo,
+            Map<Integer, PersonaNatural> naturalesMap,
+            Map<Integer, PersonaJuridica> juridicasMap) {
         ReciboResponseDTO reciboResponseDTO = modelMapper.map(recibo, ReciboResponseDTO.class);
 
         // Mapear código de cotización
@@ -116,7 +123,12 @@ public class ReciboMapper {
         else if (recibo.getPersona() != null) {
             Integer personaId = recibo.getPersona().getId();
 
-            PersonaNatural personaNatural = personaNaturalRepository.findByPersonasId(personaId).orElse(null);
+            PersonaNatural personaNatural = null;
+            if (naturalesMap != null) {
+                personaNatural = naturalesMap.get(personaId);
+            } else {
+                personaNatural = personaNaturalRepository.findByPersonasId(personaId).orElse(null);
+            }
             if (personaNatural != null) {
                 String nombreCompleto = String.join(" ",
                         personaNatural.getNombres() != null ? personaNatural.getNombres().trim() : "",
@@ -130,7 +142,12 @@ public class ReciboMapper {
                     reciboResponseDTO.setTipoDocumentoCliente("DNI");
                 }
             } else {
-                PersonaJuridica personaJuridica = personaJuridicaRepository.findByPersonasId(personaId).orElse(null);
+                PersonaJuridica personaJuridica = null;
+                if (juridicasMap != null) {
+                    personaJuridica = juridicasMap.get(personaId);
+                } else {
+                    personaJuridica = personaJuridicaRepository.findByPersonasId(personaId).orElse(null);
+                }
                 if (personaJuridica != null) {
                     reciboResponseDTO.setPersonaJuridicaId(personaJuridica.getId());
                     reciboResponseDTO.setPersonaJuridicaRuc(personaJuridica.getRuc());
