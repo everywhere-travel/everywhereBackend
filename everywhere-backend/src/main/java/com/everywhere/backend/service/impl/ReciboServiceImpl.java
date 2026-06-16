@@ -40,6 +40,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collections;
 import java.util.Optional;
 
 @Service
@@ -84,8 +87,7 @@ public class ReciboServiceImpl implements ReciboService {
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Persona jurídica no encontrada con ID: " + personaJuridicaId));
 
-            // Validar que la PersonaJuridica esté asociada a la PersonaNatural de la
-            // cotización
+            // Validar que la PersonaJuridica esté asociada a la PersonaNatural de la cotización
             if (cotizacion.getPersonas() != null) {
                 Integer personaId = cotizacion.getPersonas().getId();
                 PersonaNatural personaNatural = personaNaturalRepository.findByPersonasId(personaId)
@@ -277,7 +279,31 @@ public class ReciboServiceImpl implements ReciboService {
     }
 
     private List<ReciboResponseDTO> mapToResponseList(List<Recibo> recibos) {
-        return recibos.stream().map(reciboMapper::toResponseDTO).toList();
+        if (recibos.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Integer> personaIds = recibos.stream()
+                .filter(d -> d.getPersona() != null)
+                .map(d -> d.getPersona().getId())
+                .distinct()
+                .toList();
+
+        Map<Integer, PersonaNatural> naturalesMap = new HashMap<>();
+        Map<Integer, PersonaJuridica> juridicasMap = new HashMap<>();
+
+        if (!personaIds.isEmpty()) {
+            personaNaturalRepository.findByPersonasIdIn(personaIds).forEach(pn -> {
+                if (pn.getPersonas() != null) naturalesMap.put(pn.getPersonas().getId(), pn);
+            });
+            personaJuridicaRepository.findByPersonasIdIn(personaIds).forEach(pj -> {
+                if (pj.getPersonas() != null) juridicasMap.put(pj.getPersonas().getId(), pj);
+            });
+        }
+
+        return recibos.stream()
+                .map(recibo -> reciboMapper.toResponseDTO(recibo, naturalesMap, juridicasMap))
+                .toList();
     }
 
     private String getAuthenticatedUserName() {

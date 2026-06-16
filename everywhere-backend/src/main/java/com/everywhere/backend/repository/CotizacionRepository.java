@@ -5,11 +5,18 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.EntityGraph;
 
 import java.util.List;
 
 @Repository
 public interface CotizacionRepository extends JpaRepository<Cotizacion, Integer> {
+    @Override
+    @EntityGraph(attributePaths = {
+        "counter", "estadoCotizacion", "formaPago", "personas", "sucursal", "carpeta"
+    })
+    List<Cotizacion> findAll();
+
     @Query("SELECT MAX(c.id) FROM Cotizacion c")
     Integer findMaxId();
 

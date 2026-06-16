@@ -2,6 +2,7 @@ package com.everywhere.backend.service.impl;
 
 import com.everywhere.backend.model.dto.*;
 import com.everywhere.backend.model.entity.Personas;
+import com.everywhere.backend.model.dto.PersonaTablaDTO;
 import com.everywhere.backend.repository.PersonaJuridicaRepository;
 import com.everywhere.backend.repository.PersonaNaturalRepository;
 import com.everywhere.backend.repository.PersonaRepository;
@@ -10,6 +11,8 @@ import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.PersonaMapper;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List; 
 import java.util.stream.Collectors;
@@ -43,6 +46,11 @@ public class PersonaServiceImpl implements PersonaService {
     }
 
     @Override
+    public Page<PersonaTablaDTO> findPersonasPage(String searchTerm, String typeFilter, Pageable pageable) {
+        return personaRepository.findPersonasPage(searchTerm, typeFilter, pageable);
+    }
+
+    @Override
     public List<PersonaResponseDTO> findByTelefono(String telefono) {
         List<Personas> personas = personaRepository.findByTelefonoContainingIgnoreCase(telefono);
         return personas.stream().map(personaMapper::toResponseDTO).toList();
@@ -56,7 +64,6 @@ public class PersonaServiceImpl implements PersonaService {
 
     @Override
     public PersonaResponseDTO patch(Integer id, PersonaRequestDTO personaRequestDTO) {
-        // 🚀 OPTIMIZACIÓN: Validar existencia ANTES de buscar el objeto
         if (!personaRepository.existsById(id))
             throw new ResourceNotFoundException("Persona no encontrada con ID: " + id);
 
@@ -74,13 +81,23 @@ public class PersonaServiceImpl implements PersonaService {
 
     @Override
     public PersonaDisplayDto findPersonaNaturalOrJuridicaById(Integer id) {
-    personaRepository.findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Persona no encontrada con ID " + id));
+        personaRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Persona no encontrada con ID " + id));
 
-    return personaNaturalRepository.findByPersonasId(id)
-        .map(personaMapper::toDisplayDTO)
-        .or(() -> personaJuridicaRepository.findByPersonasId(id).map(personaMapper::toDisplayDTO))
-        .orElseThrow(() -> new ResourceNotFoundException(
-            "No se encontró información adicional (natural o jurídica) para la persona con ID: " + id));
+        return personaNaturalRepository.findByPersonasId(id)
+            .map(personaMapper::toDisplayDTO)
+            .or(() -> personaJuridicaRepository.findByPersonasId(id).map(personaMapper::toDisplayDTO))
+            .orElseThrow(() -> new ResourceNotFoundException(
+                "No se encontró información adicional (natural o jurídica) para la persona con ID: " + id));
+    }
+
+    @Override
+    public java.util.Map<String, Long> getPersonaStats() {
+        long totalNaturales = personaNaturalRepository.count();
+        long totalJuridicas = personaJuridicaRepository.count();
+        return java.util.Map.of(
+            "totalNaturales", totalNaturales,
+            "totalJuridicas", totalJuridicas
+        );
     }
 }
