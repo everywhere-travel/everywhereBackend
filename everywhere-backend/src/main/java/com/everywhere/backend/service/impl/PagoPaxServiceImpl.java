@@ -10,6 +10,8 @@ import com.everywhere.backend.model.entity.PagoPax;
 import com.everywhere.backend.repository.FormaPagoRepository;
 import com.everywhere.backend.repository.LiquidacionRepository;
 import com.everywhere.backend.repository.PagoPaxRepository;
+import com.everywhere.backend.repository.ProveedorRepository;
+import com.everywhere.backend.model.entity.Proveedor;
 import com.everywhere.backend.service.PagoPaxService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,7 @@ public class PagoPaxServiceImpl implements PagoPaxService {
     private final PagoPaxRepository pagoPaxRepository;
     private final LiquidacionRepository liquidacionRepository;
     private final FormaPagoRepository formaPagoRepository;
+    private final ProveedorRepository proveedorRepository;
     private final PagoPaxMapper pagoPaxMapper;
     private final AsientoContableService asientoContableService;
 
@@ -43,10 +46,19 @@ public class PagoPaxServiceImpl implements PagoPaxService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Forma de pago no encontrada con ID: " + requestDTO.getFormaPagoId()));
 
+        // Proveedor es opcional
+        Proveedor proveedor = null;
+        if (requestDTO.getProveedorId() != null) {
+            proveedor = proveedorRepository.findById(requestDTO.getProveedorId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Proveedor no encontrado con ID: " + requestDTO.getProveedorId()));
+        }
+
         // Crear la entidad
         PagoPax pagoPax = pagoPaxMapper.toEntity(requestDTO);
         pagoPax.setLiquidacion(liquidacion);
         pagoPax.setFormaPago(formaPago);
+        pagoPax.setProveedor(proveedor);
 
         // Guardar
         pagoPax = pagoPaxRepository.save(pagoPax);
@@ -108,6 +120,15 @@ public class PagoPaxServiceImpl implements PagoPaxService {
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Forma de pago no encontrada con ID: " + requestDTO.getFormaPagoId()));
             pagoPax.setFormaPago(formaPago);
+        }
+
+        // Actualizar proveedor si cambió
+        if (requestDTO.getProveedorId() != null 
+            && (pagoPax.getProveedor() == null || !requestDTO.getProveedorId().equals(pagoPax.getProveedor().getId()))) {
+            Proveedor proveedor = proveedorRepository.findById(requestDTO.getProveedorId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Proveedor no encontrado con ID: " + requestDTO.getProveedorId()));
+            pagoPax.setProveedor(proveedor);
         }
 
         // Guardar

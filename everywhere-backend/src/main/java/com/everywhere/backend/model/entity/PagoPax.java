@@ -42,4 +42,8 @@ public class PagoPax {
     @ManyToOne
     @JoinColumn(name = "form_id_int")
     private FormaPago formaPago;
+
+    @ManyToOne
+    @JoinColumn(name = "prov_id_int")
+    private Proveedor proveedor;
 }

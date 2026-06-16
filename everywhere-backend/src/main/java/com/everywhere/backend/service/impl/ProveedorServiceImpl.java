@@ -27,11 +27,20 @@ public class ProveedorServiceImpl implements ProveedorService {
     private final DetalleLiquidacionRepository detalleLiquidacionRepository;
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public ProveedorResponseDTO create(ProveedorRequestDTO proveedorRequestDTO) {
         if (proveedorRequestDTO.getRuc() != null && proveedorRepository.existsByRuc(proveedorRequestDTO.getRuc()))
             throw new DataIntegrityViolationException("Ya existe un proveedor con el RUC: " + proveedorRequestDTO.getRuc());
 
         Proveedor proveedor = proveedorMapper.toEntity(proveedorRequestDTO);
+
+        com.everywhere.backend.model.entity.CuentaContable cuenta = new com.everywhere.backend.model.entity.CuentaContable();
+        cuenta.setCodigo("5.PROV." + System.currentTimeMillis());
+        cuenta.setNombre("Proveedor: " + proveedor.getNombre());
+        cuenta.setTipo("PASIVO");
+        cuenta.setActivo(true);
+        proveedor.setCuentaContable(cuenta);
+
         return proveedorMapper.toResponseDTO(proveedorRepository.save(proveedor));
     }
 

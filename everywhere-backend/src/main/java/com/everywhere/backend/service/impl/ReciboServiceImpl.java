@@ -232,7 +232,10 @@ public class ReciboServiceImpl implements ReciboService {
             recibo.setFormaPago(formaPago);
         }
 
-        return reciboMapper.toResponseDTO(reciboRepository.save(recibo));
+        recibo = reciboRepository.save(recibo);
+        asientoContableService.actualizarAsientoPorRecibo(recibo);
+
+        return reciboMapper.toResponseDTO(recibo);
     }
 
     // ========== MÉTODOS PRIVADOS ==========

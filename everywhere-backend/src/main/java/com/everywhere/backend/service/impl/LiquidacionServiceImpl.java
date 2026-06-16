@@ -237,11 +237,11 @@ public LiquidacionResponseDTO update(Integer id, LiquidacionRequestDTO liquidaci
                 sumDetalles(liquidacion.getDetalles(), DetalleLiquidacionSimpleDTO::getValorVenta), moneyStyle);
         addResumenMoneyValue(sheet, rowIndex++, "Total Monto Descuento",
                 sumDetalles(liquidacion.getDetalles(), DetalleLiquidacionSimpleDTO::getMontoDescuento), moneyStyle);
-        addResumenMoneyValue(sheet, rowIndex++, "Total Pagos PAX USD",
+        addResumenMoneyValue(sheet, rowIndex++, "Total Pagos a Proveedor USD",
                 sumPagosPaxByMoneda(pagosPax, "USD"), moneyStyle);
-        addResumenMoneyValue(sheet, rowIndex++, "Total Pagos PAX PEN",
+        addResumenMoneyValue(sheet, rowIndex++, "Total Pagos a Proveedor PEN",
                 sumPagosPaxByMoneda(pagosPax, "PEN"), moneyStyle);
-        addResumenValue(sheet, rowIndex, "Cantidad de Pagos PAX", toText(pagosPax == null ? 0 : pagosPax.size()));
+        addResumenValue(sheet, rowIndex, "Cantidad de Pagos a Proveedores", toText(pagosPax == null ? 0 : pagosPax.size()));
 
         autoSizeColumns(sheet, 2);
     }
@@ -355,7 +355,7 @@ public LiquidacionResponseDTO update(Integer id, LiquidacionRequestDTO liquidaci
             List<PagoPaxResponseDTO> pagosPax,
             CellStyle headerStyle,
             CellStyle moneyStyle) {
-        Sheet sheet = workbook.createSheet("Pagos PAX");
+        Sheet sheet = workbook.createSheet("Pagos Proveedor");
         String[] headers = {
                 "#",
                 "Monto",

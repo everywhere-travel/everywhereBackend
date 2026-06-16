@@ -40,5 +40,10 @@ public class ReciboResponseDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    // Campos para el estado de cuenta
+    private java.math.BigDecimal totalDeudaDocumento;
+    private java.math.BigDecimal totalPagadoAcumulado;
+    private java.math.BigDecimal saldoPendienteActual;
+
     private List<DetalleReciboResponseDTO> detalles;
 }
