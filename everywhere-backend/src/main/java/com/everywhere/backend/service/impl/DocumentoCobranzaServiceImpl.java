@@ -39,6 +39,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collections;
 import java.util.Optional;
 
 @Service
@@ -74,9 +77,6 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         CotizacionConDetallesResponseDTO cotizacion = cotizacionService.findByIdWithDetalles(cotizacionId);
 
         String[] serieCorrelativo = generateNextDocumentNumber();
-        System.out.println("=== GENERANDO DOCUMENTO ===");
-        System.out.println("Serie: " + serieCorrelativo[0]);
-        System.out.println("Correlativo: " + serieCorrelativo[1]);
         DocumentoCobranza documentoCobranza = documentoCobranzaMapper.fromCotizacion(cotizacion, serieCorrelativo[0],
                 Integer.parseInt(serieCorrelativo[1]));
 
@@ -235,7 +235,6 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Forma de pago no encontrada con ID: " + documentoCobranzaUpdateDTO.getFormaPagoId()));
             documentoCobranza.setFormaPago(formaPago);
-            System.out.println("FormaPago actualizada: " + formaPago.getDescripcion());
         }
 
         return documentoCobranzaMapper.toResponseDTO(documentoCobranzaRepository.save(documentoCobranza));
@@ -264,7 +263,31 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     }
 
     private List<DocumentoCobranzaResponseDTO> mapToResponseList(List<DocumentoCobranza> documentos) {
-        return documentos.stream().map(documentoCobranzaMapper::toResponseDTO).toList();
+        if (documentos.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Integer> personaIds = documentos.stream()
+                .filter(d -> d.getPersona() != null)
+                .map(d -> d.getPersona().getId())
+                .distinct()
+                .toList();
+
+        Map<Integer, PersonaNatural> naturalesMap = new HashMap<>();
+        Map<Integer, PersonaJuridica> juridicasMap = new HashMap<>();
+
+        if (!personaIds.isEmpty()) {
+            personaNaturalRepository.findByPersonasIdIn(personaIds).forEach(pn -> {
+                if (pn.getPersonas() != null) naturalesMap.put(pn.getPersonas().getId(), pn);
+            });
+            personaJuridicaRepository.findByPersonasIdIn(personaIds).forEach(pj -> {
+                if (pj.getPersonas() != null) juridicasMap.put(pj.getPersonas().getId(), pj);
+            });
+        }
+
+        return documentos.stream()
+                .map(doc -> documentoCobranzaMapper.toResponseDTO(doc, naturalesMap, juridicasMap))
+                .toList();
     }
 
     /**

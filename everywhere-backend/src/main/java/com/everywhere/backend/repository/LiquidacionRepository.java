@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,8 +24,7 @@ public interface LiquidacionRepository extends JpaRepository<Liquidacion, Intege
             "cotizacion.personas",
             "cotizacion.sucursal",
             "cotizacion.carpeta",
-            "carpeta",
-            "observacionesLiquidacion"
+            "carpeta"
     })
     @NonNull
     List<Liquidacion> findAll();
@@ -38,8 +39,22 @@ public interface LiquidacionRepository extends JpaRepository<Liquidacion, Intege
             "cotizacion.personas",
             "cotizacion.sucursal",
             "cotizacion.carpeta",
-            "carpeta",
-            "observacionesLiquidacion"
+            "carpeta"
+    })
+    @NonNull
+    Page<Liquidacion> findAll(@NonNull Pageable pageable);
+
+    @EntityGraph(attributePaths = {
+            "producto",
+            "formaPago",
+            "cotizacion",
+            "cotizacion.counter",
+            "cotizacion.estadoCotizacion",
+            "cotizacion.formaPago",
+            "cotizacion.personas",
+            "cotizacion.sucursal",
+            "cotizacion.carpeta",
+            "carpeta"
     })
     @NonNull
     Optional<Liquidacion> findById(@NonNull Integer id);
@@ -55,8 +70,7 @@ public interface LiquidacionRepository extends JpaRepository<Liquidacion, Intege
             "cotizacion.personas",
             "cotizacion.sucursal",
             "cotizacion.carpeta",
-            "carpeta",
-            "observacionesLiquidacion"
+            "carpeta"
     })
     List<Liquidacion> findByCarpetaId(Integer carpetaId);
 
@@ -71,8 +85,7 @@ public interface LiquidacionRepository extends JpaRepository<Liquidacion, Intege
             "cotizacion.personas",
             "cotizacion.sucursal",
             "cotizacion.carpeta",
-            "carpeta",
-            "observacionesLiquidacion"
+            "carpeta"
     })
     List<Liquidacion> findByCarpetaIsNull();
 }
