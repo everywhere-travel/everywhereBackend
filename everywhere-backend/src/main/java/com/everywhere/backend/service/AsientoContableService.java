@@ -32,4 +32,8 @@ void generarAsientoPorDocumentoCobranza(DocumentoCobranza documento);
      * Movimiento: DEBE Caja/Banco — HABER Clientes.
      */
     void generarAsientoPorRecibo(Recibo recibo);
+
+    void actualizarAsientoPorDocumentoCobranza(DocumentoCobranza documento);
+
+    void actualizarAsientoPorRecibo(Recibo recibo);
 }

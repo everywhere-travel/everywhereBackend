@@ -140,4 +140,26 @@ public class ReciboPdfGenerator extends PdfGenerator<ReciboResponseDTO, DetalleR
     protected Long getDetalleId(DetalleReciboResponseDTO detalle) {
         return detalle.getId();
     }
+
+    @Override
+    protected void addObservationsBox(com.itextpdf.layout.Document document, ReciboResponseDTO documentoDTO) {
+        // Primero agregamos el cuadro de observaciones por defecto
+        super.addObservationsBox(document, documentoDTO);
+
+        // Luego agregamos el saldo debajo, suelto como texto
+        document.add(new com.itextpdf.layout.element.Paragraph("\n"));
+
+        java.math.BigDecimal saldo = documentoDTO.getSaldoPendienteActual() != null ? documentoDTO.getSaldoPendienteActual() : java.math.BigDecimal.ZERO;
+        String moneda = documentoDTO.getMoneda() != null && documentoDTO.getMoneda().equals("USD") ? "$ " : "S/ ";
+        java.text.DecimalFormat formatter = new java.text.DecimalFormat("#,##0.00", new java.text.DecimalFormatSymbols(java.util.Locale.US));
+
+        String textoSaldo = "SALDO PENDIENTE A PAGAR: " + moneda + formatter.format(saldo);
+
+        com.itextpdf.layout.element.Paragraph paragraph = new com.itextpdf.layout.element.Paragraph(textoSaldo)
+                .setFontSize(10)
+                .setFontColor(com.itextpdf.kernel.colors.ColorConstants.RED)
+                .setTextAlignment(com.itextpdf.layout.properties.TextAlignment.RIGHT);
+
+        document.add(paragraph);
+    }
 }

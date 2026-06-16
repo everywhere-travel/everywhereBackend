@@ -22,4 +22,6 @@ public class PagoPaxRequestDTO {
 
     @NotNull(message = "El ID de forma de pago es obligatorio")
     private Integer formaPagoId;
+
+    private Integer proveedorId;
 }

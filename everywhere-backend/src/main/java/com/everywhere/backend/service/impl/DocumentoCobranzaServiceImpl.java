@@ -239,7 +239,10 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
             System.out.println("FormaPago actualizada: " + formaPago.getDescripcion());
         }
 
-        return documentoCobranzaMapper.toResponseDTO(documentoCobranzaRepository.save(documentoCobranza));
+        documentoCobranza = documentoCobranzaRepository.save(documentoCobranza);
+        asientoContableService.actualizarAsientoPorDocumentoCobranza(documentoCobranza);
+        
+        return documentoCobranzaMapper.toResponseDTO(documentoCobranza);
     }
 
     // ========== MÉTODOS PRIVADOS ==========
