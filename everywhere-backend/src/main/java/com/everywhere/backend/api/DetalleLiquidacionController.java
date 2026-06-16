@@ -46,6 +46,15 @@ public class DetalleLiquidacionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(detalleLiquidacionService.save(detalleLiquidacionRequestDTO));
     }
 
+    @PostMapping("/liquidacion/{liquidacionId}/batch")
+    @RequirePermission(module = "LIQUIDACIONES", permission = "UPDATE")
+    public ResponseEntity<Void> saveBatch(
+            @PathVariable Integer liquidacionId,
+            @RequestBody List<DetalleLiquidacionRequestDTO> requestDTOs) {
+        detalleLiquidacionService.saveBatch(liquidacionId, requestDTOs);
+        return ResponseEntity.ok().build();
+    }
+
     @PatchMapping("/{id}")
     @RequirePermission(module = "LIQUIDACIONES", permission = "UPDATE")
     public ResponseEntity<DetalleLiquidacionResponseDTO> updateDetalleLiquidacion(

@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
 @Data
 public class LiquidacionConDetallesResponseDTO {
 
@@ -25,4 +26,7 @@ public class LiquidacionConDetallesResponseDTO {
 
     // Lista de observaciones anidadas (SIN la liquidación repetida)
     private List<ObservacionLiquidacionSimpleDTO> observaciones;
+
+    // Cotizacion asociada (para recuperar el cliente principal)
+    private CotizacionResponseDto cotizacion;
 }

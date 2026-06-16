@@ -35,6 +35,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageImpl;
 import com.everywhere.backend.service.AsientoContableService;
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
@@ -157,6 +160,19 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     @Override
     public List<DocumentoCobranzaResponseDTO> findAll() {
         return mapToResponseList(documentoCobranzaRepository.findAllForListing());
+    }
+
+    @Override
+    public Page<DocumentoCobranzaResponseDTO> findPage(Pageable pageable) {
+        Page<DocumentoCobranza> page = documentoCobranzaRepository.findAllForListing(pageable);
+        
+        List<DocumentoCobranzaResponseDTO> dtoList = mapToResponseList(page.getContent());
+        
+        return new PageImpl<>(
+            dtoList, 
+            pageable, 
+            page.getTotalElements()
+        );
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.everywhere.backend.api;
 import com.everywhere.backend.model.dto.ViajeroConPersonaResponseDTO;
 import com.everywhere.backend.model.dto.ViajeroRequestDTO;
 import com.everywhere.backend.model.dto.ViajeroResponseDTO;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.ViajeroService;
 import lombok.RequiredArgsConstructor;
@@ -66,5 +67,10 @@ public class ViajeroController {
     @RequirePermission(module = "VIAJEROS", permission = "READ")
     public ResponseEntity<List<ViajeroConPersonaResponseDTO>> findAllWithPersonaNatural() {
         return ResponseEntity.ok(viajeroService.findAllWithPersonaNatural());
+    }
+
+    @GetMapping("/dropdown")
+    public ResponseEntity<List<DropdownResponseDTO>> getDropdownViajeros() {
+        return ResponseEntity.ok(viajeroService.getDropdownViajeros());
     }
 }

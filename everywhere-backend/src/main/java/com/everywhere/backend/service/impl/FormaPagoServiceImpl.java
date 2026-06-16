@@ -3,32 +3,20 @@ package com.everywhere.backend.service.impl;
 import com.everywhere.backend.exceptions.ConflictException;
 import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.mapper.FormaPagoMapper;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.dto.FormaPagoRequestDTO;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.dto.FormaPagoResponseDTO;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.entity.FormaPago;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.repository.CotizacionRepository;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.repository.FormaPagoRepository;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.service.FormaPagoService;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 import lombok.RequiredArgsConstructor;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
-import com.everywhere.backend.model.dto.DropdownResponseDTO; 
 import org.springframework.dao.DataIntegrityViolationException;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import org.springframework.stereotype.Service;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 import java.util.List;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 @Service
 @RequiredArgsConstructor

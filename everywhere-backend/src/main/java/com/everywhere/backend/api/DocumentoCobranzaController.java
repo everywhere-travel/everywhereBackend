@@ -8,11 +8,15 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import com.everywhere.backend.service.DocumentoCobranzaService;
-import com.everywhere.backend.service.ReciboService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -23,8 +27,6 @@ import java.util.List;
 public class DocumentoCobranzaController {
 
     private final DocumentoCobranzaService documentoCobranzaService;
-    private final ReciboService reciboService;
-
     @PostMapping
     @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "CREATE")
     public ResponseEntity<DocumentoCobranzaResponseDTO> createDocumentoCobranza(
@@ -39,6 +41,19 @@ public class DocumentoCobranzaController {
     @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "READ")
     public ResponseEntity<List<DocumentoCobranzaResponseDTO>> getAllDocumentos() {
         return ResponseEntity.ok(documentoCobranzaService.findAll());
+    }
+
+    @GetMapping("/page")
+    @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "READ")
+    public ResponseEntity<Page<DocumentoCobranzaResponseDTO>> getDocumentosPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id,desc") String[] sort) {
+        
+        Direction direction = Direction.fromString(sort[1]);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sort[0]));
+        
+        return ResponseEntity.ok(documentoCobranzaService.findPage(pageable));
     }
 
     @GetMapping("/{id}")
