@@ -15,6 +15,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.io.ByteArrayInputStream;
 import java.util.List;
@@ -30,6 +35,19 @@ public class LiquidacionController {
     @RequirePermission(module = "LIQUIDACIONES", permission = "READ")
     public ResponseEntity<List<LiquidacionResponseDTO>> getAllLiquidaciones() {
         return ResponseEntity.ok(liquidacionService.findAll());
+    }
+
+    @GetMapping("/page")
+    @RequirePermission(module = "LIQUIDACIONES", permission = "READ")
+    public ResponseEntity<Page<LiquidacionResponseDTO>> getLiquidacionesPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id,desc") String[] sort) {
+        
+        Direction direction = Direction.fromString(sort[1]);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sort[0]));
+        
+        return ResponseEntity.ok(liquidacionService.findPage(pageable));
     }
 
     @GetMapping("/{id}")
