@@ -17,6 +17,9 @@ public class ReciboResponseDTO {
     private String fileVenta;
     private String moneda;
 
+    private Long documentoCobranzaId;
+    private String documentoCobranzaNumero;
+
     private Integer cotizacionId;
     private String codigoCotizacion;
     private Integer personaId;

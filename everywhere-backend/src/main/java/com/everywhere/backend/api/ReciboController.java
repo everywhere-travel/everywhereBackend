@@ -21,14 +21,19 @@ public class ReciboController {
 
     private final ReciboService reciboService;
 
+    /**
+     * Crea un nuevo Recibo a partir de un DocumentoCobranza.
+     * Un mismo DocumentoCobranza puede tener múltiples Recibos (pagos parciales o totales).
+     */
     @PostMapping
     @RequirePermission(module = "RECIBOS", permission = "CREATE")
     public ResponseEntity<ReciboResponseDTO> createRecibo(
-            @RequestParam Integer cotizacionId,
+            @RequestParam Integer documentoCobranzaId,
             @RequestParam(required = false) Integer personaJuridicaId,
-            @RequestParam(required = false) Integer sucursalId) {
+            @RequestParam(required = false) Integer sucursalId,
+            @RequestParam(required = false) java.math.BigDecimal montoPago) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(reciboService.createRecibo(cotizacionId, personaJuridicaId, sucursalId));
+                .body(reciboService.createRecibo(documentoCobranzaId, personaJuridicaId, sucursalId, montoPago));
     }
 
     @GetMapping
@@ -41,6 +46,28 @@ public class ReciboController {
     @RequirePermission(module = "RECIBOS", permission = "READ")
     public ResponseEntity<?> getReciboById(@PathVariable Integer id) {
         return ResponseEntity.ok(reciboService.findById(id));
+    }
+
+    /**
+     * Retorna todos los recibos vinculados a un DocumentoCobranza.
+     * Permite calcular el saldo pagado y pendiente del documento.
+     */
+    @GetMapping("/documento-cobranza/{documentoCobranzaId}")
+    @RequirePermission(module = "RECIBOS", permission = "READ")
+    public ResponseEntity<List<ReciboResponseDTO>> getRecibosByDocumentoCobranza(
+            @PathVariable Integer documentoCobranzaId) {
+        return ResponseEntity.ok(reciboService.findByDocumentoCobranzaId(documentoCobranzaId));
+    }
+
+    /**
+     * Retorna todos los recibos vinculados a una cotización (puede haber varios).
+     * Mantenido por compatibilidad.
+     */
+    @GetMapping("/cotizacion/{cotizacionId}")
+    @RequirePermission(module = "RECIBOS", permission = "READ")
+    public ResponseEntity<List<ReciboResponseDTO>> getRecibosByCotizacion(
+            @PathVariable Integer cotizacionId) {
+        return ResponseEntity.ok(reciboService.findByCotizacionId(cotizacionId));
     }
 
     @PatchMapping("/{id}")

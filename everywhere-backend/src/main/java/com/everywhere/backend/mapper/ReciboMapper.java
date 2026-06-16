@@ -80,6 +80,14 @@ public class ReciboMapper {
     public ReciboResponseDTO toResponseDTO(Recibo recibo) {
         ReciboResponseDTO reciboResponseDTO = modelMapper.map(recibo, ReciboResponseDTO.class);
 
+        // Mapear DocumentoCobranza (padre del recibo)
+        if (recibo.getDocumentoCobranza() != null) {
+            reciboResponseDTO.setDocumentoCobranzaId(recibo.getDocumentoCobranza().getId());
+            String numero = recibo.getDocumentoCobranza().getSerie() + "-" +
+                    recibo.getDocumentoCobranza().getCorrelativo();
+            reciboResponseDTO.setDocumentoCobranzaNumero(numero);
+        }
+
         // Mapear código de cotización
         if (recibo.getCotizacion() != null) {
             reciboResponseDTO.setCotizacionId(recibo.getCotizacion().getId());

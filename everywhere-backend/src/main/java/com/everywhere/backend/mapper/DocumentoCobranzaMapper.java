@@ -11,23 +11,44 @@ import com.everywhere.backend.model.entity.PersonaJuridica;
 import com.everywhere.backend.model.entity.PersonaNatural;
 import com.everywhere.backend.model.entity.Personas;
 import com.everywhere.backend.model.entity.Sucursal;
+import com.everywhere.backend.model.entity.DetalleDocumentoCobranza;
+import com.everywhere.backend.repository.DetalleDocumentoCobranzaRepository;
 import com.everywhere.backend.repository.PersonaJuridicaRepository;
 import com.everywhere.backend.repository.PersonaNaturalRepository;
+import com.everywhere.backend.service.ReciboService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Component
-@RequiredArgsConstructor
 public class DocumentoCobranzaMapper {
 
     private final ModelMapper modelMapper;
     private final PersonaNaturalRepository personaNaturalRepository;
     private final PersonaJuridicaRepository personaJuridicaRepository;
     private final DetalleDocumentoCobranzaMapper detalleDocumentoCobranzaMapper;
+    private final DetalleDocumentoCobranzaRepository detalleDocumentoCobranzaRepository;
+    private final ReciboService reciboService;
+
+    public DocumentoCobranzaMapper(
+            ModelMapper modelMapper,
+            PersonaNaturalRepository personaNaturalRepository,
+            PersonaJuridicaRepository personaJuridicaRepository,
+            DetalleDocumentoCobranzaMapper detalleDocumentoCobranzaMapper,
+            DetalleDocumentoCobranzaRepository detalleDocumentoCobranzaRepository,
+            @Lazy ReciboService reciboService) {
+        this.modelMapper = modelMapper;
+        this.personaNaturalRepository = personaNaturalRepository;
+        this.personaJuridicaRepository = personaJuridicaRepository;
+        this.detalleDocumentoCobranzaMapper = detalleDocumentoCobranzaMapper;
+        this.detalleDocumentoCobranzaRepository = detalleDocumentoCobranzaRepository;
+        this.reciboService = reciboService;
+    }
 
     @PostConstruct
     public void configureMapping() {
@@ -166,6 +187,42 @@ public class DocumentoCobranzaMapper {
 
             System.out.println("Mapeados " + detallesDTO.size() + " detalles para documento " + documentoCobranza.getId());
         }
+
+        // Calcular totalDeuda, totalPagado y saldoPendiente
+        calcularSaldos(documentoCobranza, documentoCobranzaResponseDTO);
+
         return documentoCobranzaResponseDTO;
+    }
+
+    private void calcularSaldos(DocumentoCobranza documentoCobranza, DocumentoCobranzaResponseDTO dto) {
+        // 1. Total de la deuda = suma de (cantidad × precio) de los detalles del documento
+        List<DetalleDocumentoCobranza> detallesDoc = detalleDocumentoCobranzaRepository
+                .findByDocumentoCobranzaId(documentoCobranza.getId());
+
+        BigDecimal totalDeuda = BigDecimal.ZERO;
+        if (detallesDoc != null) {
+            for (DetalleDocumentoCobranza detalle : detallesDoc) {
+                BigDecimal cantidad = detalle.getCantidad() != null
+                        ? BigDecimal.valueOf(detalle.getCantidad())
+                        : BigDecimal.ZERO;
+                BigDecimal precio = detalle.getPrecio() != null ? detalle.getPrecio() : BigDecimal.ZERO;
+                totalDeuda = totalDeuda.add(cantidad.multiply(precio));
+            }
+        }
+
+        // 2. Total pagado = suma de todos los recibos asociados
+        BigDecimal totalPagado;
+        try {
+            totalPagado = reciboService.calcularTotalPagado(documentoCobranza.getId().intValue());
+        } catch (Exception e) {
+            totalPagado = BigDecimal.ZERO;
+        }
+
+        // 3. Saldo pendiente
+        BigDecimal saldoPendiente = totalDeuda.subtract(totalPagado);
+
+        dto.setTotalDeuda(totalDeuda);
+        dto.setTotalPagado(totalPagado);
+        dto.setSaldoPendiente(saldoPendiente);
     }
 }
