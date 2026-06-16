@@ -6,6 +6,7 @@ import com.everywhere.backend.model.dto.ViajeroRequestDTO;
 import com.everywhere.backend.model.dto.ViajeroResponseDTO;
 import com.everywhere.backend.model.entity.Viajero;
 import com.everywhere.backend.model.entity.PersonaNatural;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.repository.ViajeroRepository;
 import com.everywhere.backend.repository.PersonaNaturalRepository;
 import com.everywhere.backend.service.ViajeroService;
@@ -110,5 +111,10 @@ public class ViajeroServiceImpl implements ViajeroService {
                         .personaNatural(personaNaturalMapper.toSinViajeroResponseDTO(viajero.getPersonaNatural()))
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<DropdownResponseDTO> getDropdownViajeros() {
+        return viajeroRepository.findDropdownViajeros();
     }
 }

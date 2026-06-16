@@ -29,6 +29,15 @@ public class PagoPaxController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
 
+    @PostMapping("/liquidacion/{liquidacionId}/batch")
+    @RequirePermission(module = "LIQUIDACIONES", permission = "UPDATE")
+    public ResponseEntity<Void> saveBatch(
+            @PathVariable Integer liquidacionId,
+            @RequestBody List<PagoPaxRequestDTO> requestDTOs) {
+        pagoPaxService.saveBatch(liquidacionId, requestDTOs);
+        return ResponseEntity.ok().build();
+    }
+
     /**
      * Obtener todos los pagos pax
      */

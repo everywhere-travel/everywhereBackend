@@ -95,59 +95,33 @@ public class LiquidacionServiceImpl implements LiquidacionService {
     }
 
     @Override
-@Transactional
-public LiquidacionResponseDTO update(Integer id, LiquidacionRequestDTO liquidacionRequestDTO) {
-    if (!liquidacionRepository.existsById(id))
-        throw new ResourceNotFoundException("Liquidación no encontrada con ID: " + id);
+    @Transactional
+    public LiquidacionResponseDTO update(Integer id, LiquidacionRequestDTO liquidacionRequestDTO) {
+        Liquidacion liquidacion = liquidacionRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Liquidación no encontrada con ID: " + id));
 
-    if (liquidacionRequestDTO.getCotizacionId() != null &&
-            !cotizacionRepository.existsById(liquidacionRequestDTO.getCotizacionId()))
-        throw new ResourceNotFoundException(
-                "Cotización no encontrada con ID: " + liquidacionRequestDTO.getCotizacionId());
+        liquidacionMapper.updateEntityFromRequest(liquidacion, liquidacionRequestDTO);
 
-    if (liquidacionRequestDTO.getProductoId() != null &&
-            !productoRepository.existsById(liquidacionRequestDTO.getProductoId()))
-        throw new ResourceNotFoundException(
-                "Producto no encontrado con ID: " + liquidacionRequestDTO.getProductoId());
+        if (liquidacionRequestDTO.getCotizacionId() != null) {
+            liquidacion.setCotizacion(cotizacionRepository.getReferenceById(liquidacionRequestDTO.getCotizacionId()));
+        }
 
-    if (liquidacionRequestDTO.getFormaPagoId() != null &&
-            !formaPagoRepository.existsById(liquidacionRequestDTO.getFormaPagoId()))
-        throw new ResourceNotFoundException(
-                "Forma de pago no encontrada con ID: " + liquidacionRequestDTO.getFormaPagoId());
+        if (liquidacionRequestDTO.getProductoId() != null) {
+            liquidacion.setProducto(productoRepository.getReferenceById(liquidacionRequestDTO.getProductoId()));
+        }
 
-    if (liquidacionRequestDTO.getCarpetaId() != null &&
-            !carpetaRepository.existsById(liquidacionRequestDTO.getCarpetaId()))
-        throw new ResourceNotFoundException(
-                "Carpeta no encontrada con ID: " + liquidacionRequestDTO.getCarpetaId());
+        if (liquidacionRequestDTO.getFormaPagoId() != null) {
+            liquidacion.setFormaPago(formaPagoRepository.getReferenceById(liquidacionRequestDTO.getFormaPagoId()));
+        }
 
-    Liquidacion liquidacion = liquidacionRepository.findById(id).get();
+        if (liquidacionRequestDTO.getCarpetaId() != null) {
+            liquidacion.setCarpeta(carpetaRepository.getReferenceById(liquidacionRequestDTO.getCarpetaId()));
+        }
 
-    liquidacionMapper.updateEntityFromRequest(liquidacion, liquidacionRequestDTO);
+        Liquidacion liquidacionGuardada = liquidacionRepository.save(liquidacion);
 
-    if (liquidacionRequestDTO.getCotizacionId() != null) {
-        Cotizacion cotizacion = cotizacionRepository.findById(liquidacionRequestDTO.getCotizacionId()).get();
-        liquidacion.setCotizacion(cotizacion);
+        return liquidacionMapper.toResponseDTO(liquidacionGuardada);
     }
-
-    if (liquidacionRequestDTO.getProductoId() != null) {
-        Producto producto = productoRepository.findById(liquidacionRequestDTO.getProductoId()).get();
-        liquidacion.setProducto(producto);
-    }
-
-    if (liquidacionRequestDTO.getFormaPagoId() != null) {
-        FormaPago formaPago = formaPagoRepository.findById(liquidacionRequestDTO.getFormaPagoId()).get();
-        liquidacion.setFormaPago(formaPago);
-    }
-
-    if (liquidacionRequestDTO.getCarpetaId() != null) {
-        Carpeta carpeta = carpetaRepository.findById(liquidacionRequestDTO.getCarpetaId()).get();
-        liquidacion.setCarpeta(carpeta);
-    }
-
-    Liquidacion liquidacionGuardada = liquidacionRepository.save(liquidacion);
-
-    return liquidacionMapper.toResponseDTO(liquidacionGuardada);
-}
 
     @Override
     @Transactional
@@ -186,6 +160,7 @@ public LiquidacionResponseDTO update(Integer id, LiquidacionRequestDTO liquidaci
         liquidacionConDetallesResponseDTO.setFormaPago(liquidacionResponseDTO.getFormaPago());
         liquidacionConDetallesResponseDTO.setDetalles(detalleLiquidacionSimpleDTOs);
         liquidacionConDetallesResponseDTO.setObservaciones(observacionLiquidacionSimpleDTOs);
+        liquidacionConDetallesResponseDTO.setCotizacion(liquidacionResponseDTO.getCotizacion());
 
         return liquidacionConDetallesResponseDTO;
     }
