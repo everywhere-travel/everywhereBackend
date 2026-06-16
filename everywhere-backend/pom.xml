@@ -143,6 +143,12 @@
             <version>13.0</version>
         </dependency>
 
+        <!-- EMAIL -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
         <!-- DEVTOOLS -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
