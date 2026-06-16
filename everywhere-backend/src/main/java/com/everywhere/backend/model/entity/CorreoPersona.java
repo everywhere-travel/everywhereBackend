@@ -36,4 +36,12 @@ public class CorreoPersona {
     @JoinColumn(name = "per_id_int")
     @JsonBackReference
     private Personas persona;
+
+    @PrePersist
+    @PreUpdate
+    public void formatFields() {
+        if (this.email != null) {
+            this.email = this.email.trim().toLowerCase().replaceAll("\\s+", "");
+        }
+    }
 }
