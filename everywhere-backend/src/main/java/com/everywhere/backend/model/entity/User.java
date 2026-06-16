@@ -44,4 +44,11 @@ public class User {
     @JoinColumn(name = "suc_id_int", nullable = true)
     private Sucursal sucursal;
 
+    @PrePersist
+    @PreUpdate
+    public void formatFields() {
+        if (this.email != null) {
+            this.email = this.email.trim().toLowerCase().replaceAll("\\s+", "");
+        }
+    }
 }
