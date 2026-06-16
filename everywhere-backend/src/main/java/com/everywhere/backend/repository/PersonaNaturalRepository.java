@@ -9,10 +9,17 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.EntityGraph;
+
 @Repository
 public interface PersonaNaturalRepository extends JpaRepository<PersonaNatural, Integer> {
+
+    @Override
+    @EntityGraph(attributePaths = {"personas", "viajero", "categoriaPersona"})
+    List<PersonaNatural> findAll();
     Optional<PersonaNatural> findByDocumentoIgnoreCase(String documento);
     Optional<PersonaNatural> findByPersonasId(Integer personaId);
+    List<PersonaNatural> findByPersonasIdIn(List<Integer> personasIds);
 
     @Query(value = "SELECT * FROM persona_natural WHERE UPPER(TRANSLATE(per_nat_nomb_vac, 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou')) LIKE UPPER(TRANSLATE(:nombres, 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou'))", nativeQuery = true)
     List<PersonaNatural> findByNombresIgnoreAccents(@Param("nombres") String nombres);
@@ -31,5 +38,6 @@ public interface PersonaNaturalRepository extends JpaRepository<PersonaNatural, 
     @Query("SELECT pn FROM PersonaNatural pn JOIN FETCH pn.personas LEFT JOIN FETCH pn.categoriaPersona LEFT JOIN FETCH pn.viajero WHERE pn.id IN :ids ORDER BY pn.id DESC")
     List<PersonaNatural> findConDetalles(@Param("ids") List<Integer> ids);
     
+    @EntityGraph(attributePaths = {"personas", "viajero", "categoriaPersona"})
     List<PersonaNatural> findTop100ByOrderByIdDesc();
 }

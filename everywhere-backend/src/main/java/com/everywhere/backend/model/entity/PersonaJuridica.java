@@ -34,4 +34,12 @@ public class PersonaJuridica {
     @ManyToOne
     @JoinColumn(name = "per_id_int", nullable = false)
     private Personas personas;
+
+    @PrePersist
+    @PreUpdate
+    public void formatFields() {
+        if (this.ruc != null) {
+            this.ruc = this.ruc.trim().replaceAll("\\s+", "");
+        }
+    }
 }

@@ -40,6 +40,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -78,6 +80,11 @@ public class LiquidacionServiceImpl implements LiquidacionService {
     @Override
     public List<LiquidacionResponseDTO> findAll() {
         return liquidacionRepository.findAll().stream().map(liquidacionMapper::toResponseDTO).toList();
+    }
+
+    @Override
+    public Page<LiquidacionResponseDTO> findPage(Pageable pageable) {
+        return liquidacionRepository.findAll(pageable).map(liquidacionMapper::toResponseDTO);
     }
 
     @Override

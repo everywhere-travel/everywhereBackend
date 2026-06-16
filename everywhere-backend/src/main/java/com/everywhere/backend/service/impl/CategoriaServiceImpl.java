@@ -1,21 +1,35 @@
 package com.everywhere.backend.service.impl;
 
 import com.everywhere.backend.exceptions.ConflictException;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.dto.CategoriaRequestDto;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.dto.CategoriaResponseDto;
-import com.everywhere.backend.model.entity.Categoria; 
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
+import com.everywhere.backend.model.entity.Categoria;
+import com.everywhere.backend.model.dto.DropdownResponseDTO; 
 import com.everywhere.backend.repository.CategoriaRepository;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.mapper.CategoriaMapper;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.repository.DetalleCotizacionRepository;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.service.CategoriaService;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import org.springframework.transaction.annotation.Transactional;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 import lombok.RequiredArgsConstructor;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import org.springframework.stereotype.Service;
-import java.util.List; 
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
+import java.util.List;
+import com.everywhere.backend.model.dto.DropdownResponseDTO; 
 
 @Service
 @Transactional(readOnly = true)
@@ -85,5 +99,10 @@ public class CategoriaServiceImpl implements CategoriaService {
         }
 
         categoriaRepository.deleteById(id);
+    }
+
+    @Override
+    public List<DropdownResponseDTO> getDropdown() {
+        return categoriaRepository.findDropdown();
     }
 }

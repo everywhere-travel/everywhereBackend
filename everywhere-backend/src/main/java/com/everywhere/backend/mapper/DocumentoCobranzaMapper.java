@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 import jakarta.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class DocumentoCobranzaMapper {
@@ -98,6 +99,12 @@ public class DocumentoCobranzaMapper {
     }
 
     public DocumentoCobranzaResponseDTO toResponseDTO(DocumentoCobranza documentoCobranza) {
+        return toResponseDTO(documentoCobranza, null, null);
+    }
+
+    public DocumentoCobranzaResponseDTO toResponseDTO(DocumentoCobranza documentoCobranza,
+            Map<Integer, PersonaNatural> naturalesMap,
+            Map<Integer, PersonaJuridica> juridicasMap) {
         DocumentoCobranzaResponseDTO documentoCobranzaResponseDTO = modelMapper.map(documentoCobranza,
                 DocumentoCobranzaResponseDTO.class);
 
@@ -140,7 +147,12 @@ public class DocumentoCobranzaMapper {
         else if (documentoCobranza.getPersona() != null) {
             Integer personaId = documentoCobranza.getPersona().getId();
 
-            PersonaNatural personaNatural = personaNaturalRepository.findByPersonasId(personaId).orElse(null);
+            PersonaNatural personaNatural = null;
+            if (naturalesMap != null) {
+                personaNatural = naturalesMap.get(personaId);
+            } else {
+                personaNatural = personaNaturalRepository.findByPersonasId(personaId).orElse(null);
+            }
             if (personaNatural != null) {
                 // Concatenación null-safe para evitar mostrar "null" en el nombre
                 String nombreCompleto = String.join(" ",
@@ -157,7 +169,12 @@ public class DocumentoCobranzaMapper {
                     documentoCobranzaResponseDTO.setTipoDocumentoCliente("DNI");
                 }
             } else {
-                PersonaJuridica personaJuridica = personaJuridicaRepository.findByPersonasId(personaId).orElse(null);
+                PersonaJuridica personaJuridica = null;
+                if (juridicasMap != null) {
+                    personaJuridica = juridicasMap.get(personaId);
+                } else {
+                    personaJuridica = personaJuridicaRepository.findByPersonasId(personaId).orElse(null);
+                }
                 if (personaJuridica != null) {
                     documentoCobranzaResponseDTO.setPersonaJuridicaId(personaJuridica.getId());
                     documentoCobranzaResponseDTO.setPersonaJuridicaRuc(personaJuridica.getRuc());
@@ -184,8 +201,6 @@ public class DocumentoCobranzaMapper {
             List<DetalleDocumentoCobranzaResponseDTO> detallesDTO = documentoCobranza.getDetalles().stream()
                     .map(detalleDocumentoCobranzaMapper::toResponseDTO).toList();
             documentoCobranzaResponseDTO.setDetalles(detallesDTO);
-
-            System.out.println("Mapeados " + detallesDTO.size() + " detalles para documento " + documentoCobranza.getId());
         }
 
         // Calcular totalDeuda, totalPagado y saldoPendiente

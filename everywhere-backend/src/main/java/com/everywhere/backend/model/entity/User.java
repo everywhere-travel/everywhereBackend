@@ -26,12 +26,15 @@ public class User {
     private String password;
 
     @CreationTimestamp
-    @Column(name = "prov_cre_tmp", updatable = false)
+    @Column(name = "usr_cre_tmp", updatable = false)
     private LocalDateTime creado;
 
     @UpdateTimestamp
-    @Column(name = "prov_upd_tmp")
+    @Column(name = "usr_upd_tmp")
     private LocalDateTime actualizado;
+
+    @Column(name = "usr_est_bol", nullable = false, columnDefinition = "boolean default true")
+    private Boolean estado = true;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "rol_id", nullable = false)
@@ -41,4 +44,11 @@ public class User {
     @JoinColumn(name = "suc_id_int", nullable = true)
     private Sucursal sucursal;
 
+    @PrePersist
+    @PreUpdate
+    public void formatFields() {
+        if (this.email != null) {
+            this.email = this.email.trim().toLowerCase().replaceAll("\\s+", "");
+        }
+    }
 }
