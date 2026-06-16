@@ -37,6 +37,9 @@ import com.everywhere.backend.repository.DetalleDocumentoCobranzaRepository;
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collections;
 import java.util.Optional;
 
 @Service
@@ -61,7 +64,8 @@ public class ReciboServiceImpl implements ReciboService {
 
     @Override
     @Transactional
-    public ReciboResponseDTO createRecibo(Integer documentoCobranzaId, Integer personaJuridicaId, Integer sucursalId, BigDecimal montoPago) {
+    public ReciboResponseDTO createRecibo(Integer documentoCobranzaId, Integer personaJuridicaId, Integer sucursalId,
+            BigDecimal montoPago) {
         if (documentoCobranzaId == null) {
             throw new IllegalArgumentException("El ID del documento de cobranza no puede ser nulo");
         }
@@ -92,6 +96,7 @@ public class ReciboServiceImpl implements ReciboService {
             PersonaJuridica personaJuridica = personaJuridicaRepository.findById(personaJuridicaId)
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Persona jurídica no encontrada con ID: " + personaJuridicaId));
+
             recibo.setPersonaJuridica(personaJuridica);
         }
 
@@ -258,16 +263,19 @@ public class ReciboServiceImpl implements ReciboService {
     }
 
     @Transactional
-    private void crearDetallesDesdeDocumentoCobranza(Recibo recibo, Long documentoCobranzaId, BigDecimal montoPago, DocumentoCobranza documentoCobranza) {
+    private void crearDetallesDesdeDocumentoCobranza(Recibo recibo, Long documentoCobranzaId, BigDecimal montoPago,
+            DocumentoCobranza documentoCobranza) {
         if (montoPago != null && montoPago.compareTo(BigDecimal.ZERO) > 0) {
             DetalleRecibo detalleRecibo = new DetalleRecibo();
             detalleRecibo.setRecibo(recibo);
             detalleRecibo.setCantidad(1);
-            
+
             String serie = documentoCobranza.getSerie() != null ? documentoCobranza.getSerie() + "-" : "";
-            String correlativo = documentoCobranza.getCorrelativo() != null ? String.valueOf(documentoCobranza.getCorrelativo()) : "S/N";
+            String correlativo = documentoCobranza.getCorrelativo() != null
+                    ? String.valueOf(documentoCobranza.getCorrelativo())
+                    : "S/N";
             detalleRecibo.setDescripcion("Pago a cuenta de Documento de Cobranza " + serie + correlativo);
-            
+
             detalleRecibo.setPrecio(montoPago);
             detalleReciboRepository.save(detalleRecibo);
         } else {
@@ -281,7 +289,8 @@ public class ReciboServiceImpl implements ReciboService {
                 detalleRecibo.setCantidad(detalleDocumento.getCantidad() != null ? detalleDocumento.getCantidad() : 1);
                 detalleRecibo.setDescripcion(detalleDocumento.getDescripcion());
                 detalleRecibo
-                        .setPrecio(detalleDocumento.getPrecio() != null ? detalleDocumento.getPrecio() : BigDecimal.ZERO);
+                        .setPrecio(
+                                detalleDocumento.getPrecio() != null ? detalleDocumento.getPrecio() : BigDecimal.ZERO);
 
                 if (detalleDocumento.getProducto() != null) {
                     detalleRecibo.setProducto(detalleDocumento.getProducto());
@@ -293,7 +302,33 @@ public class ReciboServiceImpl implements ReciboService {
     }
 
     private List<ReciboResponseDTO> mapToResponseList(List<Recibo> recibos) {
-        return recibos.stream().map(reciboMapper::toResponseDTO).toList();
+        if (recibos.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Integer> personaIds = recibos.stream()
+                .filter(d -> d.getPersona() != null)
+                .map(d -> d.getPersona().getId())
+                .distinct()
+                .toList();
+
+        Map<Integer, PersonaNatural> naturalesMap = new HashMap<>();
+        Map<Integer, PersonaJuridica> juridicasMap = new HashMap<>();
+
+        if (!personaIds.isEmpty()) {
+            personaNaturalRepository.findByPersonasIdIn(personaIds).forEach(pn -> {
+                if (pn.getPersonas() != null)
+                    naturalesMap.put(pn.getPersonas().getId(), pn);
+            });
+            personaJuridicaRepository.findByPersonasIdIn(personaIds).forEach(pj -> {
+                if (pj.getPersonas() != null)
+                    juridicasMap.put(pj.getPersonas().getId(), pj);
+            });
+        }
+
+        return recibos.stream()
+                .map(recibo -> reciboMapper.toResponseDTO(recibo, naturalesMap, juridicasMap))
+                .toList();
     }
 
     private String getAuthenticatedUserName() {

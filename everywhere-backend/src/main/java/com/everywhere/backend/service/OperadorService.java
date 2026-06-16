@@ -4,6 +4,7 @@ import com.everywhere.backend.model.dto.OperadorRequestDTO;
 import com.everywhere.backend.model.dto.OperadorResponseDTO;
 
 import java.util.List;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 public interface OperadorService {
 
@@ -13,4 +14,6 @@ public interface OperadorService {
     OperadorResponseDTO save(OperadorRequestDTO dto);
     OperadorResponseDTO update(int id, OperadorRequestDTO dto);
     void deleteById(int id);
+
+    List<DropdownResponseDTO> getDropdown();
 }
