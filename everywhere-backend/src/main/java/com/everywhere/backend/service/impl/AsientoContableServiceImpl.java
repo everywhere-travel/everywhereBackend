@@ -83,8 +83,7 @@ public class AsientoContableServiceImpl implements AsientoContableService {
 
             CuentaContable cuenta = cuentaRepository.findById(detalleRequest.getCuentaId())
                     .orElseThrow(() -> new ResourceNotFoundException(
-                            "Cuenta contable no encontrada con ID: " + detalleRequest.getCuentaId()
-                    ));
+                            "Cuenta contable no encontrada con ID: " + detalleRequest.getCuentaId()));
 
             BigDecimal debe = detalleRequest.getDebe() != null ? detalleRequest.getDebe() : BigDecimal.ZERO;
             BigDecimal haber = detalleRequest.getHaber() != null ? detalleRequest.getHaber() : BigDecimal.ZERO;
@@ -117,7 +116,8 @@ public class AsientoContableServiceImpl implements AsientoContableService {
     @Override
     @Transactional
     public void anular(Integer id) {
-        throw new UnsupportedOperationException("La anulación de asientos contables está inhabilitada temporalmente porque requiere la implementación de asientos de extorno.");
+        throw new UnsupportedOperationException(
+                "La anulación de asientos contables está inhabilitada temporalmente porque requiere la implementación de asientos de extorno.");
     }
 
     @Override
@@ -147,33 +147,31 @@ public class AsientoContableServiceImpl implements AsientoContableService {
                 pagoPax.getMoneda(),
                 pagoPax.getMonto(),
                 cuentaDebeId,
-                CUENTA_CAJA_BANCO
-        );
+                CUENTA_CAJA_BANCO);
     }
 
-@Override
-@Transactional
-public void generarAsientoPorDocumentoCobranza(DocumentoCobranza documento) {
-    if (documento == null || documento.getId() == null) {
-        return;
+    @Override
+    @Transactional
+    public void generarAsientoPorDocumentoCobranza(DocumentoCobranza documento) {
+        if (documento == null || documento.getId() == null) {
+            return;
+        }
+
+        BigDecimal totalVenta = calcularTotalDocumentoCobranza(documento.getId());
+
+        if (totalVenta.compareTo(BigDecimal.ZERO) <= 0) {
+            return;
+        }
+
+        crearAsientoAutomatico(
+                "Venta registrada - Documento de Cobranza",
+                "DOCUMENTO_COBRANZA",
+                documento.getId().intValue(),
+                "PEN",
+                totalVenta,
+                CUENTA_CLIENTES,
+                CUENTA_VENTAS);
     }
-
-    BigDecimal totalVenta = calcularTotalDocumentoCobranza(documento.getId());
-
-    if (totalVenta.compareTo(BigDecimal.ZERO) <= 0) {
-        return;
-    }
-
-    crearAsientoAutomatico(
-            "Venta registrada - Documento de Cobranza",
-            "DOCUMENTO_COBRANZA",
-            documento.getId().intValue(),
-            "PEN",
-            totalVenta,
-            CUENTA_CLIENTES,
-            CUENTA_VENTAS
-    );
-}
 
     @Override
     @Transactional
@@ -193,15 +191,15 @@ public void generarAsientoPorDocumentoCobranza(DocumentoCobranza documento) {
                 .collect(Collectors.toMap(
                         DetalleLiquidacion::getProveedor,
                         this::calcularCostoDetalleLiquidacion,
-                        BigDecimal::add
-                ));
+                        BigDecimal::add));
 
         BigDecimal costoSinProveedor = detalles.stream()
                 .filter(d -> d.getProveedor() == null)
                 .map(this::calcularCostoDetalleLiquidacion)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal totalCostoGlobal = costosPorProveedor.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add).add(costoSinProveedor);
+        BigDecimal totalCostoGlobal = costosPorProveedor.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add)
+                .add(costoSinProveedor);
 
         if (totalCostoGlobal.compareTo(BigDecimal.ZERO) <= 0) {
             return;
@@ -222,7 +220,7 @@ public void generarAsientoPorDocumentoCobranza(DocumentoCobranza documento) {
 
         CuentaContable cuentaCosto = cuentaRepository.findById(CUENTA_COSTO_SERVICIO)
                 .orElseThrow(() -> new ResourceNotFoundException("Cuenta debe no encontrada"));
-        
+
         DetalleAsientoContable detalleDebe = new DetalleAsientoContable();
         detalleDebe.setAsiento(asiento);
         detalleDebe.setCuenta(cuentaCosto);
@@ -234,7 +232,8 @@ public void generarAsientoPorDocumentoCobranza(DocumentoCobranza documento) {
 
         for (Map.Entry<Proveedor, BigDecimal> entry : costosPorProveedor.entrySet()) {
             if (entry.getValue().compareTo(BigDecimal.ZERO) > 0) {
-                CuentaContable cProv = entry.getKey().getCuentaContable() != null ? entry.getKey().getCuentaContable() : cuentaProvGen;
+                CuentaContable cProv = entry.getKey().getCuentaContable() != null ? entry.getKey().getCuentaContable()
+                        : cuentaProvGen;
                 DetalleAsientoContable dHaber = new DetalleAsientoContable();
                 dHaber.setAsiento(asiento);
                 dHaber.setCuenta(cProv);
@@ -289,15 +288,16 @@ public void generarAsientoPorDocumentoCobranza(DocumentoCobranza documento) {
                 moneda,
                 totalCobrado,
                 CUENTA_CAJA_BANCO,
-                CUENTA_CLIENTES
-        );
+                CUENTA_CLIENTES);
     }
 
     @Override
     @Transactional
     public void actualizarAsientoPorDocumentoCobranza(DocumentoCobranza documento) {
-        if (documento == null || documento.getId() == null) return;
-        List<AsientoContable> asientosAnteriores = asientoRepository.findByOrigenAndOrigenId("DOCUMENTO_COBRANZA", documento.getId().intValue());
+        if (documento == null || documento.getId() == null)
+            return;
+        List<AsientoContable> asientosAnteriores = asientoRepository.findByOrigenAndOrigenId("DOCUMENTO_COBRANZA",
+                documento.getId().intValue());
         if (!asientosAnteriores.isEmpty()) {
             asientoRepository.deleteAll(asientosAnteriores);
         }
@@ -307,7 +307,8 @@ public void generarAsientoPorDocumentoCobranza(DocumentoCobranza documento) {
     @Override
     @Transactional
     public void actualizarAsientoPorRecibo(Recibo recibo) {
-        if (recibo == null || recibo.getId() == null) return;
+        if (recibo == null || recibo.getId() == null)
+            return;
         List<AsientoContable> asientosAnteriores = asientoRepository.findByOrigenAndOrigenId("RECIBO", recibo.getId());
         if (!asientosAnteriores.isEmpty()) {
             asientoRepository.deleteAll(asientosAnteriores);
@@ -322,13 +323,13 @@ public void generarAsientoPorDocumentoCobranza(DocumentoCobranza documento) {
             String moneda,
             BigDecimal monto,
             Integer cuentaDebeId,
-            Integer cuentaHaberId
-    ) {
+            Integer cuentaHaberId) {
         CuentaContable cuentaDebe = cuentaRepository.findById(cuentaDebeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cuenta debe no encontrada con ID: " + cuentaDebeId));
 
         CuentaContable cuentaHaber = cuentaRepository.findById(cuentaHaberId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cuenta haber no encontrada con ID: " + cuentaHaberId));
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Cuenta haber no encontrada con ID: " + cuentaHaberId));
 
         AsientoContable asiento = new AsientoContable();
         asiento.setFecha(LocalDate.now());
@@ -363,17 +364,17 @@ public void generarAsientoPorDocumentoCobranza(DocumentoCobranza documento) {
     }
 
     private BigDecimal calcularTotalDocumentoCobranza(Long documentoId) {
-    List<DetalleDocumentoCobranza> detalles =
-            detalleDocumentoCobranzaRepository.findByDocumentoCobranzaId(documentoId);
+        List<DetalleDocumentoCobranza> detalles = detalleDocumentoCobranzaRepository
+                .findByDocumentoCobranzaId(documentoId);
 
-    if (detalles == null || detalles.isEmpty()) {
-        return BigDecimal.ZERO;
+        if (detalles == null || detalles.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        return detalles.stream()
+                .map(this::calcularSubtotalDetalleDocumento)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
-
-    return detalles.stream()
-            .map(this::calcularSubtotalDetalleDocumento)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-}
 
     private BigDecimal calcularSubtotalDetalleDocumento(DetalleDocumentoCobranza detalle) {
         BigDecimal cantidad = detalle.getCantidad() != null
@@ -387,22 +388,9 @@ public void generarAsientoPorDocumentoCobranza(DocumentoCobranza documento) {
         return cantidad.multiply(precio);
     }
 
-    private BigDecimal calcularTotalCostoLiquidacion(Integer liquidacionId) {
-    List<DetalleLiquidacion> detalles =
-            detalleLiquidacionRepository.findByLiquidacionId(liquidacionId);
-
-    if (detalles == null || detalles.isEmpty()) {
-        return BigDecimal.ZERO;
+    private BigDecimal calcularCostoDetalleLiquidacion(DetalleLiquidacion detalle) {
+        return detalle.getCostoTicket() != null
+                ? detalle.getCostoTicket()
+                : BigDecimal.ZERO;
     }
-
-    return detalles.stream()
-            .map(this::calcularCostoDetalleLiquidacion)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-}
-
-private BigDecimal calcularCostoDetalleLiquidacion(DetalleLiquidacion detalle) {
-    return detalle.getCostoTicket() != null
-            ? detalle.getCostoTicket()
-            : BigDecimal.ZERO;
-}
 }

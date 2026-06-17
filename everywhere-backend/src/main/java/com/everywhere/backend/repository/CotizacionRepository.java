@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -17,11 +19,19 @@ public interface CotizacionRepository extends JpaRepository<Cotizacion, Integer>
     })
     List<Cotizacion> findAll();
 
+    @EntityGraph(attributePaths = {
+        "counter", "estadoCotizacion", "formaPago", "personas", "sucursal", "carpeta"
+    })
+    Page<Cotizacion> findAll(Pageable pageable);
+
     @Query("SELECT MAX(c.id) FROM Cotizacion c")
     Integer findMaxId();
 
     @Query("SELECT c FROM Cotizacion c WHERE c.id NOT IN (SELECT l.cotizacion.id FROM Liquidacion l WHERE l.cotizacion IS NOT NULL)")
     List<Cotizacion> findCotizacionesSinLiquidacion();
+
+    @Query("SELECT c FROM Cotizacion c WHERE c.id NOT IN (SELECT d.cotizacion.id FROM DocumentoCobranza d WHERE d.cotizacion IS NOT NULL)")
+    List<Cotizacion> findCotizacionesSinDocumentoCobranza();
 
     @Query("SELECT COUNT(c) FROM Cotizacion c WHERE c.formaPago.id = :formaPagoId")
     long countByFormaPagoId(@Param("formaPagoId") Integer formaPagoId);

@@ -36,4 +36,9 @@ public interface PagoPaxService {
      * Elimina un pago pax por ID
      */
     void delete(Integer id);
+
+    /**
+     * Guarda o actualiza un lote de pagos pax
+     */
+    void saveBatch(Integer liquidacionId, List<PagoPaxRequestDTO> requestDTOs);
 }

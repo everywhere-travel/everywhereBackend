@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 
 @Data
 public class DetalleLiquidacionRequestDTO {
+    private Integer id;
     private String ticket;
     private String documentoCobro;
     private BigDecimal costoTicket;

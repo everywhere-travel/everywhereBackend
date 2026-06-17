@@ -3,6 +3,7 @@ package com.everywhere.backend.service;
 import com.everywhere.backend.model.dto.ViajeroConPersonaResponseDTO;
 import com.everywhere.backend.model.dto.ViajeroRequestDTO;
 import com.everywhere.backend.model.dto.ViajeroResponseDTO;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 import java.util.List;
 
@@ -16,4 +17,5 @@ public interface ViajeroService {
     ViajeroResponseDTO patch(Integer id, ViajeroRequestDTO viajeroRequestDTO);
     void deleteById(Integer id);
     List<ViajeroConPersonaResponseDTO> findAllWithPersonaNatural();
+    List<DropdownResponseDTO> getDropdownViajeros();
 }
