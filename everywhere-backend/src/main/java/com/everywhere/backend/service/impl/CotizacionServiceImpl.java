@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.apache.poi.xwpf.usermodel.*;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -121,6 +123,11 @@ public class CotizacionServiceImpl implements CotizacionService {
     }
 
     @Override
+    public Page<CotizacionResponseDto> findPage(Pageable pageable) {
+        return cotizacionRepository.findAll(pageable).map(cotizacionMapper::toResponse);
+    }
+
+    @Override
     public CotizacionResponseDto update(Integer id, CotizacionRequestDto cotizacionRequestDto) {
         Cotizacion cotizacion = cotizacionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cotización no encontrada con ID: " + id));
@@ -130,6 +137,13 @@ public class CotizacionServiceImpl implements CotizacionService {
             : null;
 
         cotizacionMapper.updateEntityFromRequest(cotizacion, cotizacionRequestDto);
+
+        if (cotizacionRequestDto.getPersonaId() != null) {
+            Personas persona = personasRepository.findById(cotizacionRequestDto.getPersonaId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Persona no encontrada con id " + cotizacionRequestDto.getPersonaId()));
+            cotizacion.setPersonas(persona);
+        }
 
         if (cotizacionRequestDto.getCounterId() != null) {
             Counter counter = counterRepository.findById(cotizacionRequestDto.getCounterId())
@@ -214,7 +228,16 @@ public class CotizacionServiceImpl implements CotizacionService {
 
     @Override
     public List<CotizacionResponseDto> findCotizacionesSinLiquidacion() {
-        return mapToResponseList(cotizacionRepository.findCotizacionesSinLiquidacion());
+        return cotizacionRepository.findCotizacionesSinLiquidacion().stream()
+                .map(cotizacionMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    public List<CotizacionResponseDto> findCotizacionesSinDocumentoCobranza() {
+        return cotizacionRepository.findCotizacionesSinDocumentoCobranza().stream()
+                .map(cotizacionMapper::toResponse)
+                .toList();
     }
 
     private List<CotizacionResponseDto> mapToResponseList(List<Cotizacion> cotizaciones) {

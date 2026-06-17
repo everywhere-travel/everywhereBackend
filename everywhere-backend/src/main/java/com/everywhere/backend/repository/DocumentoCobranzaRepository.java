@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -62,6 +64,15 @@ public interface DocumentoCobranzaRepository extends JpaRepository<DocumentoCobr
                      "LEFT JOIN FETCH d.personaJuridica " +
                      "LEFT JOIN FETCH d.cotizacion")
        List<DocumentoCobranza> findAllForListing();
+
+       @Query(value = "SELECT d FROM DocumentoCobranza d " +
+                     "LEFT JOIN FETCH d.formaPago " +
+                     "LEFT JOIN FETCH d.sucursal " +
+                     "LEFT JOIN FETCH d.persona " +
+                     "LEFT JOIN FETCH d.personaJuridica " +
+                     "LEFT JOIN FETCH d.cotizacion",
+              countQuery = "SELECT COUNT(d) FROM DocumentoCobranza d")
+       Page<DocumentoCobranza> findAllForListing(Pageable pageable);
 
        @Query("SELECT DISTINCT d FROM DocumentoCobranza d " +
                      "LEFT JOIN FETCH d.detalles det " +

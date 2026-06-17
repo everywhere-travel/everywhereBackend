@@ -15,6 +15,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 
 import java.io.ByteArrayInputStream;
 import java.util.List;
@@ -52,6 +57,19 @@ public class CotizacionController {
         return ResponseEntity.ok(cotizacionService.findAll());
     }
 
+    @GetMapping("/page")
+    @RequirePermission(module = "COTIZACIONES", permission = "READ")
+    public ResponseEntity<Page<CotizacionResponseDto>> getCotizacionesPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id,desc") String[] sort) {
+        
+        Direction direction = Direction.fromString(sort[1]);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sort[0]));
+        
+        return ResponseEntity.ok(cotizacionService.findPage(pageable));
+    }
+
     @PatchMapping("/{id}")
     @RequirePermission(module = "COTIZACIONES", permission = "UPDATE")
     public ResponseEntity<CotizacionResponseDto> update(
@@ -68,8 +86,14 @@ public class CotizacionController {
 
     @GetMapping("/sin-liquidacion")
     @RequirePermission(module = "COTIZACIONES", permission = "READ")
-    public ResponseEntity<List<CotizacionResponseDto>> findCotizacionesSinLiquidacion() {
+    public ResponseEntity<List<CotizacionResponseDto>> getCotizacionesSinLiquidacion() {
         return ResponseEntity.ok(cotizacionService.findCotizacionesSinLiquidacion());
+    }
+
+    @GetMapping("/sin-documento-cobranza")
+    @RequirePermission(module = "COTIZACIONES", permission = "READ")
+    public ResponseEntity<List<CotizacionResponseDto>> getCotizacionesSinDocumentoCobranza() {
+        return ResponseEntity.ok(cotizacionService.findCotizacionesSinDocumentoCobranza());
     }
 
     /**

@@ -14,6 +14,7 @@ import com.everywhere.backend.service.DetalleLiquidacionService;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.DetalleLiquidacionMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -58,33 +59,23 @@ public class DetalleLiquidacionServiceImpl implements DetalleLiquidacionService 
         DetalleLiquidacion detalleLiquidacion = detalleLiquidacionMapper.toEntity(detalleLiquidacionRequestDTO);
 
         if(detalleLiquidacionRequestDTO.getLiquidacionId() != null) {
-            if (!liquidacionRepository.existsById(detalleLiquidacionRequestDTO.getLiquidacionId()))
-                throw new ResourceNotFoundException("Liquidación no encontrada con ID: " + detalleLiquidacionRequestDTO.getLiquidacionId());
-            detalleLiquidacion.setLiquidacion(liquidacionRepository.findById(detalleLiquidacionRequestDTO.getLiquidacionId()).get());
+            detalleLiquidacion.setLiquidacion(liquidacionRepository.getReferenceById(detalleLiquidacionRequestDTO.getLiquidacionId()));
         }
 
         if (detalleLiquidacionRequestDTO.getOperadorId() != null) {
-            if (!operadorRepository.existsById(detalleLiquidacionRequestDTO.getOperadorId()))
-                throw new ResourceNotFoundException("Operador no encontrado con ID: " + detalleLiquidacionRequestDTO.getOperadorId());
-            detalleLiquidacion.setOperador(operadorRepository.findById(detalleLiquidacionRequestDTO.getOperadorId()).get());
+            detalleLiquidacion.setOperador(operadorRepository.getReferenceById(detalleLiquidacionRequestDTO.getOperadorId()));
         }
 
         if (detalleLiquidacionRequestDTO.getProveedorId() != null) {
-            if (!proveedorRepository.existsById(detalleLiquidacionRequestDTO.getProveedorId()))
-                throw new ResourceNotFoundException("Proveedor no encontrado con ID: " + detalleLiquidacionRequestDTO.getProveedorId());
-            detalleLiquidacion.setProveedor(proveedorRepository.findById(detalleLiquidacionRequestDTO.getProveedorId()).get());
+            detalleLiquidacion.setProveedor(proveedorRepository.getReferenceById(detalleLiquidacionRequestDTO.getProveedorId()));
         }
 
         if (detalleLiquidacionRequestDTO.getProductoId() != null) {
-            if (!productoRepository.existsById(detalleLiquidacionRequestDTO.getProductoId()))
-                throw new ResourceNotFoundException("Producto no encontrado con ID: " + detalleLiquidacionRequestDTO.getProductoId());
-            detalleLiquidacion.setProducto(productoRepository.findById(detalleLiquidacionRequestDTO.getProductoId()).get());
+            detalleLiquidacion.setProducto(productoRepository.getReferenceById(detalleLiquidacionRequestDTO.getProductoId()));
         }
 
         if (detalleLiquidacionRequestDTO.getViajeroId() != null) {
-            if (!viajeroRepository.existsById(detalleLiquidacionRequestDTO.getViajeroId()))
-                throw new ResourceNotFoundException("Viajero no encontrado con ID: " + detalleLiquidacionRequestDTO.getViajeroId());
-            detalleLiquidacion.setViajero(viajeroRepository.findById(detalleLiquidacionRequestDTO.getViajeroId()).get());
+            detalleLiquidacion.setViajero(viajeroRepository.getReferenceById(detalleLiquidacionRequestDTO.getViajeroId()));
         }
 
         return detalleLiquidacionMapper.toResponseDTO(detalleLiquidacionRepository.save(detalleLiquidacion));
@@ -92,40 +83,29 @@ public class DetalleLiquidacionServiceImpl implements DetalleLiquidacionService 
 
     @Override
     public DetalleLiquidacionResponseDTO update(Integer id, DetalleLiquidacionRequestDTO detalleLiquidacionRequestDTO) {
-        if (!detalleLiquidacionRepository.existsById(id))
-            throw new ResourceNotFoundException("Detalle de liquidación no encontrado con ID: " + id);
-
-        DetalleLiquidacion detalleLiquidacion = detalleLiquidacionRepository.findById(id).get();
+        DetalleLiquidacion detalleLiquidacion = detalleLiquidacionRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Detalle de liquidación no encontrado con ID: " + id));
+            
         detalleLiquidacionMapper.updateEntityFromDTO(detalleLiquidacionRequestDTO, detalleLiquidacion);
 
         if(detalleLiquidacionRequestDTO.getLiquidacionId() != null) {
-            if (!liquidacionRepository.existsById(detalleLiquidacionRequestDTO.getLiquidacionId()))
-                throw new ResourceNotFoundException("Liquidación no encontrada con ID: " + detalleLiquidacionRequestDTO.getLiquidacionId());
-            detalleLiquidacion.setLiquidacion(liquidacionRepository.findById(detalleLiquidacionRequestDTO.getLiquidacionId()).get());
+            detalleLiquidacion.setLiquidacion(liquidacionRepository.getReferenceById(detalleLiquidacionRequestDTO.getLiquidacionId()));
         }
 
         if (detalleLiquidacionRequestDTO.getOperadorId() != null) {
-            if (!operadorRepository.existsById(detalleLiquidacionRequestDTO.getOperadorId()))
-                throw new ResourceNotFoundException("Operador no encontrado con ID: " + detalleLiquidacionRequestDTO.getOperadorId());
-            detalleLiquidacion.setOperador(operadorRepository.findById(detalleLiquidacionRequestDTO.getOperadorId()).get());
+            detalleLiquidacion.setOperador(operadorRepository.getReferenceById(detalleLiquidacionRequestDTO.getOperadorId()));
         }
 
         if (detalleLiquidacionRequestDTO.getProveedorId() != null) {
-            if (!proveedorRepository.existsById(detalleLiquidacionRequestDTO.getProveedorId()))
-                throw new ResourceNotFoundException("Proveedor no encontrado con ID: " + detalleLiquidacionRequestDTO.getProveedorId());
-            detalleLiquidacion.setProveedor(proveedorRepository.findById(detalleLiquidacionRequestDTO.getProveedorId()).get());
+            detalleLiquidacion.setProveedor(proveedorRepository.getReferenceById(detalleLiquidacionRequestDTO.getProveedorId()));
         }
 
         if (detalleLiquidacionRequestDTO.getProductoId() != null) {
-            if (!productoRepository.existsById(detalleLiquidacionRequestDTO.getProductoId()))
-                throw new ResourceNotFoundException("Producto no encontrado con ID: " + detalleLiquidacionRequestDTO.getProductoId());
-            detalleLiquidacion.setProducto(productoRepository.findById(detalleLiquidacionRequestDTO.getProductoId()).get());
+            detalleLiquidacion.setProducto(productoRepository.getReferenceById(detalleLiquidacionRequestDTO.getProductoId()));
         }
 
         if (detalleLiquidacionRequestDTO.getViajeroId() != null) {
-            if (!viajeroRepository.existsById(detalleLiquidacionRequestDTO.getViajeroId()))
-                throw new ResourceNotFoundException("Viajero no encontrado con ID: " + detalleLiquidacionRequestDTO.getViajeroId());
-            detalleLiquidacion.setViajero(viajeroRepository.findById(detalleLiquidacionRequestDTO.getViajeroId()).get());
+            detalleLiquidacion.setViajero(viajeroRepository.getReferenceById(detalleLiquidacionRequestDTO.getViajeroId()));
         }
 
         return detalleLiquidacionMapper.toResponseDTO(detalleLiquidacionRepository.save(detalleLiquidacion));
@@ -136,6 +116,45 @@ public class DetalleLiquidacionServiceImpl implements DetalleLiquidacionService 
         if (!detalleLiquidacionRepository.existsById(id)) 
             throw new ResourceNotFoundException("Detalle de liquidación no encontrado con ID: " + id);
         detalleLiquidacionRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public void saveBatch(Integer liquidacionId, List<DetalleLiquidacionRequestDTO> requestDTOs) {
+        List<DetalleLiquidacion> entidadesParaGuardar = new java.util.ArrayList<>();
+        
+        for (DetalleLiquidacionRequestDTO dto : requestDTOs) {
+            dto.setLiquidacionId(liquidacionId);
+            DetalleLiquidacion detalleLiquidacion;
+            
+            if (dto.getId() != null) {
+                detalleLiquidacion = detalleLiquidacionRepository.findById(dto.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Detalle no encontrado"));
+                detalleLiquidacionMapper.updateEntityFromDTO(dto, detalleLiquidacion);
+            } else {
+                detalleLiquidacion = detalleLiquidacionMapper.toEntity(dto);
+            }
+            
+            if(dto.getLiquidacionId() != null) {
+                detalleLiquidacion.setLiquidacion(liquidacionRepository.getReferenceById(dto.getLiquidacionId()));
+            }
+            if (dto.getOperadorId() != null) {
+                detalleLiquidacion.setOperador(operadorRepository.getReferenceById(dto.getOperadorId()));
+            }
+            if (dto.getProveedorId() != null) {
+                detalleLiquidacion.setProveedor(proveedorRepository.getReferenceById(dto.getProveedorId()));
+            }
+            if (dto.getProductoId() != null) {
+                detalleLiquidacion.setProducto(productoRepository.getReferenceById(dto.getProductoId()));
+            }
+            if (dto.getViajeroId() != null) {
+                detalleLiquidacion.setViajero(viajeroRepository.getReferenceById(dto.getViajeroId()));
+            }
+            
+            entidadesParaGuardar.add(detalleLiquidacion);
+        }
+        
+        detalleLiquidacionRepository.saveAll(entidadesParaGuardar);
     }
 
     private List<DetalleLiquidacionResponseDTO> mapToResponseList(List<DetalleLiquidacion> detalles) {

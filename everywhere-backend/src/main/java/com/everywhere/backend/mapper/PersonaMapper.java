@@ -42,9 +42,15 @@ public class PersonaMapper {
     }
 
     public PersonaDisplayDto toDisplayDTO(PersonaNatural personaNatural) {
-        String nombreCompleto = personaNatural.getNombres() + " " +
-                personaNatural.getApellidosPaterno() + " " +
-                personaNatural.getApellidosMaterno();
+        String nombres = personaNatural.getNombres() != null && !personaNatural.getNombres().equalsIgnoreCase("null") ? personaNatural.getNombres().trim() : "";
+        String apePaterno = personaNatural.getApellidosPaterno() != null && !personaNatural.getApellidosPaterno().equalsIgnoreCase("null") ? personaNatural.getApellidosPaterno().trim() : "";
+        String apeMaterno = personaNatural.getApellidosMaterno() != null && !personaNatural.getApellidosMaterno().equalsIgnoreCase("null") ? personaNatural.getApellidosMaterno().trim() : "";
+        
+        String nombreCompleto = (nombres + " " + apePaterno + " " + apeMaterno).trim().replaceAll("\\s+", " ");
+        if (nombreCompleto.isEmpty()) {
+            nombreCompleto = "Sin nombre";
+        }
+        
         return new PersonaDisplayDto(
                 personaNatural.getId(),
                 "NATURAL",
