@@ -3,17 +3,28 @@ package com.everywhere.backend.api;
 import com.everywhere.backend.model.dto.CategoriaPersonaRequestDTO;
 import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.dto.CategoriaPersonaResponseDTO;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.dto.PersonaNaturalResponseDTO;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.dto.PersonaNaturalCategoriaDTO;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.service.CategoriaPersonaService;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import jakarta.validation.Valid;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import lombok.RequiredArgsConstructor;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import org.springframework.http.HttpStatus;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import org.springframework.http.ResponseEntity;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import org.springframework.web.bind.annotation.*;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 import java.util.List;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 @RestController
 @RequestMapping("/categorias-personas")
