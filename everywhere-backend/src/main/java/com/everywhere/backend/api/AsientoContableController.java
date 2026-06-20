@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import com.everywhere.backend.security.RequirePermission;
 
 @RestController
 @RequestMapping("/asientos-contables")
@@ -19,11 +20,13 @@ public class AsientoContableController {
 
     private final AsientoContableService asientoService;
 
+    @RequirePermission(module = "ASIENTOS_CONTABLES", permission = "READ")
     @GetMapping
     public ResponseEntity<List<AsientoContableResponseDTO>> listar() {
         return ResponseEntity.ok(asientoService.listar());
     }
 
+    @RequirePermission(module = "ASIENTOS_CONTABLES", permission = "READ")
     @GetMapping("/{id}")
     public ResponseEntity<AsientoContableResponseDTO> obtenerPorId(
             @PathVariable Integer id) {
@@ -31,6 +34,7 @@ public class AsientoContableController {
         return ResponseEntity.ok(asientoService.obtenerPorId(id));
     }
 
+    @RequirePermission(module = "ASIENTOS_CONTABLES", permission = "READ")
     @GetMapping("/origen")
     public ResponseEntity<List<AsientoContableResponseDTO>> listarPorOrigen(
             @RequestParam String origen,
@@ -41,6 +45,7 @@ public class AsientoContableController {
         );
     }
 
+    @RequirePermission(module = "ASIENTOS_CONTABLES", permission = "CREATE")
     @PostMapping
     public ResponseEntity<AsientoContableResponseDTO> crear(
             @RequestBody AsientoContableRequestDTO request) {
@@ -50,6 +55,7 @@ public class AsientoContableController {
                 .body(asientoService.crear(request));
     }
 
+    @RequirePermission(module = "ASIENTOS_CONTABLES", permission = "UPDATE")
     @PutMapping("/{id}/anular")
     public ResponseEntity<Void> anular(@PathVariable Integer id) {
         asientoService.anular(id);
