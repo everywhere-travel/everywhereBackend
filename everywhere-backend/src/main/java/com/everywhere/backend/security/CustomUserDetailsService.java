@@ -2,6 +2,7 @@ package com.everywhere.backend.security;
 
 import com.everywhere.backend.exceptions.UnauthorizedAccessException;
 import com.everywhere.backend.model.entity.User;
+import com.everywhere.backend.model.entity.Role;
 import com.everywhere.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
