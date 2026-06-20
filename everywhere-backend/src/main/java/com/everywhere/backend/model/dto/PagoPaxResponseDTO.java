@@ -17,4 +17,5 @@ public class PagoPaxResponseDTO {
     private LocalDateTime actualizado;
     private LiquidacionResponseDTO liquidacion;
     private FormaPagoResponseDTO formaPago;
+    private ProveedorResponseDTO proveedor;
 }

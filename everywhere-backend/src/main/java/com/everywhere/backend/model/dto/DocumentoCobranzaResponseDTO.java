@@ -40,5 +40,9 @@ public class DocumentoCobranzaResponseDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    private BigDecimal totalDeuda;
+    private BigDecimal totalPagado;
+    private BigDecimal saldoPendiente;
+
     private List<DetalleDocumentoCobranzaResponseDTO> detalles;
 }

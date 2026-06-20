@@ -4,17 +4,17 @@ import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.PagoPaxMapper;
 import com.everywhere.backend.model.dto.PagoPaxRequestDTO;
 import com.everywhere.backend.model.dto.PagoPaxResponseDTO;
-import com.everywhere.backend.model.entity.FormaPago;
-import com.everywhere.backend.model.entity.Liquidacion;
 import com.everywhere.backend.model.entity.PagoPax;
 import com.everywhere.backend.repository.FormaPagoRepository;
 import com.everywhere.backend.repository.LiquidacionRepository;
 import com.everywhere.backend.repository.PagoPaxRepository;
+import com.everywhere.backend.repository.ProveedorRepository;
 import com.everywhere.backend.service.PagoPaxService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.everywhere.backend.service.AsientoContableService;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,28 +26,29 @@ public class PagoPaxServiceImpl implements PagoPaxService {
     private final PagoPaxRepository pagoPaxRepository;
     private final LiquidacionRepository liquidacionRepository;
     private final FormaPagoRepository formaPagoRepository;
+    private final ProveedorRepository proveedorRepository;
     private final PagoPaxMapper pagoPaxMapper;
+    private final AsientoContableService asientoContableService;
 
     @Override
     @Transactional
     public PagoPaxResponseDTO create(PagoPaxRequestDTO requestDTO) {
-        // Validar que existe la liquidación
-        Liquidacion liquidacion = liquidacionRepository.findById(requestDTO.getLiquidacionId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Liquidación no encontrada con ID: " + requestDTO.getLiquidacionId()));
-
-        // Validar que existe la forma de pago
-        FormaPago formaPago = formaPagoRepository.findById(requestDTO.getFormaPagoId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Forma de pago no encontrada con ID: " + requestDTO.getFormaPagoId()));
-
         // Crear la entidad
         PagoPax pagoPax = pagoPaxMapper.toEntity(requestDTO);
-        pagoPax.setLiquidacion(liquidacion);
-        pagoPax.setFormaPago(formaPago);
+        
+        if (requestDTO.getLiquidacionId() != null) {
+            pagoPax.setLiquidacion(liquidacionRepository.getReferenceById(requestDTO.getLiquidacionId()));
+        }
+        if (requestDTO.getFormaPagoId() != null) {
+            pagoPax.setFormaPago(formaPagoRepository.getReferenceById(requestDTO.getFormaPagoId()));
+        }
+        if (requestDTO.getProveedorId() != null) {
+            pagoPax.setProveedor(proveedorRepository.getReferenceById(requestDTO.getProveedorId()));
+        }
 
         // Guardar
         pagoPax = pagoPaxRepository.save(pagoPax);
+        asientoContableService.generarAsientoPorPagoPax(pagoPax);
 
         return pagoPaxMapper.toResponseDTO(pagoPax);
     }
@@ -92,23 +93,24 @@ public class PagoPaxServiceImpl implements PagoPaxService {
         // Actualizar liquidación si cambió
         if (requestDTO.getLiquidacionId() != null 
             && !requestDTO.getLiquidacionId().equals(pagoPax.getLiquidacion().getId())) {
-            Liquidacion liquidacion = liquidacionRepository.findById(requestDTO.getLiquidacionId())
-                    .orElseThrow(() -> new ResourceNotFoundException(
-                            "Liquidación no encontrada con ID: " + requestDTO.getLiquidacionId()));
-            pagoPax.setLiquidacion(liquidacion);
+            pagoPax.setLiquidacion(liquidacionRepository.getReferenceById(requestDTO.getLiquidacionId()));
         }
 
         // Actualizar forma de pago si cambió
         if (requestDTO.getFormaPagoId() != null 
             && !requestDTO.getFormaPagoId().equals(pagoPax.getFormaPago().getId())) {
-            FormaPago formaPago = formaPagoRepository.findById(requestDTO.getFormaPagoId())
-                    .orElseThrow(() -> new ResourceNotFoundException(
-                            "Forma de pago no encontrada con ID: " + requestDTO.getFormaPagoId()));
-            pagoPax.setFormaPago(formaPago);
+            pagoPax.setFormaPago(formaPagoRepository.getReferenceById(requestDTO.getFormaPagoId()));
+        }
+
+        // Actualizar proveedor si cambió
+        if (requestDTO.getProveedorId() != null 
+            && (pagoPax.getProveedor() == null || !requestDTO.getProveedorId().equals(pagoPax.getProveedor().getId()))) {
+            pagoPax.setProveedor(proveedorRepository.getReferenceById(requestDTO.getProveedorId()));
         }
 
         // Guardar
         pagoPax = pagoPaxRepository.save(pagoPax);
+   
 
         return pagoPaxMapper.toResponseDTO(pagoPax);
     }
@@ -121,5 +123,41 @@ public class PagoPaxServiceImpl implements PagoPaxService {
         }
 
         pagoPaxRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public void saveBatch(Integer liquidacionId, List<PagoPaxRequestDTO> requestDTOs) {
+        List<PagoPax> pagosParaGuardar = new java.util.ArrayList<>();
+        
+        for (PagoPaxRequestDTO dto : requestDTOs) {
+            dto.setLiquidacionId(liquidacionId);
+            PagoPax pagoPax;
+            
+            if (dto.getId() != null) {
+                pagoPax = pagoPaxRepository.findById(dto.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Pago Pax no encontrado"));
+                pagoPaxMapper.updateEntityFromRequestDTO(pagoPax, dto);
+            } else {
+                pagoPax = pagoPaxMapper.toEntity(dto);
+            }
+            
+            if (dto.getLiquidacionId() != null) {
+                pagoPax.setLiquidacion(liquidacionRepository.getReferenceById(dto.getLiquidacionId()));
+            }
+            if (dto.getFormaPagoId() != null) {
+                pagoPax.setFormaPago(formaPagoRepository.getReferenceById(dto.getFormaPagoId()));
+            }
+            if (dto.getProveedorId() != null) {
+                pagoPax.setProveedor(proveedorRepository.getReferenceById(dto.getProveedorId()));
+            }
+            
+            pagoPax = pagoPaxRepository.save(pagoPax);
+            if (dto.getId() == null) {
+                asientoContableService.generarAsientoPorPagoPax(pagoPax);
+            }
+            
+            pagosParaGuardar.add(pagoPax);
+        }
     }
 }

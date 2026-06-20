@@ -2,6 +2,7 @@ package com.everywhere.backend.api;
 
 import com.everywhere.backend.model.dto.DocumentoCobranzaResponseDTO;
 import com.everywhere.backend.model.dto.DocumentoCobranzaUpdateDTO;
+import com.everywhere.backend.model.dto.SaldoDocumentoCobranzaDTO;
 import com.everywhere.backend.security.RequirePermission;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +12,13 @@ import com.everywhere.backend.service.DocumentoCobranzaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -20,7 +27,6 @@ import java.util.List;
 public class DocumentoCobranzaController {
 
     private final DocumentoCobranzaService documentoCobranzaService;
-
     @PostMapping
     @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "CREATE")
     public ResponseEntity<DocumentoCobranzaResponseDTO> createDocumentoCobranza(
@@ -35,6 +41,19 @@ public class DocumentoCobranzaController {
     @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "READ")
     public ResponseEntity<List<DocumentoCobranzaResponseDTO>> getAllDocumentos() {
         return ResponseEntity.ok(documentoCobranzaService.findAll());
+    }
+
+    @GetMapping("/page")
+    @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "READ")
+    public ResponseEntity<Page<DocumentoCobranzaResponseDTO>> getDocumentosPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id,desc") String[] sort) {
+        
+        Direction direction = Direction.fromString(sort[1]);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sort[0]));
+        
+        return ResponseEntity.ok(documentoCobranzaService.findPage(pageable));
     }
 
     @GetMapping("/{id}")
@@ -70,5 +89,24 @@ public class DocumentoCobranzaController {
             @PathVariable Long id,
             @RequestParam(required = false) Integer carpetaId) {
         return ResponseEntity.ok(documentoCobranzaService.updateCarpeta(id, carpetaId));
+    }
+
+    /**
+     * Retorna el saldo del Documento de Cobranza:
+     * totalDeuda, totalPagado y saldoPendiente.
+     */
+    @GetMapping("/{id}/saldo")
+    @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "READ")
+    public ResponseEntity<SaldoDocumentoCobranzaDTO> getSaldo(@PathVariable Long id) {
+        DocumentoCobranzaResponseDTO documento = documentoCobranzaService.findById(id);
+
+        SaldoDocumentoCobranzaDTO saldo = new SaldoDocumentoCobranzaDTO();
+        saldo.setDocumentoCobranzaId(documento.getId());
+        saldo.setDocumentoCobranzaNumero(documento.getSerie() + "-" + documento.getCorrelativo());
+        saldo.setTotalDeuda(documento.getTotalDeuda() != null ? documento.getTotalDeuda() : BigDecimal.ZERO);
+        saldo.setTotalPagado(documento.getTotalPagado() != null ? documento.getTotalPagado() : BigDecimal.ZERO);
+        saldo.setSaldoPendiente(documento.getSaldoPendiente() != null ? documento.getSaldoPendiente() : BigDecimal.ZERO);
+
+        return ResponseEntity.ok(saldo);
     }
 }

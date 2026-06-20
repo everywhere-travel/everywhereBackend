@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 @Data
 public class PagoPaxRequestDTO {
     
+    private Integer id;
+    
     @NotNull(message = "El monto es obligatorio")
     @DecimalMin(value = "0.00", inclusive = false, message = "El monto debe ser mayor a 0")
     private BigDecimal monto;
@@ -22,4 +24,6 @@ public class PagoPaxRequestDTO {
 
     @NotNull(message = "El ID de forma de pago es obligatorio")
     private Integer formaPagoId;
+
+    private Integer proveedorId;
 }

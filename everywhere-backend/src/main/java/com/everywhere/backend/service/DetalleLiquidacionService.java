@@ -21,4 +21,6 @@ public interface DetalleLiquidacionService {
     DetalleLiquidacionResponseDTO update(Integer id, DetalleLiquidacionRequestDTO detalleLiquidacionRequestDTO);
 
     void deleteById(Integer id);
+
+    void saveBatch(Integer liquidacionId, List<DetalleLiquidacionRequestDTO> requestDTOs);
 }

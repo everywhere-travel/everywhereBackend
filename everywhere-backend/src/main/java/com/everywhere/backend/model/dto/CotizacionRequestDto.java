@@ -22,4 +22,5 @@ public class CotizacionRequestDto {
     private Integer estadoCotizacionId;
     private Integer sucursalId;
     private Integer carpetaId;
+    private Integer personaId;
 }
