@@ -12,6 +12,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -160,6 +161,16 @@ public class GlobalExceptionHandler {
         problemDetail.setType(URI.create("about:blank"));
         problemDetail.setInstance(URI.create(request.getDescription(false).replace("uri=", "")));
         return ResponseEntity.status(507).body(problemDetail);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ProblemDetail> handleMaxSizeException(MaxUploadSizeExceededException ex, WebRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.PAYLOAD_TOO_LARGE, 
+            "El tamaño total de los archivos adjuntos supera el límite permitido (20MB). Por favor, envíe archivos más pequeños.");
+        problemDetail.setTitle("Archivos demasiado grandes");
+        problemDetail.setType(URI.create("about:blank"));
+        problemDetail.setInstance(URI.create(request.getDescription(false).replace("uri=", "")));
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(problemDetail);
     }
 
     @ExceptionHandler(DataAccessException.class)
