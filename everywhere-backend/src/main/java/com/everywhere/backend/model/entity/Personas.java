@@ -39,6 +39,10 @@ public class Personas {
     @Column(name = "per_upd_tmp")
     private LocalDateTime actualizado;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "acc_id_int")
+    private CuentaContable cuentaContable;
+
     @OneToMany(mappedBy = "persona", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonManagedReference
     @org.hibernate.annotations.BatchSize(size = 100)
