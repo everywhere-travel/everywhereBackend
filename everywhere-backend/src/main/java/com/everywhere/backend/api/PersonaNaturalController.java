@@ -26,6 +26,11 @@ public class PersonaNaturalController {
         return ResponseEntity.ok(personaNaturalService.findAll());
     }
 
+    @GetMapping("/dropdown")
+    public ResponseEntity<List<PersonaNaturalResponseDTO>> getDropdown(@RequestParam(required = false) String search) {
+        return ResponseEntity.ok(personaNaturalService.getDropdown(search));
+    }
+
     @GetMapping("/documento")
     @RequirePermission(module = "CLIENTES", permission = "READ")
     public ResponseEntity<List<PersonaNaturalResponseDTO>> getPersonasNaturalesByDocumento(@RequestParam String documento) { 

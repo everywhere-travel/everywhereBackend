@@ -3,10 +3,8 @@ package com.everywhere.backend.service;
 import com.everywhere.backend.model.dto.DocumentoRequestDto;
 import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.dto.DocumentoResponseDto;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 import java.util.List;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 public interface DocumentoService {
     List<DocumentoResponseDto> findAll();

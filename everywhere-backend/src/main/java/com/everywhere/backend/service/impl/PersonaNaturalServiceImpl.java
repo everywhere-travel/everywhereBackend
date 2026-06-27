@@ -36,7 +36,35 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
     private final PersonaNaturalMapper personaNaturalMapper;
     private final PersonaMapper personaMapper;
 
-   
+    @Override
+    @Transactional(readOnly = true)
+    public List<PersonaNaturalResponseDTO> getDropdown(String search) {
+        List<Integer> ids;
+        if (search == null || search.trim().isEmpty()) {
+            ids = personaNaturalRepository.findTop100ByOrderByIdDesc()
+                    .stream()
+                    .map(PersonaNatural::getId)
+                    .toList();
+        } else {
+            ids = personaNaturalRepository.findIdsBySearch(search.trim(), org.springframework.data.domain.PageRequest.of(0, 100));
+        }
+
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+
+        return personaNaturalRepository.findConDetalles(ids)
+                .stream()
+                .map(personaNaturalMapper::toResponseDTO)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PersonaNaturalResponseDTO> getDropdown() {
+        return this.getDropdown(null);
+    }
+
     @Override
     @Transactional(readOnly = true)
     public List<PersonaNaturalResponseDTO> findAll() {
@@ -53,7 +81,7 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
         // 2. Traer las entidades completas usando los IDs con JOIN FETCH
         return personaNaturalRepository.findConDetalles(ids)
                 .stream()
-                .map(personaNaturalMapper::toResponseDTO) // Usamos tu mapper original
+                .map(personaNaturalMapper::toResponseDTO) // Usamos el mapper original
                 .toList();
     }
 
@@ -157,10 +185,18 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
     }
 
     @Override
+    @Transactional
     public void deleteById(Integer id) {
-        if (!personaNaturalRepository.existsById(id))
-            throw new ResourceNotFoundException("Persona natural no encontrada con ID: " + id);
-        personaNaturalRepository.deleteById(id);
+        PersonaNatural personaNatural = personaNaturalRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Persona natural no encontrada con ID: " + id));
+            
+        Integer personaId = personaNatural.getPersonas() != null ? personaNatural.getPersonas().getId() : null;
+        
+        personaNaturalRepository.delete(personaNatural);
+        
+        if (personaId != null) {
+            personaRepository.deleteById(personaId);
+        }
     }
 
     @Override

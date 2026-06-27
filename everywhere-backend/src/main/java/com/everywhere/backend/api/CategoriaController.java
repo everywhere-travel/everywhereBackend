@@ -2,6 +2,7 @@ package com.everywhere.backend.api;
 
 import com.everywhere.backend.model.dto.CategoriaRequestDto;
 import com.everywhere.backend.model.dto.CategoriaResponseDto;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.CategoriaService;
 
@@ -48,5 +49,10 @@ public class CategoriaController {
 	public ResponseEntity<Void> delete(@PathVariable int id) {
 		categoriaService.delete(id);
 		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping("/dropdown")
+	public ResponseEntity<List<DropdownResponseDTO>> getDropdown() {
+		return ResponseEntity.ok(categoriaService.getDropdown());
 	}
 }

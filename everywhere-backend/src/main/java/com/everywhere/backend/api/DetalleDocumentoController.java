@@ -34,6 +34,11 @@ public class DetalleDocumentoController {
         return ResponseEntity.ok(detalleDocumentoService.findByPersonaId(personaId));
     }
 
+    @GetMapping("/dropdown/persona/{personaId}")
+    public ResponseEntity<List<DetalleDocumentoResponseDto>> getDropdownByPersonaId(@PathVariable Integer personaId) {
+        return ResponseEntity.ok(detalleDocumentoService.findByPersonaId(personaId));
+    }
+
     @GetMapping("/{id}")
     @RequirePermission(module = "CLIENTES", permission = "READ")
     public ResponseEntity<DetalleDocumentoResponseDto> findById(@PathVariable Integer id) {

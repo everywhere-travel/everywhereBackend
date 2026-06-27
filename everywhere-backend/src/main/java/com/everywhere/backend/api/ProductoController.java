@@ -3,22 +3,14 @@ package com.everywhere.backend.api;
 import com.everywhere.backend.model.dto.ProductoRequestDTO;
 import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.dto.ProductoResponseDTO;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.service.ProductoService;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import jakarta.validation.Valid;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import lombok.RequiredArgsConstructor;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import org.springframework.http.ResponseEntity;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import org.springframework.web.bind.annotation.*;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 import java.util.List;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 @RestController
 @RequestMapping("/producto")

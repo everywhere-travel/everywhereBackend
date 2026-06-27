@@ -85,13 +85,13 @@ public class CotizacionController {
     }
 
     @GetMapping("/sin-liquidacion")
-    @RequirePermission(module = "COTIZACIONES", permission = "READ")
+    @RequirePermission(module = "LIQUIDACIONES", permission = "READ")
     public ResponseEntity<List<CotizacionResponseDto>> getCotizacionesSinLiquidacion() {
         return ResponseEntity.ok(cotizacionService.findCotizacionesSinLiquidacion());
     }
 
     @GetMapping("/sin-documento-cobranza")
-    @RequirePermission(module = "COTIZACIONES", permission = "READ")
+    @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "READ")
     public ResponseEntity<List<CotizacionResponseDto>> getCotizacionesSinDocumentoCobranza() {
         return ResponseEntity.ok(cotizacionService.findCotizacionesSinDocumentoCobranza());
     }
@@ -119,19 +119,19 @@ public class CotizacionController {
     // Endpoints para gestión de carpetas
 
     @GetMapping("/carpeta/{carpetaId}")
-    @RequirePermission(module = "COTIZACIONES", permission = "READ")
+    @RequirePermission(module = "CARPETA", permission = "READ")
     public ResponseEntity<List<CotizacionResponseDto>> findByCarpeta(@PathVariable Integer carpetaId) {
         return ResponseEntity.ok(cotizacionService.findByCarpeta(carpetaId));
     }
 
     @GetMapping("/sin-carpeta")
-    @RequirePermission(module = "COTIZACIONES", permission = "READ")
+    @RequirePermission(module = "CARPETA", permission = "READ")
     public ResponseEntity<List<CotizacionResponseDto>> findSinCarpeta() {
         return ResponseEntity.ok(cotizacionService.findSinCarpeta());
     }
 
     @PatchMapping("/{id}/carpeta")
-    @RequirePermission(module = "COTIZACIONES", permission = "UPDATE")
+    @RequirePermission(module = "CARPETA", permission = "UPDATE")
     public ResponseEntity<CotizacionResponseDto> updateCarpeta(
             @PathVariable Integer id,
             @RequestParam(required = false) Integer carpetaId) {

@@ -6,6 +6,8 @@ import com.everywhere.backend.model.dto.PersonaJuridicaResponseDTO;
 import java.util.List;
 
 public interface PersonaJuridicaService {
+    List<PersonaJuridicaResponseDTO> getDropdown();
+    List<PersonaJuridicaResponseDTO> getDropdown(String search);
     List<PersonaJuridicaResponseDTO> findAll();
     PersonaJuridicaResponseDTO findById(Integer id);
     List<PersonaJuridicaResponseDTO> findByRuc(String ruc);

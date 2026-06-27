@@ -39,6 +39,12 @@ public class NaturalJuridicoController {
         return ResponseEntity.ok(naturalJuridicoService.findByPersonaNaturalId(personaNaturalId));
     }
 
+    @GetMapping("/dropdown/persona-natural/{personaNaturalId}")
+    public ResponseEntity<List<NaturalJuridicoResponseDTO>> getDropdownByPersonaNatural(
+            @PathVariable Integer personaNaturalId) {
+        return ResponseEntity.ok(naturalJuridicoService.findByPersonaNaturalId(personaNaturalId));
+    }
+
     @GetMapping("/persona-juridica/{personaJuridicaId}")
     @RequirePermission(module = "CLIENTES", permission = "READ")
     public ResponseEntity<List<NaturalJuridicoResponseDTO>> getRelacionesByPersonaJuridica(

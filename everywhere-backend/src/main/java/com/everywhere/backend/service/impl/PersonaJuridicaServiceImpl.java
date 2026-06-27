@@ -1,5 +1,6 @@
 package com.everywhere.backend.service.impl;
  
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.dto.PersonaJuridicaRequestDTO;
 import com.everywhere.backend.model.dto.PersonaJuridicaResponseDTO;
 import com.everywhere.backend.model.entity.PersonaJuridica;
@@ -13,6 +14,7 @@ import com.everywhere.backend.mapper.PersonaJuridicaMapper;
 import com.everywhere.backend.mapper.PersonaMapper;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor; 
 import java.util.List;
@@ -21,6 +23,35 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class PersonaJuridicaServiceImpl implements PersonaJuridicaService {
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PersonaJuridicaResponseDTO> getDropdown(String search) {
+        List<Integer> ids;
+        if (search == null || search.trim().isEmpty()) {
+            ids = personaJuridicaRepository.findTop100ByOrderByIdDesc()
+                    .stream()
+                    .map(PersonaJuridica::getId)
+                    .toList();
+        } else {
+            ids = personaJuridicaRepository.findIdsBySearch(search.trim(), org.springframework.data.domain.PageRequest.of(0, 100));
+        }
+
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+
+        return personaJuridicaRepository.findConDetalles(ids)
+                .stream()
+                .map(personaJuridicaMapper::toResponseDTO)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PersonaJuridicaResponseDTO> getDropdown() {
+        return this.getDropdown(null);
+    }
 
     private final PersonaJuridicaRepository personaJuridicaRepository;
     private final PersonaRepository personaRepository;
@@ -91,11 +122,11 @@ public class PersonaJuridicaServiceImpl implements PersonaJuridicaService {
 
     @Override
     public PersonaJuridicaResponseDTO patch(Integer id, PersonaJuridicaRequestDTO personaJuridicaRequestDTO) {
-        // 🚀 OPTIMIZACIÓN 1: Validar existencia ANTES de buscar el objeto
+        // Validar existencia ANTES de buscar el objeto
         if (!personaJuridicaRepository.existsById(id))
             throw new ResourceNotFoundException("Persona jurídica no encontrada con ID: " + id);
 
-        // 🚀 OPTIMIZACIÓN 2: Si viene RUC, validar duplicado ANTES de buscar el objeto completo
+        // Si viene RUC, validar duplicado ANTES de buscar el objeto completo
         if (personaJuridicaRequestDTO.getRuc() != null && !personaJuridicaRequestDTO.getRuc().trim().isEmpty()) { 
             String newRuc = personaJuridicaRequestDTO.getRuc().trim();
             if (personaJuridicaRepository.findByRucIgnoreCaseAndIdNot(newRuc, id).isPresent()) {
@@ -110,9 +141,17 @@ public class PersonaJuridicaServiceImpl implements PersonaJuridicaService {
     }
 
     @Override
+    @Transactional
     public void deleteById(Integer id) {
-        if (!personaJuridicaRepository.existsById(id))
-            throw new ResourceNotFoundException("Persona jurídica no encontrada con ID: " + id);
-        personaJuridicaRepository.deleteById(id);
+        PersonaJuridica personaJuridica = personaJuridicaRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Persona jurídica no encontrada con ID: " + id));
+            
+        Integer personaId = personaJuridica.getPersonas() != null ? personaJuridica.getPersonas().getId() : null;
+        
+        personaJuridicaRepository.delete(personaJuridica);
+        
+        if (personaId != null) {
+            personaRepository.deleteById(personaId);
+        }
     }
 }

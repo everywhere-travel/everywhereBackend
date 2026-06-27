@@ -1,6 +1,7 @@
 package com.everywhere.backend.repository;
 
 import com.everywhere.backend.model.entity.PersonaJuridica;
+import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,6 +13,9 @@ import java.util.Optional;
 @Repository
 public interface PersonaJuridicaRepository extends JpaRepository<PersonaJuridica, Integer> {
     Optional<PersonaJuridica> findByRucIgnoreCase(String ruc);
+
+    @Query("SELECT new com.everywhere.backend.model.dto.DropdownResponseDTO(p.id, p.razonSocial) FROM PersonaJuridica p ORDER BY p.razonSocial ASC")
+    List<DropdownResponseDTO> findDropdown();
 
     @Query(value = "SELECT * FROM persona_juridica WHERE UPPER(TRANSLATE(per_jurd_razSocial_vac, 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou')) LIKE UPPER(TRANSLATE(:razonSocial, 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou'))", nativeQuery = true)
     List<PersonaJuridica> findByRazonSocialIgnoreAccents(@Param("razonSocial") String razonSocial);
@@ -26,4 +30,7 @@ public interface PersonaJuridicaRepository extends JpaRepository<PersonaJuridica
     List<PersonaJuridica> findConDetalles(@Param("ids") List<Integer> ids);
     
     List<PersonaJuridica> findTop100ByOrderByIdDesc();
+
+    @Query("SELECT pj.id FROM PersonaJuridica pj WHERE LOWER(pj.razonSocial) LIKE LOWER(CONCAT('%', :search, '%')) OR pj.ruc LIKE CONCAT('%', :search, '%') ORDER BY pj.id DESC")
+    List<Integer> findIdsBySearch(@Param("search") String search, org.springframework.data.domain.Pageable pageable);
 }

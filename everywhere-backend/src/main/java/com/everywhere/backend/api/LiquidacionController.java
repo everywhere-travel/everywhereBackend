@@ -100,19 +100,19 @@ public class LiquidacionController {
     // Endpoints para gestión de carpetas
 
     @GetMapping("/carpeta/{carpetaId}")
-    @RequirePermission(module = "LIQUIDACIONES", permission = "READ")
+    @RequirePermission(module = "CARPETA", permission = "READ")
     public ResponseEntity<List<LiquidacionResponseDTO>> findByCarpeta(@PathVariable Integer carpetaId) {
         return ResponseEntity.ok(liquidacionService.findByCarpeta(carpetaId));
     }
 
     @GetMapping("/sin-carpeta")
-    @RequirePermission(module = "LIQUIDACIONES", permission = "READ")
+    @RequirePermission(module = "CARPETA", permission = "READ")
     public ResponseEntity<List<LiquidacionResponseDTO>> findSinCarpeta() {
         return ResponseEntity.ok(liquidacionService.findSinCarpeta());
     }
 
     @PatchMapping("/{id}/carpeta")
-    @RequirePermission(module = "LIQUIDACIONES", permission = "UPDATE")
+    @RequirePermission(module = "CARPETA", permission = "UPDATE")
     public ResponseEntity<LiquidacionResponseDTO> updateCarpeta(
             @PathVariable Integer id,
             @RequestParam(required = false) Integer carpetaId) {
