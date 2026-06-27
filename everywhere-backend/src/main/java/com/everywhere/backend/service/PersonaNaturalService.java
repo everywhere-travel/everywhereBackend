@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface PersonaNaturalService {
     List<PersonaNaturalResponseDTO> findAll();
+    List<PersonaNaturalResponseDTO> getDropdown();
+    List<PersonaNaturalResponseDTO> getDropdown(String search);
     PersonaNaturalResponseDTO findById(Integer id);
     List<PersonaNaturalResponseDTO> findByDocumento(String documento);
     List<PersonaNaturalResponseDTO> findByNombres(String nombres);

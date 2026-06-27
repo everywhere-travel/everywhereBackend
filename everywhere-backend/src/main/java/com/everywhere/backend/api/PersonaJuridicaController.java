@@ -19,6 +19,11 @@ public class PersonaJuridicaController {
 
     private final PersonaJuridicaService personaJuridicaService;
 
+    @GetMapping("/dropdown")
+    public ResponseEntity<List<PersonaJuridicaResponseDTO>> getDropdown(@RequestParam(required = false) String search) {
+        return ResponseEntity.ok(personaJuridicaService.getDropdown(search));
+    }
+
     @GetMapping
     @RequirePermission(module = "CLIENTES", permission = "READ")
     public ResponseEntity<List<PersonaJuridicaResponseDTO>> getAllPersonasJuridicas() { 

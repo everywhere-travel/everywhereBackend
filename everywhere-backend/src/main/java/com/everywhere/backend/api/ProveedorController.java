@@ -3,20 +3,14 @@ package com.everywhere.backend.api;
 import com.everywhere.backend.model.dto.ProveedorRequestDTO;
 import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.model.dto.ProveedorResponseDTO;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.ProveedorService;
 import lombok.RequiredArgsConstructor;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import org.springframework.http.HttpStatus;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import org.springframework.http.ResponseEntity;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 import org.springframework.web.bind.annotation.*;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 import java.util.List;
-import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 @RestController
 @RequestMapping("/proveedores")

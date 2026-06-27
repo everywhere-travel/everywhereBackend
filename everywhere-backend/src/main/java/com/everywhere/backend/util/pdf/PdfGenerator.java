@@ -66,13 +66,11 @@ public abstract class PdfGenerator<T, D> {
                         document.close();
                         return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
                 } catch (Exception e) {
-                        e.printStackTrace();
                         throw new ResourceNotFoundException("Error al generar el PDF: " + e.getMessage());
                 }
         }
 
         // ========== MÉTODOS ABSTRACTOS (deben ser implementados por las subclases)
-        // ==========
 
         /**
          * Retorna el título del documento (ej: "DOCUMENTO DE COBRANZA" o "RECIBO")

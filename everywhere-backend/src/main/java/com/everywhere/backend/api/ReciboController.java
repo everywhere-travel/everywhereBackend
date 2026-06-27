@@ -80,19 +80,19 @@ public class ReciboController {
     // Endpoints para gestión de carpetas
 
     @GetMapping("/carpeta/{carpetaId}")
-    @RequirePermission(module = "RECIBOS", permission = "READ")
+    @RequirePermission(module = "CARPETA", permission = "READ")
     public ResponseEntity<List<ReciboResponseDTO>> findByCarpeta(@PathVariable Integer carpetaId) {
         return ResponseEntity.ok(reciboService.findByCarpeta(carpetaId));
     }
 
     @GetMapping("/sin-carpeta")
-    @RequirePermission(module = "RECIBOS", permission = "READ")
+    @RequirePermission(module = "CARPETA", permission = "READ")
     public ResponseEntity<List<ReciboResponseDTO>> findSinCarpeta() {
         return ResponseEntity.ok(reciboService.findSinCarpeta());
     }
 
     @PatchMapping("/{id}/carpeta")
-    @RequirePermission(module = "RECIBOS", permission = "UPDATE")
+    @RequirePermission(module = "CARPETA", permission = "UPDATE")
     public ResponseEntity<ReciboResponseDTO> updateCarpeta(
             @PathVariable Integer id,
             @RequestParam(required = false) Integer carpetaId) {
