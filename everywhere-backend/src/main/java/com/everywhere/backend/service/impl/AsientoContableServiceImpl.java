@@ -20,6 +20,12 @@ import com.everywhere.backend.repository.CuentaContableRepository;
 import com.everywhere.backend.repository.DetalleDocumentoCobranzaRepository;
 import com.everywhere.backend.repository.DetalleLiquidacionRepository;
 import com.everywhere.backend.repository.DetalleReciboRepository;
+import com.everywhere.backend.repository.PersonaRepository;
+import com.everywhere.backend.repository.PersonaNaturalRepository;
+import com.everywhere.backend.repository.PersonaJuridicaRepository;
+import com.everywhere.backend.model.entity.Personas;
+import com.everywhere.backend.model.entity.PersonaNatural;
+import com.everywhere.backend.model.entity.PersonaJuridica;
 import com.everywhere.backend.service.AsientoContableService;
 
 import lombok.RequiredArgsConstructor;
@@ -52,6 +58,9 @@ public class AsientoContableServiceImpl implements AsientoContableService {
     private static final Integer CUENTA_PROVEEDORES = 5;
     private final DetalleLiquidacionRepository detalleLiquidacionRepository;
     private final DetalleReciboRepository detalleReciboRepository;
+    private final PersonaRepository personaRepository;
+    private final PersonaNaturalRepository personaNaturalRepository;
+    private final PersonaJuridicaRepository personaJuridicaRepository;
 
     @Override
     public List<AsientoContableResponseDTO> listar() {
@@ -163,13 +172,18 @@ public class AsientoContableServiceImpl implements AsientoContableService {
             return;
         }
 
+        Integer cuentaDebeId = CUENTA_CLIENTES;
+        if (documento.getPersona() != null) {
+            cuentaDebeId = obtenerOCrearCuentaCliente(documento.getPersona());
+        }
+
         crearAsientoAutomatico(
                 "Venta registrada - Documento de Cobranza",
                 "DOCUMENTO_COBRANZA",
                 documento.getId().intValue(),
                 "PEN",
                 totalVenta,
-                CUENTA_CLIENTES,
+                cuentaDebeId,
                 CUENTA_VENTAS);
     }
 
@@ -281,6 +295,11 @@ public class AsientoContableServiceImpl implements AsientoContableService {
 
         String moneda = recibo.getMoneda() != null ? recibo.getMoneda() : "PEN";
 
+        Integer cuentaHaberId = CUENTA_CLIENTES;
+        if (recibo.getPersona() != null) {
+            cuentaHaberId = obtenerOCrearCuentaCliente(recibo.getPersona());
+        }
+
         crearAsientoAutomatico(
                 "Cobro de cliente - Recibo " + recibo.getSerie() + "-" + recibo.getCorrelativo(),
                 "RECIBO",
@@ -288,7 +307,7 @@ public class AsientoContableServiceImpl implements AsientoContableService {
                 moneda,
                 totalCobrado,
                 CUENTA_CAJA_BANCO,
-                CUENTA_CLIENTES);
+                cuentaHaberId);
     }
 
     @Override
@@ -392,5 +411,47 @@ public class AsientoContableServiceImpl implements AsientoContableService {
         return detalle.getCostoTicket() != null
                 ? detalle.getCostoTicket()
                 : BigDecimal.ZERO;
+    }
+
+    private Integer obtenerOCrearCuentaCliente(Personas persona) {
+        if (persona.getCuentaContable() != null) {
+            return persona.getCuentaContable().getId();
+        }
+
+        String nombreCliente = "Cliente " + persona.getId();
+
+        List<PersonaNatural> naturales = personaNaturalRepository.findByPersonasIdIn(List.of(persona.getId()));
+        if (!naturales.isEmpty()) {
+            PersonaNatural pn = naturales.get(0);
+            String nom = pn.getNombres() != null ? pn.getNombres() : "";
+            String pat = pn.getApellidosPaterno() != null ? pn.getApellidosPaterno() : "";
+            String mat = pn.getApellidosMaterno() != null ? pn.getApellidosMaterno() : "";
+            nombreCliente = (nom + " " + pat + " " + mat).trim();
+        } else {
+            List<PersonaJuridica> juridicas = personaJuridicaRepository.findByPersonasIdIn(List.of(persona.getId()));
+            if (!juridicas.isEmpty()) {
+                PersonaJuridica pj = juridicas.get(0);
+                if (pj.getRazonSocial() != null) {
+                    nombreCliente = pj.getRazonSocial();
+                }
+            }
+        }
+
+        if (nombreCliente.length() > 150) {
+            nombreCliente = nombreCliente.substring(0, 150);
+        }
+
+        CuentaContable cuenta = new CuentaContable();
+        cuenta.setCodigo("12-" + persona.getId());
+        cuenta.setNombre(nombreCliente);
+        cuenta.setTipo("ACTIVO");
+        cuenta.setActivo(true);
+        
+        cuenta = cuentaRepository.save(cuenta);
+        
+        persona.setCuentaContable(cuenta);
+        personaRepository.save(persona);
+        
+        return cuenta.getId();
     }
 }
