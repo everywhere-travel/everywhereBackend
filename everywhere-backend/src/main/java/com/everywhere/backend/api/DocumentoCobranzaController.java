@@ -43,6 +43,11 @@ public class DocumentoCobranzaController {
         return ResponseEntity.ok(documentoCobranzaService.findAll());
     }
 
+    @GetMapping("/dropdown")
+    public ResponseEntity<List<DocumentoCobranzaResponseDTO>> getDropdown() {
+        return ResponseEntity.ok(documentoCobranzaService.findAll());
+    }
+
     @GetMapping("/page")
     @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "READ")
     public ResponseEntity<Page<DocumentoCobranzaResponseDTO>> getDocumentosPage(
@@ -72,19 +77,19 @@ public class DocumentoCobranzaController {
     // Endpoints para gestión de carpetas
 
     @GetMapping("/carpeta/{carpetaId}")
-    @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "READ")
+    @RequirePermission(module = "CARPETA", permission = "READ")
     public ResponseEntity<List<DocumentoCobranzaResponseDTO>> findByCarpeta(@PathVariable Integer carpetaId) {
         return ResponseEntity.ok(documentoCobranzaService.findByCarpeta(carpetaId));
     }
 
     @GetMapping("/sin-carpeta")
-    @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "READ")
+    @RequirePermission(module = "CARPETA", permission = "READ")
     public ResponseEntity<List<DocumentoCobranzaResponseDTO>> findSinCarpeta() {
         return ResponseEntity.ok(documentoCobranzaService.findSinCarpeta());
     }
 
     @PatchMapping("/{id}/carpeta")
-    @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "UPDATE")
+    @RequirePermission(module = "CARPETA", permission = "UPDATE")
     public ResponseEntity<DocumentoCobranzaResponseDTO> updateCarpeta(
             @PathVariable Long id,
             @RequestParam(required = false) Integer carpetaId) {

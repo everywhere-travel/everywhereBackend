@@ -40,4 +40,7 @@ public interface PersonaNaturalRepository extends JpaRepository<PersonaNatural, 
     
     @EntityGraph(attributePaths = {"personas", "viajero", "categoriaPersona"})
     List<PersonaNatural> findTop100ByOrderByIdDesc();
+
+    @Query("SELECT pn.id FROM PersonaNatural pn WHERE LOWER(CONCAT(pn.nombres, ' ', pn.apellidosPaterno, ' ', COALESCE(pn.apellidosMaterno, ''))) LIKE LOWER(CONCAT('%', :search, '%')) OR pn.documento LIKE CONCAT('%', :search, '%') ORDER BY pn.id DESC")
+    List<Integer> findIdsBySearch(@Param("search") String search, org.springframework.data.domain.Pageable pageable);
 }

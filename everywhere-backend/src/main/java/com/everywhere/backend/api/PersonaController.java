@@ -47,6 +47,20 @@ public class PersonaController {
         return ResponseEntity.ok(personaService.findPersonasPage(searchTerm, typeFilter, pageable));
     }
 
+    @GetMapping("/dropdown/page")
+    public ResponseEntity<Page<PersonaTablaDTO>> getPersonasDropdownPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id,desc") String[] sort,
+            @RequestParam(required = false) String searchTerm,
+            @RequestParam(required = false) String typeFilter) {
+
+        Direction direction = Direction.fromString(sort[1]);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sort[0]));
+
+        return ResponseEntity.ok(personaService.findPersonasPage(searchTerm, typeFilter, pageable));
+    }
+
     @GetMapping("/stats")
     @RequirePermission(module = "CLIENTES", permission = "READ")
     public ResponseEntity<java.util.Map<String, Long>> getPersonaStats() {
@@ -93,6 +107,11 @@ public class PersonaController {
     @GetMapping("/{personaId}/NaturalOrJuridica")
     @RequirePermission(module = "CLIENTES", permission = "READ")
     public ResponseEntity<PersonaDisplayDto> findPersonaNaturalOrJuridicaById(@PathVariable Integer personaId) {
+        return ResponseEntity.ok(personaService.findPersonaNaturalOrJuridicaById(personaId));
+    }
+
+    @GetMapping("/dropdown/{personaId}/NaturalOrJuridica")
+    public ResponseEntity<PersonaDisplayDto> findPersonaNaturalOrJuridicaByIdDropdown(@PathVariable Integer personaId) {
         return ResponseEntity.ok(personaService.findPersonaNaturalOrJuridicaById(personaId));
     }
 }

@@ -2,6 +2,7 @@ package com.everywhere.backend.model.dto;
 
 public interface PersonaTablaDTO {
     Integer getId();
+    Integer getTipoId();
     String getTipo();
     String getNombre();
     String getNombres();

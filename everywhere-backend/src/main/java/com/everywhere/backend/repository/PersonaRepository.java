@@ -29,6 +29,7 @@ public interface PersonaRepository extends JpaRepository<Personas, Integer> {
     @Query(value = """
         SELECT 
             p.per_id_int as id,
+            CASE WHEN pn.per_nat_id_int IS NOT NULL THEN pn.per_nat_id_int ELSE pj.per_jurd_id_int END as tipoId,
             CASE WHEN pn.per_nat_id_int IS NOT NULL THEN 'natural' ELSE 'juridica' END as tipo,
             CASE WHEN pn.per_nat_id_int IS NOT NULL THEN TRIM(CONCAT(COALESCE(pn.per_nat_nomb_vac, ''), ' ', COALESCE(pn.per_nat_apell_pat_vac, ''), ' ', COALESCE(pn.per_nat_apell_mat_vac, ''))) ELSE pj.per_jurd_raz_social_vac END as nombre,
             pn.per_nat_nomb_vac as nombres,
