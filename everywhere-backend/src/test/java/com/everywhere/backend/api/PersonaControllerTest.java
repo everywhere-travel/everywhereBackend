@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -166,5 +168,64 @@ class PersonaControllerTest extends BaseControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.tipo").value("NATURAL"));
+    }
+
+    @Test
+    void should_Return200AndPage_When_GetPersonasPage() throws Exception {
+        DummyPersonaTablaDTO dto = new DummyPersonaTablaDTO();
+        dto.id = 1;
+        
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 10);
+        org.springframework.data.domain.Page<com.everywhere.backend.model.dto.PersonaTablaDTO> page = new org.springframework.data.domain.PageImpl<>(
+                java.util.Collections.singletonList(dto), pageable, 1);
+
+        when(personaService.findPersonasPage(anyString(), anyString(), any(org.springframework.data.domain.Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/personas/page")
+                .param("page", "0")
+                .param("size", "10")
+                .param("sort", "id,desc")
+                .param("searchTerm", "test")
+                .param("typeFilter", "NATURAL"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(1));
+    }
+
+    @Test
+    void should_Return200AndPage_When_GetDropdownPage() throws Exception {
+        DummyPersonaTablaDTO dto = new DummyPersonaTablaDTO();
+        dto.id = 1;
+        
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 10);
+        org.springframework.data.domain.Page<com.everywhere.backend.model.dto.PersonaTablaDTO> page = new org.springframework.data.domain.PageImpl<>(
+                java.util.Collections.singletonList(dto), pageable, 1);
+
+        when(personaService.findPersonasPage(anyString(), anyString(), any(org.springframework.data.domain.Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/personas/dropdown/page")
+                .param("page", "0")
+                .param("size", "10")
+                .param("sort", "id,desc")
+                .param("searchTerm", "test")
+                .param("typeFilter", "NATURAL"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(1));
+    }
+
+    private static class DummyPersonaTablaDTO implements com.everywhere.backend.model.dto.PersonaTablaDTO {
+        public Integer id;
+        public Integer getId() { return id; }
+        public Integer getTipoId() { return null; }
+        public String getTipo() { return null; }
+        public String getNombre() { return null; }
+        public String getNombres() { return null; }
+        public String getApellidosPaterno() { return null; }
+        public String getApellidosMaterno() { return null; }
+        public String getRazonSocial() { return null; }
+        public String getDocumento() { return null; }
+        public String getRuc() { return null; }
+        public String getEmail() { return null; }
+        public String getTelefono() { return null; }
+        public String getDireccion() { return null; }
     }
 }

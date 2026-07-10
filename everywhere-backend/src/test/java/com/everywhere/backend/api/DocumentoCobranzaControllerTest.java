@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -158,5 +159,23 @@ class DocumentoCobranzaControllerTest extends BaseControllerTest {
                 .param("carpetaId", "2"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1));
+    }
+
+    @Test
+    void should_Return200AndPage_When_GetDocumentosPage() throws Exception {
+        DocumentoCobranzaResponseDTO dto = CobranzaTestData.getValidDocumentoCobranzaResponseDTO();
+        
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 10);
+        org.springframework.data.domain.Page<DocumentoCobranzaResponseDTO> page = new org.springframework.data.domain.PageImpl<>(
+                java.util.Collections.singletonList(dto), pageable, 1);
+
+        when(documentoCobranzaService.findPage(any(org.springframework.data.domain.Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/documentos-cobranza/page")
+                .param("page", "0")
+                .param("size", "10")
+                .param("sort", "id,desc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(1));
     }
 }

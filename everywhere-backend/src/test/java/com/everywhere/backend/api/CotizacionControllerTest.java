@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -87,20 +88,21 @@ public class CotizacionControllerTest extends BaseControllerTest {
     }
 
     @Test
-    @org.junit.jupiter.api.Disabled("Disabled: MockMvc standalone setup fails to serialize PageImpl (UnsupportedOperationException) without SpringDataWebSupport. Will use @WebMvcTest without security filters for paginated endpoints in Phase 2.")
     void should_Return200AndPage_When_GetCotizacionesPage() throws Exception {
         // Arrange
         CotizacionResponseDto responseDto = CotizacionTestData.createValidResponseDto(1);
-        Page<CotizacionResponseDto> page = new PageImpl<>(java.util.Collections.singletonList(responseDto));
+        
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 10);
+        org.springframework.data.domain.Page<CotizacionResponseDto> page = new org.springframework.data.domain.PageImpl<>(
+                java.util.Collections.singletonList(responseDto), pageable, 1);
 
-        when(cotizacionService.findPage(any(Pageable.class))).thenReturn(page);
+        when(cotizacionService.findPage(any(org.springframework.data.domain.Pageable.class))).thenReturn(page);
 
         // Act & Assert
         mockMvc.perform(get("/cotizaciones/page")
                 .param("page", "0")
                 .param("size", "10")
-                .param("sort", "id", "desc"))
-                .andDo(org.springframework.test.web.servlet.result.MockMvcResultHandlers.print())
+                .param("sort", "id,desc"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].id").value(responseDto.getId()))
                 .andExpect(jsonPath("$.totalElements").value(1));
@@ -108,11 +110,9 @@ public class CotizacionControllerTest extends BaseControllerTest {
 
     @Test
     void should_Return204_When_Delete() throws Exception {
-        // Arrange
         Integer id = 1;
         doNothing().when(cotizacionService).delete(id);
 
-        // Act & Assert
         mockMvc.perform(delete("/cotizaciones/{id}", id))
                 .andExpect(status().isNoContent());
     }
