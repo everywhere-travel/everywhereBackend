@@ -88,3 +88,16 @@ N°	Fecha	Hora de inicio	Hora de fin	Tiempo de respuesta (ms)	Tipo de operación
 87	02/07/2026	04:46:28.399	04:46:35.317	6918	DocumentoCobranzaController.findSinCarpeta	Exitosa	Respuesta dentro del rango esperado
 88	02/07/2026	04:46:40.305	04:46:41.420	1115	DocumentoCobranzaController.updateCarpeta	Exitosa	Respuesta dentro del rango esperado
 89	02/07/2026	04:46:42.516	04:46:43.730	1214	DocumentoCobranzaController.findByCarpeta	Exitosa	Respuesta dentro del rango esperado
+90	04/07/2026	00:10:07.470	00:10:09.315	1845	AuthController.login	Exitosa	Respuesta dentro del rango esperado
+91	04/07/2026	00:22:57.128	00:22:58.277	1149	AuthController.login	Exitosa	Respuesta dentro del rango esperado
+92	04/07/2026	00:25:29.033	00:25:29.909	876	EstadosCotizacionController.getDropdown	Exitosa	Respuesta dentro del rango esperado
+93	04/07/2026	00:25:29.081	00:25:30.105	1024	SucursalController.getDropdown	Exitosa	Respuesta dentro del rango esperado
+94	04/07/2026	00:25:29.698	00:25:30.201	503	ProductoController.getDropdown	Exitosa	Respuesta dentro del rango esperado
+95	04/07/2026	00:25:29.994	00:25:30.401	406	FormaPagoController.getDropdown	Exitosa	Respuesta dentro del rango esperado
+96	04/07/2026	00:25:28.655	00:25:30.600	1945	PersonaNaturalController.getDropdown	Exitosa	Respuesta dentro del rango esperado
+97	04/07/2026	00:25:28.987	00:25:30.820	1832	CotizacionController.findAll	Exitosa	Respuesta dentro del rango esperado
+98	04/07/2026	00:25:31.433	00:25:31.717	284	CategoriaController.getDropdown	Exitosa	Respuesta dentro del rango esperado
+99	04/07/2026	00:25:31.599	00:25:31.872	273	ProveedorController.getDropdown	Exitosa	Respuesta dentro del rango esperado
+100	04/07/2026	00:25:31.862	00:25:32.848	986	PersonaJuridicaController.getDropdown	Exitosa	Respuesta dentro del rango esperado
+101	04/07/2026	00:25:35.000	00:25:35.873	873	PersonaController.findPersonaNaturalOrJuridicaByIdDropdown	Exitosa	Respuesta dentro del rango esperado
+102	04/07/2026	00:25:35.235	00:25:36.008	773	PersonaController.findPersonaNaturalOrJuridicaByIdDropdown	Exitosa	Respuesta dentro del rango esperado
