@@ -24,6 +24,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import com.everywhere.backend.model.entity.VerificationToken;
+import com.everywhere.backend.model.dto.EmailRequestDTO;
+import com.everywhere.backend.exceptions.ResourceNotFoundException;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +41,8 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
     private final TokenProvider tokenProvider;
     private final PasswordEncoder passwordEncoder;
+    private final com.everywhere.backend.repository.VerificationTokenRepository verificationTokenRepository;
+    private final com.everywhere.backend.service.EmailService emailService;
 
     @Override
     public AuthResponseDTO login(LoginDTO loginDTO) {
@@ -45,7 +52,13 @@ public class UserServiceImpl implements UserService {
 
         // Obtener datos del usuario autenticado
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        User user = userPrincipal.getUser(); // Generar token JWT
+        User user = userPrincipal.getUser(); 
+        
+        // Incrementar el contador de logins
+        user.setLoginCount((user.getLoginCount() == null ? 0 : user.getLoginCount()) + 1);
+        userRepository.save(user);
+
+        // Generar token JWT
         String token = tokenProvider.createAccessToken(authentication); // Retornar respuesta con token
         return userMapper.toAuthResponseDTO(user, token);
     }
@@ -177,5 +190,69 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(Integer userId) {
         User user = getUserbyId(userId);
         userRepository.delete(user);
+    }
+
+    @Override
+    @Transactional
+    public void resetLoginCount(Integer userId) {
+        User user = getUserbyId(userId);
+        user.setLoginCount(0);
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void sendVerificationCode(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con correo: " + email));
+
+        // Borrar token anterior si existe
+        verificationTokenRepository.deleteByUser(user);
+
+        // Generar código de 6 dígitos
+        SecureRandom random = new SecureRandom();
+        int num = random.nextInt(1000000);
+        String code = String.format("%06d", num);
+
+        VerificationToken token = new VerificationToken();
+        token.setToken(code);
+        token.setUser(user);
+        token.setExpiryDate(LocalDateTime.now().plusMinutes(15));
+        
+        verificationTokenRepository.save(token);
+
+        // Enviar correo
+        EmailRequestDTO emailReq = new EmailRequestDTO();
+        emailReq.setTo(email);
+        emailReq.setSubject("Código de Verificación - Everywhere");
+        emailReq.setBody("Hola " + user.getNombre() + ",<br><br>" +
+                "Tu código de verificación para cambiar tu contraseña es: <b>" + code + "</b><br><br>" +
+                "Este código expirará en 15 minutos.");
+        
+        emailService.sendEmail(emailReq, null);
+    }
+
+    @Override
+    @Transactional
+    public void changePasswordWithCode(String email, String code, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con correo: " + email));
+
+        VerificationToken token = verificationTokenRepository.findByUser(user)
+                .orElseThrow(() -> new IllegalArgumentException("No hay código de verificación activo para este usuario."));
+
+        if (!token.getToken().equals(code)) {
+            throw new IllegalArgumentException("El código ingresado es incorrecto.");
+        }
+
+        if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
+            verificationTokenRepository.delete(token);
+            throw new IllegalArgumentException("El código ha expirado. Solicite uno nuevo.");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        verificationTokenRepository.delete(token);
     }
 }

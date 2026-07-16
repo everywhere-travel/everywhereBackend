@@ -285,3 +285,27 @@ N°	Fecha	Hora de inicio	Hora de fin	Tiempo de respuesta (ms)	Tipo de operación
 284	16/07/2026	02:48:24.205	02:48:24.325	120	FormaPagoController.getDropdown	Exitosa	Respuesta dentro del rango esperado
 285	16/07/2026	02:48:25.455	02:48:26.193	738	DetalleDocumentoController.getDropdownByPersonaId	Exitosa	Respuesta dentro del rango esperado
 286	16/07/2026	02:48:27.352	02:48:27.716	364	NaturalJuridicoController.getDropdownByPersonaNatural	Exitosa	Respuesta dentro del rango esperado
+287	16/07/2026	02:51:26.158	02:51:26.407	249	UserController.getCurrentUserProfile	Exitosa	Respuesta dentro del rango esperado
+288	16/07/2026	03:09:40.567	03:09:42.275	1707	AuthController.login	Exitosa	Respuesta dentro del rango esperado
+289	16/07/2026	03:09:43.694	03:09:43.968	274	UserController.getCurrentUserProfile	Exitosa	Respuesta dentro del rango esperado
+290	16/07/2026	03:10:07.288	03:10:08.323	1035	AuthController.login	Exitosa	Respuesta dentro del rango esperado
+291	16/07/2026	03:30:10.273	03:30:12.795	2521	AuthController.login	Exitosa	Respuesta dentro del rango esperado
+292	16/07/2026	03:30:36.851	03:30:38.476	1625	AuthController.login	Exitosa	Respuesta dentro del rango esperado
+293	16/07/2026	03:30:50.751	03:30:51.778	1027	AuthController.login	Exitosa	Respuesta dentro del rango esperado
+294	16/07/2026	03:30:57.952	03:30:58.093	141	SucursalController.getDropdown	Exitosa	Respuesta dentro del rango esperado
+295	16/07/2026	03:30:58.081	03:30:58.394	313	PermissionController.findAll	Exitosa	Respuesta dentro del rango esperado
+296	16/07/2026	03:30:58.030	03:30:59.606	1576	RoleController.findAll	Exitosa	Respuesta dentro del rango esperado
+297	16/07/2026	03:31:00.725	03:31:00.978	253	UserController.getCurrentUserProfile	Exitosa	Respuesta dentro del rango esperado
+298	16/07/2026	03:31:00.749	03:31:02.494	1745	UserController.getAllUsers	Exitosa	Respuesta dentro del rango esperado
+299	16/07/2026	03:31:06.587	03:31:06.703	116	SucursalController.getDropdown	Exitosa	Respuesta dentro del rango esperado
+300	16/07/2026	03:31:06.620	03:31:06.896	276	PermissionController.findAll	Exitosa	Respuesta dentro del rango esperado
+301	16/07/2026	03:31:06.612	03:31:08.276	1664	RoleController.findAll	Exitosa	Respuesta dentro del rango esperado
+302	16/07/2026	03:31:09.525	03:31:11.247	1722	UserController.getAllUsers	Exitosa	Respuesta dentro del rango esperado
+303	16/07/2026	03:32:34.722	03:32:35.363	641	UserController.createUser	Fallida	Excepción: IllegalArgumentException - El email ya está en uso
+304	16/07/2026	03:32:49.046	03:32:50.242	1196	UserController.createUser	Exitosa	Respuesta dentro del rango esperado
+305	16/07/2026	03:32:51.496	03:32:53.358	1862	UserController.getAllUsers	Exitosa	Respuesta dentro del rango esperado
+306	16/07/2026	03:34:11.924	03:34:13.019	1095	AuthController.login	Exitosa	Respuesta dentro del rango esperado
+307	16/07/2026	03:34:17.267	03:34:17.527	260	UserController.getCurrentUserProfile	Exitosa	Respuesta dentro del rango esperado
+308	16/07/2026	03:34:32.550	03:34:44.508	11958	AuthController.sendVerificationCode	Exitosa	Respuesta dentro del rango esperado
+309	16/07/2026	03:35:21.471	03:35:22.612	1141	AuthController.verifyPasswordChange	Exitosa	Respuesta dentro del rango esperado
+310	16/07/2026	03:35:37.743	03:35:38.900	1157	AuthController.login	Exitosa	Respuesta dentro del rango esperado
