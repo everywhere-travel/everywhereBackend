@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +28,7 @@ public class ProveedorContactoServiceImpl implements ProveedorContactoService {
     private final ProveedorContactoMapper mapper;
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProveedorContactoResponseDTO> findAll() {
         return repository.findAll().stream()
                 .map(mapper::toResponseDTO)
@@ -34,6 +36,7 @@ public class ProveedorContactoServiceImpl implements ProveedorContactoService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProveedorContactoResponseDTO findById(Integer id) {
         ProveedorContacto entity = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Contacto de proveedor no encontrado con ID: " + id));
@@ -41,6 +44,7 @@ public class ProveedorContactoServiceImpl implements ProveedorContactoService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProveedorContactoResponseDTO> findByProveedorId(Integer proveedorId) {
         return repository.findByProveedorId(proveedorId).stream()
                 .map(mapper::toResponseDTO)
@@ -48,6 +52,7 @@ public class ProveedorContactoServiceImpl implements ProveedorContactoService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProveedorContactoResponseDTO> findByGrupoContactoId(Integer grupoContactoId) {
         return repository.findByGrupoContactoId(grupoContactoId).stream()
                 .map(mapper::toResponseDTO)
@@ -55,6 +60,7 @@ public class ProveedorContactoServiceImpl implements ProveedorContactoService {
     }
 
     @Override
+    @Transactional
     public ProveedorContactoResponseDTO save(ProveedorContactoRequestDTO dto) {
         ProveedorContacto entity = mapper.toEntity(dto);
 
@@ -78,6 +84,7 @@ public class ProveedorContactoServiceImpl implements ProveedorContactoService {
     }
 
     @Override
+    @Transactional
     public ProveedorContactoResponseDTO update(Integer id, ProveedorContactoRequestDTO dto) {
         ProveedorContacto existing = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Contacto de proveedor no encontrado con ID: " + id));
@@ -104,6 +111,7 @@ public class ProveedorContactoServiceImpl implements ProveedorContactoService {
     }
 
     @Override
+    @Transactional
     public void deleteById(Integer id) {
         if (!repository.existsById(id)) {
             throw new ResourceNotFoundException("Contacto de proveedor no encontrado con ID: " + id);

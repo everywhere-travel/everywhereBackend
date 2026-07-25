@@ -22,6 +22,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,11 +35,13 @@ public class HistorialCotizacionServiceImpl implements HistorialCotizacionServic
     private final UserRepository userRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public List<HistorialCotizacionResponseDTO> findAll() {
         return mapToResponseList(historialCotizacionRepository.findAllWithRelations());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public HistorialCotizacionResponseDTO findById(Integer id) {
         HistorialCotizacion historialCotizacion = historialCotizacionRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Historial de cotización no encontrado con ID: " + id));
@@ -46,6 +49,7 @@ public class HistorialCotizacionServiceImpl implements HistorialCotizacionServic
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<HistorialCotizacionSimpleDTO> findByCotizacionId(Integer cotizacionId) {
         if (!cotizacionRepository.existsById(cotizacionId)) {
             throw new ResourceNotFoundException("Cotización no encontrada con ID: " + cotizacionId);
@@ -54,6 +58,7 @@ public class HistorialCotizacionServiceImpl implements HistorialCotizacionServic
     }
 
     @Override
+    @Transactional
     public HistorialCotizacionResponseDTO save(HistorialCotizacionRequestDTO historialCotizacionRequestDTO) {
         if (historialCotizacionRequestDTO.getCotizacionId() == null) {
             throw new BadRequestException("El campo cotizacionId es obligatorio para registrar historial");
@@ -74,6 +79,7 @@ public class HistorialCotizacionServiceImpl implements HistorialCotizacionServic
     }
 
     @Override
+    @Transactional
     public HistorialCotizacionResponseDTO update(Integer id, HistorialCotizacionRequestDTO historialCotizacionRequestDTO) {
         if (!historialCotizacionRepository.existsById(id)) {
             throw new ResourceNotFoundException("Historial de cotización no encontrado con ID: " + id);
@@ -99,6 +105,7 @@ public class HistorialCotizacionServiceImpl implements HistorialCotizacionServic
     }
 
     @Override
+    @Transactional
     public void deleteById(Integer id) {
         if (!historialCotizacionRepository.existsById(id)) {
             throw new ResourceNotFoundException("Historial de cotización no encontrado con ID: " + id);
@@ -107,6 +114,7 @@ public class HistorialCotizacionServiceImpl implements HistorialCotizacionServic
     }
 
     @Override
+    @Transactional
     public HistorialCotizacionResponseDTO registrarCambioEstado(Integer cotizacionId,
                                                                 Integer estadoCotizacionId,
                                                                 String observacion) {

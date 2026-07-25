@@ -7,6 +7,7 @@ import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.CotizacionService;
 
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -34,7 +35,7 @@ public class CotizacionController {
     @PostMapping("/persona/{personaId}")
     @RequirePermission(module = "COTIZACIONES", permission = "CREATE")
     public ResponseEntity<CotizacionResponseDto> createWithPersona(
-            @PathVariable Integer personaId, @RequestBody CotizacionRequestDto cotizacionRequestDto) {
+            @PathVariable Integer personaId, @Valid @RequestBody CotizacionRequestDto cotizacionRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(cotizacionService.create(cotizacionRequestDto, personaId));
     }
@@ -64,8 +65,10 @@ public class CotizacionController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id,desc") String[] sort) {
         
+        int safeSize = Math.min(Math.max(size, 1), 100);
+        int safePage = Math.max(page, 0);
         Direction direction = Direction.fromString(sort[1]);
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sort[0]));
+        Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by(direction, sort[0]));
         
         return ResponseEntity.ok(cotizacionService.findPage(pageable));
     }
@@ -73,7 +76,7 @@ public class CotizacionController {
     @PatchMapping("/{id}")
     @RequirePermission(module = "COTIZACIONES", permission = "UPDATE")
     public ResponseEntity<CotizacionResponseDto> update(
-            @PathVariable Integer id, @RequestBody CotizacionRequestDto cotizacionRequestDto) {
+            @PathVariable Integer id, @Valid @RequestBody CotizacionRequestDto cotizacionRequestDto) {
         return ResponseEntity.ok(cotizacionService.update(id, cotizacionRequestDto));
     }
 
