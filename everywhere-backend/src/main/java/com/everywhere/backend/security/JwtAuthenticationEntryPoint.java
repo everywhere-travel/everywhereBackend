@@ -24,17 +24,14 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
         String exceptionMsg = (String) request.getAttribute("exception");
         if (exceptionMsg == null) {
-            exceptionMsg = authException.getMessage();
-        }
-        if (exceptionMsg == null) {
-            exceptionMsg = "Access denied. Invalid or missing token.";
+            exceptionMsg = "Acceso denegado. Se requiere autenticación para acceder a este recurso.";
         }
 
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType("application/problem+json");
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, exceptionMsg);
-        problemDetail.setTitle("Unauthorized");
+        problemDetail.setTitle("No autorizado");
         problemDetail.setType(URI.create("about:blank"));
         problemDetail.setInstance(URI.create(request.getRequestURI()));
 

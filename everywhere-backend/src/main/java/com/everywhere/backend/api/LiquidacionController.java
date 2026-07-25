@@ -44,8 +44,10 @@ public class LiquidacionController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id,desc") String[] sort) {
         
+        int safeSize = Math.min(Math.max(size, 1), 100);
+        int safePage = Math.max(page, 0);
         Direction direction = Direction.fromString(sort[1]);
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sort[0]));
+        Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by(direction, sort[0]));
         
         return ResponseEntity.ok(liquidacionService.findPage(pageable));
     }

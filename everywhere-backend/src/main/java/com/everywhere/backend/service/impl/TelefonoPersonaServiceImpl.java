@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,18 +25,21 @@ public class TelefonoPersonaServiceImpl implements TelefonoPersonaService {
     private final TelefonoPersonaMapper telefonoPersonaMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public List<TelefonoPersonaResponseDTO> findAll() {
         return telefonoPersonaRepository.findAll()
                 .stream().map(telefonoPersonaMapper::toResponseDTO).toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<TelefonoPersonaResponseDTO> findById(Integer telefonoId, Integer personaId) {
         return telefonoPersonaRepository.findByIdAndPersonaId(telefonoId, personaId)
                 .map(telefonoPersonaMapper::toResponseDTO);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<TelefonoPersonaResponseDTO> findByPersonaId(Integer personaId) {
         return telefonoPersonaRepository.findByPersonaId(personaId)
                 .stream()
@@ -44,6 +48,7 @@ public class TelefonoPersonaServiceImpl implements TelefonoPersonaService {
     }
 
     @Override
+    @Transactional
     public TelefonoPersonaResponseDTO save(TelefonoPersonaRequestDTO telefonoPersonaRequestDTO, Integer personaId) {
         Personas persona = personaRepository.findById(personaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Persona no encontrada con ID: " + personaId));
@@ -56,6 +61,7 @@ public class TelefonoPersonaServiceImpl implements TelefonoPersonaService {
 
 
     @Override
+    @Transactional
     public TelefonoPersonaResponseDTO update(Integer personaId, TelefonoPersonaRequestDTO telefonoPersonaRequestDTO, Integer telefonoId) {
         TelefonoPersona telefono = telefonoPersonaRepository.findByIdAndPersonaId(telefonoId, personaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Teléfono no encontrado con ID: " + telefonoId + " para la persona con ID: "+ personaId));
@@ -66,6 +72,7 @@ public class TelefonoPersonaServiceImpl implements TelefonoPersonaService {
 
 
     @Override
+    @Transactional
     public void deleteById(Integer telefonoId, Integer personaId) {
         if (!telefonoPersonaRepository.existsByIdAndPersonaId(telefonoId, personaId))
             throw new ResourceNotFoundException("Teléfono no encontrado con ID: " + telefonoId + " para la persona con ID: " + personaId);

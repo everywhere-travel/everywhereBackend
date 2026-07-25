@@ -6,7 +6,7 @@
             "name": "Current File",
             "request": "launch",
             "mainClass": "${file}",
-            "envFile": "C:/Users/jaime/gitProjects/everywhereBackend/everywhere-backend/src/.env"
+            "envFile": "${workspaceFolder}/.env"
         },
         {
             "type": "java",
@@ -15,7 +15,7 @@
             "mainClass": "com.everywhere.backend.EverywhereBackendApplication",
             "projectName": "everywhere-backend",
             "cwd": "${workspaceFolder}",
-            "envFile": "C:/Users/jaime/gitProjects/everywhereBackend/everywhere-backend/src/.env"
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }

@@ -83,23 +83,12 @@ public class TokenProvider {
         // Crear la lista de autoridades (roles) para el usuario
         List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
 
-        try {
-            // Cargar el usuario completo desde la base de datos usando el email del token
-            UserDetails userDetails = userDetailsService.loadUserByUsername(claims.getSubject());
+        // Cargar el usuario completo desde la base de datos usando el email del token
+        // Si el usuario fue eliminado o deshabilitado, lanzará excepción y el token será rechazado
+        UserDetails userDetails = userDetailsService.loadUserByUsername(claims.getSubject());
 
-            // Crear el objeto de autenticación con el UserPrincipal completo
-            return new UsernamePasswordAuthenticationToken(userDetails, token, authorities);
-        } catch (UsernameNotFoundException e) {
-            // Si no se encuentra el usuario, crear un UserPrincipal básico (fallback)
-            UserPrincipal principal = new UserPrincipal(
-                    null, // id no disponible desde el token
-                    claims.getSubject(), // email
-                    "", // password vacío para tokens
-                    authorities,
-                    null // user entity no disponible desde el token
-            );
-            return new UsernamePasswordAuthenticationToken(principal, token, authorities);
-        }
+        // Crear el objeto de autenticación con el UserPrincipal completo
+        return new UsernamePasswordAuthenticationToken(userDetails, token, authorities);
     }
 
     // Método para validar el token JWT (si está correctamente firmado y no ha expirado)

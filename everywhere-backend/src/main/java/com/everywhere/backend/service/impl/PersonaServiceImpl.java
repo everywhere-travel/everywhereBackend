@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List; 
 import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,11 +28,13 @@ public class PersonaServiceImpl implements PersonaService {
     private final PersonaJuridicaRepository personaJuridicaRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public List<PersonaResponseDTO> findAll() {
         return personaRepository.findAll().stream().map(personaMapper::toResponseDTO).collect(Collectors.toList());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PersonaResponseDTO findById(Integer id) {
         Personas persona = personaRepository.findByIdWithTelefonos(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Persona no encontrada con ID: " + id));
@@ -40,29 +43,34 @@ public class PersonaServiceImpl implements PersonaService {
 
 
     @Override
+    @Transactional(readOnly = true)
     public List<PersonaResponseDTO> findByEmail(String email) {
         List<Personas> personas = personaRepository.findByEmailContainingIgnoreCase(email);
         return personas.stream().map(personaMapper::toResponseDTO).toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<PersonaTablaDTO> findPersonasPage(String searchTerm, String typeFilter, Pageable pageable) {
         return personaRepository.findPersonasPage(searchTerm, typeFilter, pageable);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<PersonaResponseDTO> findByTelefono(String telefono) {
         List<Personas> personas = personaRepository.findByTelefonoContainingIgnoreCase(telefono);
         return personas.stream().map(personaMapper::toResponseDTO).toList();
     }
 
     @Override
+    @Transactional
     public PersonaResponseDTO save(PersonaRequestDTO personaRequestDTO) {
         Personas persona = personaMapper.toEntity(personaRequestDTO);
         return personaMapper.toResponseDTO(personaRepository.save(persona));
     }
 
     @Override
+    @Transactional
     public PersonaResponseDTO patch(Integer id, PersonaRequestDTO personaRequestDTO) {
         if (!personaRepository.existsById(id))
             throw new ResourceNotFoundException("Persona no encontrada con ID: " + id);
@@ -73,6 +81,7 @@ public class PersonaServiceImpl implements PersonaService {
     }
 
     @Override
+    @Transactional
     public void deleteById(Integer id) {
         if (!personaRepository.existsById(id))
             throw new ResourceNotFoundException("Persona no encontrada con ID: " + id);
@@ -80,6 +89,7 @@ public class PersonaServiceImpl implements PersonaService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PersonaDisplayDto findPersonaNaturalOrJuridicaById(Integer id) {
         personaRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Persona no encontrada con ID " + id));
@@ -92,6 +102,7 @@ public class PersonaServiceImpl implements PersonaService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public java.util.Map<String, Long> getPersonaStats() {
         long totalNaturales = personaNaturalRepository.count();
         long totalJuridicas = personaJuridicaRepository.count();

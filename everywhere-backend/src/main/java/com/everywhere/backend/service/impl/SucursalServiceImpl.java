@@ -14,6 +14,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,11 +24,13 @@ public class SucursalServiceImpl implements SucursalService {
     private final SucursalMapper sucursalMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public List<SucursalResponseDTO> findAll() {
         return mapToResponseList(sucursalRepository.findAll());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public SucursalResponseDTO findById(Integer id) {
         Sucursal sucursal = sucursalRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada con ID: " + id));
@@ -35,11 +38,13 @@ public class SucursalServiceImpl implements SucursalService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<SucursalResponseDTO> findByDescripcion(String descripcion) {
         return mapToResponseList(sucursalRepository.findByDescripcionContainingIgnoreCase(descripcion));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public SucursalResponseDTO findByDescripcionExacta(String descripcion) {
         Sucursal sucursal = sucursalRepository.findByDescripcionIgnoreCase(descripcion)
                 .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada con descripción: " + descripcion));
@@ -47,21 +52,25 @@ public class SucursalServiceImpl implements SucursalService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<SucursalResponseDTO> findByEstado(Boolean estado) {
         return mapToResponseList(sucursalRepository.findByEstado(estado));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<SucursalResponseDTO> findByEstadoAndDescripcion(Boolean estado, String descripcion) {
         return mapToResponseList(sucursalRepository.findByEstadoAndDescripcionContainingIgnoreCase(estado, descripcion));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<SucursalResponseDTO> findByDireccion(String direccion) {
         return mapToResponseList(sucursalRepository.findByDireccionContainingIgnoreCase(direccion));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public SucursalResponseDTO findByEmail(String email) {
         Sucursal sucursal = sucursalRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada con email: " + email));
@@ -69,6 +78,7 @@ public class SucursalServiceImpl implements SucursalService {
     }
 
     @Override
+    @Transactional
     public SucursalResponseDTO save(SucursalRequestDTO sucursalRequestDTO) {
         if (sucursalRequestDTO.getEmail() != null &&
                 !sucursalRequestDTO.getEmail().trim().isEmpty() &&
@@ -83,6 +93,7 @@ public class SucursalServiceImpl implements SucursalService {
     }
 
     @Override
+    @Transactional
     public SucursalResponseDTO update(Integer id, SucursalRequestDTO sucursalRequestDTO) {
         if (!sucursalRepository.existsById(id))
             throw new ResourceNotFoundException("Sucursal no encontrada con ID: " + id);
@@ -101,6 +112,7 @@ public class SucursalServiceImpl implements SucursalService {
     }
 
     @Override
+    @Transactional
     public void deleteById(Integer id) {
         if (!sucursalRepository.existsById(id))
             throw new ResourceNotFoundException("Sucursal no encontrada con ID: " + id);
@@ -108,6 +120,7 @@ public class SucursalServiceImpl implements SucursalService {
     }
 
     @Override
+    @Transactional
     public SucursalResponseDTO cambiarEstado(Integer id, Boolean estado) {
         if (!sucursalRepository.existsById(id))
             throw new ResourceNotFoundException("Sucursal no encontrada con ID: " + id);
@@ -122,6 +135,7 @@ public class SucursalServiceImpl implements SucursalService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<DropdownResponseDTO> getDropdown() {
         return sucursalRepository.findDropdown();
     }
