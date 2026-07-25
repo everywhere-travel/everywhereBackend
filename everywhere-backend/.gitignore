@@ -19,6 +19,12 @@ target/
 *.iml
 *.ipr
 
+### Claude Promocional Video ###
+.agents
+.claude
+videos
+skills-lock.json
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
