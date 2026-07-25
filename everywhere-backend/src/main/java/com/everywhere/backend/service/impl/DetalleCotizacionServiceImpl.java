@@ -11,6 +11,7 @@ import com.everywhere.backend.service.DetalleCotizacionService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;  
 
@@ -27,17 +28,20 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
     private final DetalleCotizacionMapper detalleCotizacionMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public List<DetalleCotizacionResponseDto> findAll() {
         return mapToResponseList(detalleCotizacionRepository.findAll());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public DetalleCotizacionResponseDto findById(Integer id) {
         return detalleCotizacionRepository.findById(id).map(detalleCotizacionMapper::toResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Detalle de cotización no encontrado con ID: " + id));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<DetalleCotizacionResponseDto> findByCotizacionId(Integer cotizacionId) {
         if (!cotizacionRepository.existsById(cotizacionId))
             throw new ResourceNotFoundException("Cotización no encontrada con ID: " + cotizacionId);
@@ -46,6 +50,7 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
     }
 
     @Override
+    @Transactional
     public DetalleCotizacionResponseDto create(DetalleCotizacionRequestDto detalleCotizacionRequestDto, Integer cotizacionId) {
         if (cotizacionId == null) throw new IllegalArgumentException("El ID de la cotización es obligatorio");
         
@@ -83,6 +88,7 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
     }
 
     @Override
+    @Transactional
     public DetalleCotizacionResponseDto patch(Integer id, DetalleCotizacionRequestDto detalleCotizacionRequestDto) {
         if (!detalleCotizacionRepository.existsById(id))
             throw new ResourceNotFoundException("Detalle de cotización no encontrado con ID: " + id);
@@ -118,6 +124,7 @@ public class DetalleCotizacionServiceImpl implements DetalleCotizacionService {
     }
 
     @Override
+    @Transactional
     public void delete(Integer id) {
         if (!detalleCotizacionRepository.existsById(id))
             throw new ResourceNotFoundException("Detalle de cotización no encontrado con ID: " + id);

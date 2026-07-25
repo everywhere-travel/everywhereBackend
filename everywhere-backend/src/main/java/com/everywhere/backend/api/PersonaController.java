@@ -41,8 +41,10 @@ public class PersonaController {
             @RequestParam(required = false) String searchTerm,
             @RequestParam(required = false) String typeFilter) {
         
+        int safeSize = Math.min(Math.max(size, 1), 100);
+        int safePage = Math.max(page, 0);
         Direction direction = Direction.fromString(sort[1]);
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sort[0]));
+        Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by(direction, sort[0]));
         
         return ResponseEntity.ok(personaService.findPersonasPage(searchTerm, typeFilter, pageable));
     }
@@ -55,8 +57,10 @@ public class PersonaController {
             @RequestParam(required = false) String searchTerm,
             @RequestParam(required = false) String typeFilter) {
 
+        int safeSize = Math.min(Math.max(size, 1), 100);
+        int safePage = Math.max(page, 0);
         Direction direction = Direction.fromString(sort[1]);
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sort[0]));
+        Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by(direction, sort[0]));
 
         return ResponseEntity.ok(personaService.findPersonasPage(searchTerm, typeFilter, pageable));
     }

@@ -16,10 +16,11 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@org.springframework.transaction.annotation.Transactional(readOnly = true)
+@Transactional(readOnly = true)
 public class ProveedorServiceImpl implements ProveedorService {
 
     private final ProveedorRepository proveedorRepository;
@@ -28,7 +29,7 @@ public class ProveedorServiceImpl implements ProveedorService {
     private final DetalleLiquidacionRepository detalleLiquidacionRepository;
 
     @Override
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public ProveedorResponseDTO create(ProveedorRequestDTO proveedorRequestDTO) {
         if (proveedorRequestDTO.getRuc() != null && proveedorRepository.existsByRuc(proveedorRequestDTO.getRuc()))
             throw new DataIntegrityViolationException("Ya existe un proveedor con el RUC: " + proveedorRequestDTO.getRuc());
@@ -46,6 +47,7 @@ public class ProveedorServiceImpl implements ProveedorService {
     }
 
     @Override
+    @Transactional
     public ProveedorResponseDTO update(Integer id, ProveedorRequestDTO proveedorRequestDTO) {
         if (!proveedorRepository.existsById(id))
             throw new ResourceNotFoundException("Proveedor no encontrado con ID: " + id);
@@ -75,6 +77,7 @@ public class ProveedorServiceImpl implements ProveedorService {
     }
 
     @Override
+    @Transactional
     public void delete(Integer id) {
         if (!proveedorRepository.existsById(id)) {
             throw new ResourceNotFoundException("Proveedor no encontrado con ID: " + id);

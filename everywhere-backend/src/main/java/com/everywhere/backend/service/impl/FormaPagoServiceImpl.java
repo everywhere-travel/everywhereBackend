@@ -17,6 +17,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,34 +28,40 @@ public class FormaPagoServiceImpl implements FormaPagoService {
     private final CotizacionRepository cotizacionRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public List<FormaPagoResponseDTO> findAll() {
         return mapToResponseList(formaPagoRepository.findAll());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public FormaPagoResponseDTO findById(Integer id) {
         return formaPagoRepository.findById(id).map(formaPagoMapper::toResponseDTO)
             .orElseThrow(() -> new ResourceNotFoundException("Forma de pago no encontrada con ID: " + id));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public FormaPagoResponseDTO findByCodigo(Integer codigo) {
         return formaPagoRepository.findByCodigo(codigo).map(formaPagoMapper::toResponseDTO)
             .orElseThrow(() -> new ResourceNotFoundException("Forma de pago no encontrada con código: " + codigo));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<FormaPagoResponseDTO> findByDescripcionContaining(String descripcion) {
         return mapToResponseList(formaPagoRepository.findByDescripcionContainingIgnoreCase(descripcion));
     }
 
     @Override
+    @Transactional
     public FormaPagoResponseDTO save(FormaPagoRequestDTO formaPagoRequestDTO) {
         FormaPago formaPago = formaPagoMapper.toEntity(formaPagoRequestDTO);
         return formaPagoMapper.toResponseDTO(formaPagoRepository.save(formaPago));
     }
 
     @Override
+    @Transactional
     public FormaPagoResponseDTO patch(Integer id, FormaPagoRequestDTO formaPagoRequestDTO) {
         if (!formaPagoRepository.existsById(id))
             throw new ResourceNotFoundException("Forma de pago no encontrada con ID: " + id);
@@ -77,6 +84,7 @@ public class FormaPagoServiceImpl implements FormaPagoService {
     }
 
     @Override
+    @Transactional
     public void deleteById(Integer id) {
         if (!formaPagoRepository.existsById(id)) {
             throw new ResourceNotFoundException("Forma de pago no encontrada con ID: " + id);
@@ -98,6 +106,7 @@ public class FormaPagoServiceImpl implements FormaPagoService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<DropdownResponseDTO> getDropdown() {
         return formaPagoRepository.findDropdown();
     }
