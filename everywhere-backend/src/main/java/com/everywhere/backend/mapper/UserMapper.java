@@ -43,6 +43,7 @@ public class UserMapper {
         Set<String> permissions = rolePermissionRepository
                 .findPermissionNamesByRoleId(user.getRole().getId());
         authResponseDTO.setPermissions(permissions);
+        authResponseDTO.setLoginCount(user.getLoginCount());
 
         return authResponseDTO;
     }
