@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,12 +25,14 @@ public class EstadoCotizacionServiceImpl implements EstadoCotizacionService {
     private final CotizacionRepository cotizacionRepository;
 
     @Override
+    @Transactional
     public EstadoCotizacionResponseDTO create(EstadoCotizacionRequestDTO estadoCotizacionRequestDTO) {
         EstadoCotizacion estadoCotizacion = estadoCotizacionMapper.toEntity(estadoCotizacionRequestDTO); 
         return estadoCotizacionMapper.toResponseDTO(estadoCotizacionRepository.save(estadoCotizacion));
     }
 
     @Override
+    @Transactional
     public EstadoCotizacionResponseDTO update(Integer id, EstadoCotizacionRequestDTO estadoCotizacionRequestDTO) {
         if (!estadoCotizacionRepository.existsById(id))
             throw new ResourceNotFoundException("Estado de Cotización no encontrado con ID: " + id);
@@ -40,17 +43,20 @@ public class EstadoCotizacionServiceImpl implements EstadoCotizacionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public EstadoCotizacionResponseDTO getById(Integer id) {
         return estadoCotizacionRepository.findById(id).map(estadoCotizacionMapper::toResponseDTO)
             .orElseThrow(() -> new ResourceNotFoundException("Estado de Cotización no encontrado con ID: " + id));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<EstadoCotizacionResponseDTO> getAll() {
         return mapToResponseList(estadoCotizacionRepository.findAll());
     }
 
     @Override
+    @Transactional
     public void delete(Integer ida) {
         if (!estadoCotizacionRepository.existsById(ida))
             throw new ResourceNotFoundException("Estado de Cotización no encontrado con ID: " + ida);
@@ -73,6 +79,7 @@ public class EstadoCotizacionServiceImpl implements EstadoCotizacionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<DropdownResponseDTO> getDropdown() {
         return estadoCotizacionRepository.findDropdown();
     }

@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +25,7 @@ public class ProveedorColaboradorServiceImpl implements ProveedorColaboradorServ
     private final ProveedorColaboradorMapper mapper;
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProveedorColaboradorResponseDTO> findAll() {
         return repository.findAll().stream()
                 .map(mapper::toResponseDTO)
@@ -31,6 +33,7 @@ public class ProveedorColaboradorServiceImpl implements ProveedorColaboradorServ
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProveedorColaboradorResponseDTO findById(Integer id) {
         ProveedorColaborador entity = repository.findById(id)
                 .orElseThrow(
@@ -39,6 +42,7 @@ public class ProveedorColaboradorServiceImpl implements ProveedorColaboradorServ
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProveedorColaboradorResponseDTO> findByProveedorId(Integer proveedorId) {
         return repository.findByProveedorId(proveedorId).stream()
                 .map(mapper::toResponseDTO)
@@ -46,6 +50,7 @@ public class ProveedorColaboradorServiceImpl implements ProveedorColaboradorServ
     }
 
     @Override
+    @Transactional
     public ProveedorColaboradorResponseDTO save(ProveedorColaboradorRequestDTO dto) {
         ProveedorColaborador entity = mapper.toEntity(dto);
 
@@ -61,6 +66,7 @@ public class ProveedorColaboradorServiceImpl implements ProveedorColaboradorServ
     }
 
     @Override
+    @Transactional
     public ProveedorColaboradorResponseDTO update(Integer id, ProveedorColaboradorRequestDTO dto) {
         ProveedorColaborador existing = repository.findById(id)
                 .orElseThrow(
@@ -80,6 +86,7 @@ public class ProveedorColaboradorServiceImpl implements ProveedorColaboradorServ
     }
 
     @Override
+    @Transactional
     public void deleteById(Integer id) {
         if (!repository.existsById(id)) {
             throw new ResourceNotFoundException("Colaborador de proveedor no encontrado con ID: " + id);

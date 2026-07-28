@@ -28,6 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -57,6 +58,7 @@ public class CotizacionServiceImpl implements CotizacionService {
     private static final DateTimeFormatter DOCX_FECHA_EMISION_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy',' HH:mm:ss");
 
     @Override
+    @Transactional
     public CotizacionResponseDto create(CotizacionRequestDto cotizacionRequestDto, Integer personaId) {
 
         Cotizacion cotizacion = cotizacionMapper.toEntity(cotizacionRequestDto);
@@ -112,22 +114,26 @@ public class CotizacionServiceImpl implements CotizacionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CotizacionResponseDto findById(Integer id) {
         return cotizacionRepository.findById(id).map(cotizacionMapper::toResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Cotización no encontrada con ID: " + id));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<CotizacionResponseDto> findAll() {
         return mapToResponseList(cotizacionRepository.findAll());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<CotizacionResponseDto> findPage(Pageable pageable) {
         return cotizacionRepository.findAll(pageable).map(cotizacionMapper::toResponse);
     }
 
     @Override
+    @Transactional
     public CotizacionResponseDto update(Integer id, CotizacionRequestDto cotizacionRequestDto) {
         Cotizacion cotizacion = cotizacionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cotización no encontrada con ID: " + id));
@@ -194,6 +200,7 @@ public class CotizacionServiceImpl implements CotizacionService {
     }
 
     @Override
+    @Transactional
     public void delete(Integer id) {
         if (!cotizacionRepository.existsById(id))
             throw new ResourceNotFoundException("Cotización no encontrada con ID: " + id);
@@ -215,6 +222,7 @@ public class CotizacionServiceImpl implements CotizacionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CotizacionConDetallesResponseDTO findByIdWithDetalles(Integer id) {
         Cotizacion cotizacion = cotizacionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cotización no encontrada con ID: " + id));
@@ -227,6 +235,7 @@ public class CotizacionServiceImpl implements CotizacionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<CotizacionResponseDto> findCotizacionesSinLiquidacion() {
         return cotizacionRepository.findCotizacionesSinLiquidacion().stream()
                 .map(cotizacionMapper::toResponse)
@@ -234,6 +243,7 @@ public class CotizacionServiceImpl implements CotizacionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<CotizacionResponseDto> findCotizacionesSinDocumentoCobranza() {
         return cotizacionRepository.findCotizacionesSinDocumentoCobranza().stream()
                 .map(cotizacionMapper::toResponse)

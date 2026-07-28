@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import com.everywhere.backend.model.dto.DropdownResponseDTO;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.stream.Collectors; 
 
 @Service
@@ -28,12 +29,14 @@ public class ProductoServiceImpl implements ProductoService {
     private final DetalleLiquidacionRepository detalleLiquidacionRepository;
 
     @Override
+    @Transactional
     public ProductoResponseDTO create(ProductoRequestDTO productoRequestDTO) {
         Producto producto = productoMapper.toEntity(productoRequestDTO);
         return productoMapper.toResponseDTO(productoRepository.save(producto));
     }
 
     @Override
+    @Transactional
     public ProductoResponseDTO update(Integer id, ProductoRequestDTO productoRequestDTO) {
         if (!productoRepository.existsById(id))
             throw new ResourceNotFoundException("Producto no encontrado con ID: " + id);
@@ -51,6 +54,7 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductoResponseDTO getById(Integer id) {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
@@ -58,11 +62,13 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProductoResponseDTO> getAll() {
         return mapToResponseList(productoRepository.findAll());
     }
 
     @Override
+    @Transactional
     public void delete(Integer id) {
         if (!productoRepository.existsById(id)) {
             throw new ResourceNotFoundException("Producto no encontrado con ID: " + id);
@@ -95,6 +101,7 @@ public class ProductoServiceImpl implements ProductoService {
 
 
     @Override
+    @Transactional(readOnly = true)
     public List<DropdownResponseDTO> getDropdown() {
         return productoRepository.findDropdown();
     }

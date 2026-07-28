@@ -24,8 +24,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ProblemDetail> handleAuthenticationException(AuthenticationException ex, WebRequest request) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
-        problemDetail.setTitle("Unauthorized");
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Acceso denegado. Credenciales inválidas o sesión expirada.");
+        problemDetail.setTitle("No autorizado");
         problemDetail.setType(URI.create("about:blank"));
         problemDetail.setInstance(URI.create(request.getDescription(false).replace("uri=", "")));
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problemDetail);
@@ -60,7 +60,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({ ResourceNotFoundException.class, EntityNotFoundException.class })
     public ResponseEntity<ProblemDetail> handleNotFoundException(Exception ex, WebRequest request) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        String detailMessage = ex instanceof EntityNotFoundException ? "El recurso solicitado no fue encontrado." : ex.getMessage();
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, detailMessage);
         problemDetail.setTitle("Resource Not Found");
         problemDetail.setType(URI.create("about:blank"));
         problemDetail.setInstance(URI.create(request.getDescription(false).replace("uri=", "")));
@@ -69,7 +70,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({ BadRequestException.class, IllegalArgumentException.class })
     public ResponseEntity<ProblemDetail> handleBadRequestException(Exception ex, WebRequest request) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        String detailMessage = ex instanceof IllegalArgumentException ? "La solicitud contiene parámetros inválidos o mal formados." : ex.getMessage();
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detailMessage);
         problemDetail.setTitle("Bad Request");
         problemDetail.setType(URI.create("about:blank"));
         problemDetail.setInstance(URI.create(request.getDescription(false).replace("uri=", "")));
@@ -97,6 +99,8 @@ public class GlobalExceptionHandler {
             
             userFriendlyMessage = String.format("No se puede eliminar este registro porque está siendo utilizado por %s. " +
                     "Primero debe eliminar las referencias asociadas.", tableName);
+        } else if (detailedMessage != null && (detailedMessage.toLowerCase().contains("_pkey") || detailedMessage.toLowerCase().contains("primary key"))) {
+            userFriendlyMessage = "Conflicto de numeración interna en la base de datos (secuencia de ID desincronizada). El sistema está autocorrigiendo la secuencia, por favor intente de nuevo.";
         } else if (detailedMessage != null && (detailedMessage.toLowerCase().contains("duplicate") || 
                    detailedMessage.toLowerCase().contains("ya existe"))) {
             userFriendlyMessage = "Ya existe un registro con estos datos. No se permiten duplicados.";
@@ -174,19 +178,18 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(DataAccessException.class)
-    public ResponseEntity<ProblemDetail> handleDataAccessException(DataAccessException ex) {
-        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
-        problem.setTitle("Error de base de datos");
-        problem.setType(URI.create("about:blank"));
-        problem.setDetail("Ocurrió un problema al acceder a la base de datos. Comuníquese con el área de soporte.");
-        problem.setInstance(URI.create("about:blank"));
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problem);
+    public ResponseEntity<ProblemDetail> handleDataAccessException(DataAccessException ex, WebRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Ocurrió un problema al acceder a la base de datos. Comuníquese con el área de soporte.");
+        problemDetail.setTitle("Error de base de datos");
+        problemDetail.setType(URI.create("about:blank"));
+        problemDetail.setInstance(URI.create(request.getDescription(false).replace("uri=", "")));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problemDetail);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ProblemDetail> handleGeneralException(Exception ex, WebRequest request) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
-        problemDetail.setTitle("Internal Server Error");
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Ocurrió un error interno. Por favor, contacte al administrador del sistema.");
+        problemDetail.setTitle("Error interno");
         problemDetail.setType(URI.create("about:blank"));
         problemDetail.setInstance(URI.create(request.getDescription(false).replace("uri=", "")));
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problemDetail);

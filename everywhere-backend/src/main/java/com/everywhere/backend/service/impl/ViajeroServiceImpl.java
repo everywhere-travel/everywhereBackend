@@ -18,10 +18,10 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@org.springframework.transaction.annotation.Transactional(readOnly = true)
 public class ViajeroServiceImpl implements ViajeroService {
 
     private final ViajeroRepository viajeroRepository;
@@ -30,11 +30,13 @@ public class ViajeroServiceImpl implements ViajeroService {
     private final ViajeroMapper viajeroMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public List<ViajeroResponseDTO> findAll() {
         return mapToResponseList(viajeroRepository.findAll());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ViajeroResponseDTO findById(Integer id) {
         Viajero viajero = viajeroRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Viajero no encontrado con ID: " + id));
@@ -42,16 +44,19 @@ public class ViajeroServiceImpl implements ViajeroService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ViajeroResponseDTO> findByNacionalidad(String nacionalidad) {
         return mapToResponseList(viajeroRepository.findByNacionalidadIgnoreAccents(nacionalidad));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ViajeroResponseDTO> findByResidencia(String residencia) {
         return mapToResponseList(viajeroRepository.findByResidenciaIgnoreAccents(residencia));
     }
 
     @Override
+    @Transactional
     public ViajeroResponseDTO save(ViajeroRequestDTO viajeroRequestDTO) {
         Viajero viajero = viajeroMapper.toEntity(viajeroRequestDTO);
         // Si viene personaNaturalId, buscar la PersonaNatural y enlazarla
@@ -76,6 +81,7 @@ public class ViajeroServiceImpl implements ViajeroService {
     }
 
     @Override
+    @Transactional
     public ViajeroResponseDTO patch(Integer id, ViajeroRequestDTO viajeroRequestDTO) {
         if (!viajeroRepository.existsById(id))
             throw new ResourceNotFoundException("Viajero no encontrado con ID: " + id);
@@ -87,6 +93,7 @@ public class ViajeroServiceImpl implements ViajeroService {
     }
 
     @Override
+    @Transactional
     public void deleteById(Integer id) {
         if (!viajeroRepository.existsById(id))
             throw new ResourceNotFoundException("Viajero no encontrado con ID: " + id);
@@ -98,6 +105,7 @@ public class ViajeroServiceImpl implements ViajeroService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ViajeroConPersonaResponseDTO> findAllWithPersonaNatural() {
         return viajeroRepository.findAll().stream()
                 .filter(viajero -> viajero.getPersonaNatural() != null)
@@ -114,6 +122,7 @@ public class ViajeroServiceImpl implements ViajeroService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<DropdownResponseDTO> getDropdownViajeros() {
         return viajeroRepository.findDropdownViajeros();
     }

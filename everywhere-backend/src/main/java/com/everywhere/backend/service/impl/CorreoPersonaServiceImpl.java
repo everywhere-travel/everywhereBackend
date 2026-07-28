@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +24,7 @@ public class CorreoPersonaServiceImpl implements CorreoPersonaService {
     private final PersonaRepository personaRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public List<CorreoPersonaResponseDTO> findAll() {
         return correoPersonaRepository.findAll()
                 .stream()
@@ -31,12 +33,14 @@ public class CorreoPersonaServiceImpl implements CorreoPersonaService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<CorreoPersonaResponseDTO> findById(Integer id) {
         return correoPersonaRepository.findById(id)
                 .map(correoPersonaMapper::toResponseDTO);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<CorreoPersonaResponseDTO> findByPersonaId(Integer personaId) {
         return correoPersonaRepository.findByPersonaId(personaId)
                 .stream()
@@ -45,6 +49,7 @@ public class CorreoPersonaServiceImpl implements CorreoPersonaService {
     }
 
     @Override
+    @Transactional
     public CorreoPersonaResponseDTO save(CorreoPersonaRequestDTO correoPersonaRequestDTO, Integer personaId) {
         Personas persona = personaRepository.findById(personaId)
                 .orElseThrow(() -> new RuntimeException("Persona no encontrada con ID: " + personaId));
@@ -57,6 +62,7 @@ public class CorreoPersonaServiceImpl implements CorreoPersonaService {
 
 
     @Override
+    @Transactional
     public CorreoPersonaResponseDTO update(Integer personaId, CorreoPersonaRequestDTO correoPersonaRequestDTO, Integer correoPersonaId) {
         CorreoPersona correo = correoPersonaRepository.findById(correoPersonaId)
                 .orElseThrow(() -> new RuntimeException("Correo no encontrado con ID: " + correoPersonaId));
@@ -71,6 +77,7 @@ public class CorreoPersonaServiceImpl implements CorreoPersonaService {
 
 
     @Override
+    @Transactional
     public void deleteById(Integer id) {
         if (!correoPersonaRepository.existsById(id)) {
             throw new RuntimeException("Correo no encontrado con ID: " + id);

@@ -13,11 +13,12 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 import com.everywhere.backend.model.dto.DropdownResponseDTO;
 
 @Service
 @RequiredArgsConstructor
-@org.springframework.transaction.annotation.Transactional(readOnly = true)
+@Transactional(readOnly = true)
 public class OperadorServiceImpl implements OperadorService {
 
     private final OperadorRepository operadorRepository;
@@ -44,6 +45,7 @@ public class OperadorServiceImpl implements OperadorService {
     }
 
     @Override
+    @Transactional
     public OperadorResponseDTO save(OperadorRequestDTO operadorRequestDTO) {
         if (operadorRepository.existsByNombreIgnoreCase(operadorRequestDTO.getNombre()))
             throw new DataIntegrityViolationException("Ya existe un operador con el nombre: " + operadorRequestDTO.getNombre());
@@ -52,6 +54,7 @@ public class OperadorServiceImpl implements OperadorService {
     }
 
     @Override
+    @Transactional
     public OperadorResponseDTO update(int id, OperadorRequestDTO operadorRequestDTO) {
         if (!operadorRepository.existsById(id))
             throw new ResourceNotFoundException("Operador con id " + id + " no encontrado");
@@ -69,6 +72,7 @@ public class OperadorServiceImpl implements OperadorService {
     }
 
     @Override
+    @Transactional
     public void deleteById(int id) {
         if (!operadorRepository.existsById(id))
             throw new ResourceNotFoundException("Operador no encontrado con ID: " + id);

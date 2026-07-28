@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,11 +24,13 @@ public class ObservacionLiquidacionServiceImpl implements ObservacionLiquidacion
     private final LiquidacionRepository liquidacionRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public List<ObservacionLiquidacionResponseDTO> findAll() {
         return mapToResponseList(observacionLiquidacionRepository.findAll());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ObservacionLiquidacionResponseDTO findById(Long id) {
         ObservacionLiquidacion observacionLiquidacion = observacionLiquidacionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -37,6 +40,7 @@ public class ObservacionLiquidacionServiceImpl implements ObservacionLiquidacion
     }
 
     @Override
+    @Transactional
     public ObservacionLiquidacionResponseDTO save(ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO) { 
         if (observacionLiquidacionRequestDTO.getLiquidacionId() != null && 
             !liquidacionRepository.existsById(observacionLiquidacionRequestDTO.getLiquidacionId())) {
@@ -54,6 +58,7 @@ public class ObservacionLiquidacionServiceImpl implements ObservacionLiquidacion
     }
 
     @Override
+    @Transactional
     public ObservacionLiquidacionResponseDTO update(Long id, ObservacionLiquidacionRequestDTO observacionLiquidacionRequestDTO) { 
         if (!observacionLiquidacionRepository.existsById(id))
             throw new ResourceNotFoundException("Observación de liquidación no encontrada con ID: " + id);
@@ -76,6 +81,7 @@ public class ObservacionLiquidacionServiceImpl implements ObservacionLiquidacion
     }
 
     @Override
+    @Transactional
     public void deleteById(Long id) {
         if (!observacionLiquidacionRepository.existsById(id))
             throw new ResourceNotFoundException("No existe una observación de liquidación con ID: " + id);
@@ -83,6 +89,7 @@ public class ObservacionLiquidacionServiceImpl implements ObservacionLiquidacion
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ObservacionLiquidacionResponseDTO> findByLiquidacionId(Integer liquidacionId) { 
         return mapToResponseList(observacionLiquidacionRepository.findByLiquidacionId(liquidacionId));
     }

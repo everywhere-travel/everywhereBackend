@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,11 +26,13 @@ public class ViajeroFrecuenteServiceImpl implements ViajeroFrecuenteService {
     private final ViajeroFrecuenteMapper viajeroFrecuenteMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public List<ViajeroFrecuenteResponseDto> findAll() {
         return mapToResponseList(viajeroFrecuenteRepository.findAll());
     }
 
     @Override
+    @Transactional
     public ViajeroFrecuenteResponseDto crear(Integer viajeroId, ViajeroFrecuenteRequestDto viajeroFrecuenteRequestDto) {
         if (viajeroId == null) throw new IllegalArgumentException("El ID del viajero no puede ser nulo");
 
@@ -43,6 +46,7 @@ public class ViajeroFrecuenteServiceImpl implements ViajeroFrecuenteService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ViajeroFrecuenteResponseDto buscarPorId(Integer id) {
         ViajeroFrecuente viajeroFrecuente = viajeroFrecuenteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("ViajeroFrecuente no encontrado con id: " + id));
@@ -51,18 +55,21 @@ public class ViajeroFrecuenteServiceImpl implements ViajeroFrecuenteService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ViajeroFrecuenteResponseDto> listarPorViajero(Integer viajeroId) {
         return mapToResponseList(viajeroFrecuenteRepository.findByViajero_Id(viajeroId));
     }
 
 
     @Override
+    @Transactional
     public void eliminar(Integer id) {
         if (!viajeroFrecuenteRepository.existsById(id)) throw new ResourceNotFoundException("ViajeroFrecuente no encontrado con id: " + id);
         viajeroFrecuenteRepository.deleteById(id);
     }
 
     @Override
+    @Transactional
     public ViajeroFrecuenteResponseDto actualizar(Integer id, ViajeroFrecuenteRequestDto viajeroFrecuenteRequestDto) {
         if (!viajeroFrecuenteRepository.existsById(id))
             throw new ResourceNotFoundException("ViajeroFrecuente no encontrado con id: " + id);
@@ -84,6 +91,7 @@ public class ViajeroFrecuenteServiceImpl implements ViajeroFrecuenteService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ViajeroFrecuenteResponseDto> buscarPorViajeroId(Integer viajeroId) {
         return mapToResponseList(viajeroFrecuenteRepository.findByViajero_Id(viajeroId));
     }
