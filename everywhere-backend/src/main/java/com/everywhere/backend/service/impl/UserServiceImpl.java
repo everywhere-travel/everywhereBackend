@@ -46,9 +46,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public AuthResponseDTO login(LoginDTO loginDTO) {
+        String email = loginDTO.getEmail() != null ? loginDTO.getEmail().trim().toLowerCase() : "";
         // Autenticar usuario
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken( loginDTO.getEmail(), loginDTO.getPassword()));
+                new UsernamePasswordAuthenticationToken(email, loginDTO.getPassword()));
 
         // Obtener datos del usuario autenticado
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
@@ -121,13 +122,14 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponseDTO createUser(UserRequestDTO request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+        String email = request.getEmail() != null ? request.getEmail().trim().toLowerCase() : "";
+        if (userRepository.findByEmail(email).isPresent()) {
             throw new IllegalArgumentException("El email ya está en uso");
         }
 
         User user = new User();
         user.setNombre(request.getNombre());
-        user.setEmail(request.getEmail());
+        user.setEmail(email);
         user.setEstado(true);
 
         String rawPassword = request.getPassword() != null && !request.getPassword().isEmpty() ? request.getPassword() : "123456";
@@ -150,13 +152,14 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponseDTO updateUser(Integer userId, UserRequestDTO request) {
         User user = getUserbyId(userId);
+        String email = request.getEmail() != null ? request.getEmail().trim().toLowerCase() : "";
 
-        if (!user.getEmail().equals(request.getEmail()) && userRepository.findByEmail(request.getEmail()).isPresent()) {
+        if (!user.getEmail().equalsIgnoreCase(email) && userRepository.findByEmail(email).isPresent()) {
             throw new IllegalArgumentException("El email ya está en uso por otro usuario");
         }
 
         user.setNombre(request.getNombre());
-        user.setEmail(request.getEmail());
+        user.setEmail(email);
 
         if (request.getPassword() != null && !request.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
