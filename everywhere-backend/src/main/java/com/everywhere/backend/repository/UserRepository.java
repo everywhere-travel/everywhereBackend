@@ -10,12 +10,13 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
-    Optional<User> findByEmail(String email);
+    @Query("SELECT u FROM User u WHERE LOWER(u.email) = LOWER(:email)")
+    Optional<User> findByEmail(@Param("email") String email);
 
-    @Query("SELECT u FROM User u WHERE u.email = :email")
+    @Query("SELECT u FROM User u WHERE LOWER(u.email) = LOWER(:email)")
     User findByEmailQuery(@Param("email") String email);
 
-    @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.email = :email")
+    @Query("SELECT COUNT(u) > 0 FROM User u WHERE LOWER(u.email) = LOWER(:email)")
     boolean existsByEmail(@Param("email") String email);
 
     @Query("SELECT u.role.name FROM User u WHERE u.id = :userId")
