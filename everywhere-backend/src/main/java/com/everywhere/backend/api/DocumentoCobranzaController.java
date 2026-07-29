@@ -69,6 +69,12 @@ public class DocumentoCobranzaController {
         return ResponseEntity.ok(documentoCobranzaService.findById(id));
     }
 
+    @GetMapping("/cotizacion/{cotizacionId}")
+    @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "READ")
+    public ResponseEntity<DocumentoCobranzaResponseDTO> getDocumentoByCotizacion(@PathVariable Integer cotizacionId) {
+        return ResponseEntity.ok(documentoCobranzaService.findByCotizacionId(cotizacionId));
+    }
+
     @PatchMapping("/{id}")
     @RequirePermission(module = "DOCUMENTOS_COBRANZA", permission = "UPDATE")
     public ResponseEntity<?> updateDocumento(@PathVariable Long id,

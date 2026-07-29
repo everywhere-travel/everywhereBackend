@@ -12,6 +12,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -80,25 +81,28 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ProblemDetail> handleDataIntegrityViolationException(DataIntegrityViolationException ex, WebRequest request) {
+        ex.printStackTrace();
         String detailedMessage = ex.getMostSpecificCause().getMessage();
         String userFriendlyMessage;
         
         // Detectar errores de llave foránea (foreign key constraint)
         if (detailedMessage != null && (detailedMessage.contains("llave foránea") || detailedMessage.contains("foreign key"))) {
-            // Extraer el nombre de la tabla referenciada si es posible
-            String tableName = "otro registro";
-            if (detailedMessage.contains("«documento_cobranza»")) {
-                tableName = "documentos de cobranza";
-            } else if (detailedMessage.contains("«") && detailedMessage.contains("»")) {
-                int start = detailedMessage.lastIndexOf("«") + 1;
-                int end = detailedMessage.lastIndexOf("»");
-                if (start > 0 && end > start) {
-                    tableName = detailedMessage.substring(start, end).replace("_", " ");
+            if (detailedMessage.toLowerCase().contains("delete") || detailedMessage.toLowerCase().contains("eliminar") || detailedMessage.contains("violates foreign key constraint") && detailedMessage.contains("on table") && !detailedMessage.toLowerCase().contains("insert") && !detailedMessage.toLowerCase().contains("update")) {
+                String tableName = "otro registro";
+                if (detailedMessage.contains("«documento_cobranza»")) {
+                    tableName = "documentos de cobranza";
+                } else if (detailedMessage.contains("«") && detailedMessage.contains("»")) {
+                    int start = detailedMessage.lastIndexOf("«") + 1;
+                    int end = detailedMessage.lastIndexOf("»");
+                    if (start > 0 && end > start) {
+                        tableName = detailedMessage.substring(start, end).replace("_", " ");
+                    }
                 }
+                userFriendlyMessage = String.format("No se puede eliminar este registro porque está siendo utilizado por %s. " +
+                        "Primero debe eliminar las referencias asociadas.", tableName);
+            } else {
+                userFriendlyMessage = "No se puede crear o guardar el registro porque hace referencia a un elemento no existente en la base de datos (llave foránea inválida). Detalle técnico: " + detailedMessage;
             }
-            
-            userFriendlyMessage = String.format("No se puede eliminar este registro porque está siendo utilizado por %s. " +
-                    "Primero debe eliminar las referencias asociadas.", tableName);
         } else if (detailedMessage != null && (detailedMessage.toLowerCase().contains("_pkey") || detailedMessage.toLowerCase().contains("primary key"))) {
             userFriendlyMessage = "Conflicto de numeración interna en la base de datos (secuencia de ID desincronizada). El sistema está autocorrigiendo la secuencia, por favor intente de nuevo.";
         } else if (detailedMessage != null && (detailedMessage.toLowerCase().contains("duplicate") || 
@@ -148,6 +152,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
     }
 
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ProblemDetail> handleMissingServletRequestParameterException(MissingServletRequestParameterException ex, WebRequest request) {
+        String detail = String.format("Falta el parámetro requerido en la petición: '%s' de tipo %s", ex.getParameterName(), ex.getParameterType());
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
+        problemDetail.setTitle("Parámetro faltante");
+        problemDetail.setType(URI.create("about:blank"));
+        problemDetail.setInstance(URI.create(request.getDescription(false).replace("uri=", "")));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
+    }
+
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ProblemDetail> handleNoResourceFoundException(NoResourceFoundException ex, WebRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND,
@@ -179,6 +193,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataAccessException.class)
     public ResponseEntity<ProblemDetail> handleDataAccessException(DataAccessException ex, WebRequest request) {
+        ex.printStackTrace();
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Ocurrió un problema al acceder a la base de datos. Comuníquese con el área de soporte.");
         problemDetail.setTitle("Error de base de datos");
         problemDetail.setType(URI.create("about:blank"));
@@ -188,6 +203,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ProblemDetail> handleGeneralException(Exception ex, WebRequest request) {
+        ex.printStackTrace();
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Ocurrió un error interno. Por favor, contacte al administrador del sistema.");
         problemDetail.setTitle("Error interno");
         problemDetail.setType(URI.create("about:blank"));
@@ -197,6 +213,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ProblemDetail> handleConflictException(ConflictException ex, WebRequest request) {
+        ex.printStackTrace();
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problemDetail.setTitle("Conflict");
         problemDetail.setType(URI.create("about:blank"));

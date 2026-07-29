@@ -55,6 +55,7 @@ public class PersonaJuridicaServiceImpl implements PersonaJuridicaService {
 
     private final PersonaJuridicaRepository personaJuridicaRepository;
     private final PersonaRepository personaRepository;
+    private final com.everywhere.backend.repository.NaturalJuridicoRepository naturalJuridicoRepository;
     private final PersonaJuridicaMapper personaJuridicaMapper;
     private final PersonaMapper personaMapper;
 
@@ -148,6 +149,11 @@ public class PersonaJuridicaServiceImpl implements PersonaJuridicaService {
             
         Integer personaId = personaJuridica.getPersonas() != null ? personaJuridica.getPersonas().getId() : null;
         
+        List<com.everywhere.backend.model.entity.NaturalJuridico> relaciones = naturalJuridicoRepository.findByPersonaJuridicaId(id);
+        if (relaciones != null && !relaciones.isEmpty()) {
+            naturalJuridicoRepository.deleteAll(relaciones);
+        }
+
         personaJuridicaRepository.delete(personaJuridica);
         
         if (personaId != null) {

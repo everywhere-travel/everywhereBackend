@@ -11,6 +11,11 @@ import com.everywhere.backend.service.ReciboService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 
 import java.util.List;
 
@@ -22,24 +27,38 @@ public class ReciboController {
     private final ReciboService reciboService;
 
     /**
-     * Crea un nuevo Recibo a partir de un DocumentoCobranza.
-     * Un mismo DocumentoCobranza puede tener múltiples Recibos (pagos parciales o totales).
+     * Crea un nuevo Recibo a partir de una Cotizacion.
+     * Una misma Cotizacion puede tener múltiples Recibos (pagos parciales o totales).
      */
     @PostMapping
     @RequirePermission(module = "RECIBOS", permission = "CREATE")
     public ResponseEntity<ReciboResponseDTO> createRecibo(
-            @RequestParam Integer documentoCobranzaId,
+            @RequestParam Integer cotizacionId,
             @RequestParam(required = false) Integer personaJuridicaId,
             @RequestParam(required = false) Integer sucursalId,
             @RequestParam(required = false) java.math.BigDecimal montoPago) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(reciboService.createRecibo(documentoCobranzaId, personaJuridicaId, sucursalId, montoPago));
+                .body(reciboService.createRecibo(cotizacionId, personaJuridicaId, sucursalId, montoPago));
     }
 
     @GetMapping
     @RequirePermission(module = "RECIBOS", permission = "READ")
     public ResponseEntity<List<ReciboResponseDTO>> getAllRecibos() {
         return ResponseEntity.ok(reciboService.findAll());
+    }
+
+    @GetMapping("/page")
+    @RequirePermission(module = "RECIBOS", permission = "READ")
+    public ResponseEntity<Page<ReciboResponseDTO>> getRecibosPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id,desc") String[] sort) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.max(size, 1);
+        Direction direction = Direction.fromString(sort[1]);
+        Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by(direction, sort[0]));
+        
+        return ResponseEntity.ok(reciboService.findPage(pageable));
     }
 
     @GetMapping("/{id}")
