@@ -67,6 +67,7 @@ public class DocumentoCobranzaMapper {
         documentoCobranza.setSerie(serie);
         documentoCobranza.setCorrelativo(correlativo);
         documentoCobranza.setMoneda(cotizacionConDetallesResponseDTO.getMoneda());
+        documentoCobranza.setFechaEmision(java.time.LocalDate.now());
 
         Cotizacion cotizacionEntity = new Cotizacion();
         cotizacionEntity.setId(cotizacionConDetallesResponseDTO.getId());
@@ -98,12 +99,20 @@ public class DocumentoCobranzaMapper {
     }
 
     public DocumentoCobranzaResponseDTO toResponseDTO(DocumentoCobranza documentoCobranza) {
-        return toResponseDTO(documentoCobranza, null, null);
+        return toResponseDTO(documentoCobranza, null, null, null, null);
     }
 
     public DocumentoCobranzaResponseDTO toResponseDTO(DocumentoCobranza documentoCobranza,
             Map<Integer, PersonaNatural> naturalesMap,
             Map<Integer, PersonaJuridica> juridicasMap) {
+        return toResponseDTO(documentoCobranza, naturalesMap, juridicasMap, null, null);
+    }
+
+    public DocumentoCobranzaResponseDTO toResponseDTO(DocumentoCobranza documentoCobranza,
+            Map<Integer, PersonaNatural> naturalesMap,
+            Map<Integer, PersonaJuridica> juridicasMap,
+            Map<Long, BigDecimal> totalDeudaMap,
+            Map<Long, BigDecimal> totalPagadoMap) {
         DocumentoCobranzaResponseDTO documentoCobranzaResponseDTO = modelMapper.map(documentoCobranza,
                 DocumentoCobranzaResponseDTO.class);
 
@@ -203,33 +212,46 @@ public class DocumentoCobranzaMapper {
         }
 
         // Calcular totalDeuda, totalPagado y saldoPendiente
-        calcularSaldos(documentoCobranza, documentoCobranzaResponseDTO);
+        calcularSaldos(documentoCobranza, documentoCobranzaResponseDTO, totalDeudaMap, totalPagadoMap);
 
         return documentoCobranzaResponseDTO;
     }
 
-    private void calcularSaldos(DocumentoCobranza documentoCobranza, DocumentoCobranzaResponseDTO dto) {
-        // 1. Total de la deuda = suma de (cantidad × precio) de los detalles del documento
-        List<DetalleDocumentoCobranza> detallesDoc = detalleDocumentoCobranzaRepository
-                .findByDocumentoCobranzaId(documentoCobranza.getId());
+    private void calcularSaldos(DocumentoCobranza documentoCobranza, DocumentoCobranzaResponseDTO dto,
+            Map<Long, BigDecimal> totalDeudaMap, Map<Long, BigDecimal> totalPagadoMap) {
+        Long docId = documentoCobranza.getId();
 
-        BigDecimal totalDeuda = BigDecimal.ZERO;
-        if (detallesDoc != null) {
-            for (DetalleDocumentoCobranza detalle : detallesDoc) {
-                BigDecimal cantidad = detalle.getCantidad() != null
-                        ? BigDecimal.valueOf(detalle.getCantidad())
-                        : BigDecimal.ZERO;
-                BigDecimal precio = detalle.getPrecio() != null ? detalle.getPrecio() : BigDecimal.ZERO;
-                totalDeuda = totalDeuda.add(cantidad.multiply(precio));
+        // 1. Total de la deuda: usar mapa pre-calculado si está disponible
+        BigDecimal totalDeuda;
+        if (totalDeudaMap != null && docId != null) {
+            totalDeuda = totalDeudaMap.getOrDefault(docId, BigDecimal.ZERO);
+        } else {
+            // fallback (usado solo en llamadas individuales: findById, PDF)
+            List<DetalleDocumentoCobranza> detallesDoc = detalleDocumentoCobranzaRepository
+                    .findByDocumentoCobranzaId(docId);
+            totalDeuda = BigDecimal.ZERO;
+            if (detallesDoc != null) {
+                for (DetalleDocumentoCobranza detalle : detallesDoc) {
+                    BigDecimal cantidad = detalle.getCantidad() != null
+                            ? BigDecimal.valueOf(detalle.getCantidad())
+                            : BigDecimal.ZERO;
+                    BigDecimal precio = detalle.getPrecio() != null ? detalle.getPrecio() : BigDecimal.ZERO;
+                    totalDeuda = totalDeuda.add(cantidad.multiply(precio));
+                }
             }
         }
 
-        // 2. Total pagado = suma de todos los recibos asociados
+        // 2. Total pagado: usar mapa pre-calculado si está disponible
         BigDecimal totalPagado;
-        try {
-            totalPagado = reciboService.calcularTotalPagado(documentoCobranza.getId().intValue());
-        } catch (Exception e) {
-            totalPagado = BigDecimal.ZERO;
+        if (totalPagadoMap != null && docId != null) {
+            totalPagado = totalPagadoMap.getOrDefault(docId, BigDecimal.ZERO);
+        } else {
+            // fallback individual
+            try {
+                totalPagado = reciboService.calcularTotalPagado(docId.intValue());
+            } catch (Exception e) {
+                totalPagado = BigDecimal.ZERO;
+            }
         }
 
         // 3. Saldo pendiente

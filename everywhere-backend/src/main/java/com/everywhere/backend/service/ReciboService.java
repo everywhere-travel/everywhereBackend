@@ -6,12 +6,15 @@ import java.util.List;
 import com.everywhere.backend.model.dto.ReciboResponseDTO;
 import com.everywhere.backend.model.dto.ReciboUpdateDTO;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 public interface ReciboService {
     /**
-     * Crea un nuevo Recibo a partir de un DocumentoCobranza.
-     * Un mismo DocumentoCobranza puede tener múltiples recibos (pagos parciales o totales).
+     * Crea un nuevo Recibo a partir de una Cotizacion.
+     * Una misma Cotizacion puede tener múltiples recibos (pagos parciales o totales).
      */
-    ReciboResponseDTO createRecibo(Integer documentoCobranzaId, Integer personaJuridicaId, Integer sucursalId, java.math.BigDecimal montoPago);
+    ReciboResponseDTO createRecibo(Integer cotizacionId, Integer personaJuridicaId, Integer sucursalId, java.math.BigDecimal montoPago);
 
     ByteArrayInputStream generatePdf(Integer reciboId);
 
@@ -20,6 +23,8 @@ public interface ReciboService {
     ReciboResponseDTO findBySerieAndCorrelativo(String serie, Integer correlativo);
 
     List<ReciboResponseDTO> findAll();
+
+    Page<ReciboResponseDTO> findPage(Pageable pageable);
 
     /** Retorna todos los recibos vinculados a un DocumentoCobranza. */
     List<ReciboResponseDTO> findByDocumentoCobranzaId(Integer documentoCobranzaId);

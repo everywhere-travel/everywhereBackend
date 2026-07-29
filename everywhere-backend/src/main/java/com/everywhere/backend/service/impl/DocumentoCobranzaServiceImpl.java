@@ -18,9 +18,11 @@ import com.everywhere.backend.model.entity.DetalleDocumento;
 import com.everywhere.backend.repository.DetalleDocumentoCobranzaRepository;
 import com.everywhere.backend.repository.DetalleDocumentoRepository;
 import com.everywhere.backend.repository.DocumentoCobranzaRepository;
+import com.everywhere.backend.repository.DetalleReciboRepository;
 import com.everywhere.backend.repository.FormaPagoRepository;
 import com.everywhere.backend.repository.NaturalJuridicoRepository;
 import com.everywhere.backend.model.entity.Carpeta;
+import com.everywhere.backend.model.entity.User;
 import com.everywhere.backend.repository.CarpetaRepository;
 import com.everywhere.backend.security.UserPrincipal;
 import com.everywhere.backend.service.CotizacionService;
@@ -66,6 +68,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     private final CarpetaRepository carpetaRepository;
     private final com.everywhere.backend.util.pdf.DocumentoCobranzaPdfGenerator documentoCobranzaPdfGenerator;
     private final AsientoContableService asientoContableService;
+    private final DetalleReciboRepository detalleReciboRepository;
     @Override
     @Transactional
     public DocumentoCobranzaResponseDTO createDocumentoCobranza(Integer cotizacionId, Integer personaJuridicaId,
@@ -118,6 +121,23 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
             documentoCobranza.setSucursal(sucursal);
         }
 
+        // Asignar el usuario que lo crea y la sucursal por defecto
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+                && authentication.getPrincipal() instanceof UserPrincipal) {
+            UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+            if (userPrincipal.getUser() != null) {
+                documentoCobranza.setUsuario(userPrincipal.getUser());
+                if (sucursalId == null && userPrincipal.getUser().getSucursal() != null) {
+                    documentoCobranza.setSucursal(userPrincipal.getUser().getSucursal());
+                }
+            }
+        }
+
+        if (documentoCobranza.getSucursal() == null) {
+            sucursalRepository.findAll().stream().findFirst().ifPresent(documentoCobranza::setSucursal);
+        }
+
         documentoCobranza = documentoCobranzaRepository.save(documentoCobranza);
 
         // Crear detalles desde cotización con repartición por cantidad
@@ -159,12 +179,12 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
     @Override
     public List<DocumentoCobranzaResponseDTO> findAll() {
-        return mapToResponseList(documentoCobranzaRepository.findAllForListing());
+        return mapToResponseList(documentoCobranzaRepository.findAll());
     }
 
     @Override
     public Page<DocumentoCobranzaResponseDTO> findPage(Pageable pageable) {
-        Page<DocumentoCobranza> page = documentoCobranzaRepository.findAllForListing(pageable);
+        Page<DocumentoCobranza> page = documentoCobranzaRepository.findAll(pageable);
         
         List<DocumentoCobranzaResponseDTO> dtoList = mapToResponseList(page.getContent());
         
@@ -305,8 +325,31 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
             });
         }
 
+        // Precargar totales de deuda en UNA sola query (evita N+1)
+        List<Long> documentoIds = documentos.stream()
+                .filter(d -> d.getId() != null)
+                .map(d -> d.getId())
+                .distinct()
+                .toList();
+
+        Map<Long, java.math.BigDecimal> totalDeudaMap = new HashMap<>();
+        Map<Long, java.math.BigDecimal> totalPagadoMap = new HashMap<>();
+
+        if (!documentoIds.isEmpty()) {
+            detalleDocumentoCobranzaRepository.findTotalDeudaByDocumentoIds(documentoIds).forEach(row -> {
+                Long docId = ((Number) row[0]).longValue();
+                java.math.BigDecimal total = (java.math.BigDecimal) row[1];
+                totalDeudaMap.put(docId, total);
+            });
+            detalleReciboRepository.findTotalPagadoByDocumentoCobranzaIds(documentoIds).forEach(row -> {
+                Long docId = ((Number) row[0]).longValue();
+                java.math.BigDecimal total = (java.math.BigDecimal) row[1];
+                totalPagadoMap.put(docId, total);
+            });
+        }
+
         return documentos.stream()
-                .map(doc -> documentoCobranzaMapper.toResponseDTO(doc, naturalesMap, juridicasMap))
+                .map(doc -> documentoCobranzaMapper.toResponseDTO(doc, naturalesMap, juridicasMap, totalDeudaMap, totalPagadoMap))
                 .toList();
     }
 

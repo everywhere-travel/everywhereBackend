@@ -95,6 +95,14 @@ public class ReciboMapper {
     public ReciboResponseDTO toResponseDTO(Recibo recibo,
             Map<Integer, PersonaNatural> naturalesMap,
             Map<Integer, PersonaJuridica> juridicasMap) {
+        return toResponseDTO(recibo, naturalesMap, juridicasMap, null, null);
+    }
+
+    public ReciboResponseDTO toResponseDTO(Recibo recibo,
+            Map<Integer, PersonaNatural> naturalesMap,
+            Map<Integer, PersonaJuridica> juridicasMap,
+            Map<Long, java.math.BigDecimal> totalDeudaMap,
+            Map<Long, java.math.BigDecimal> totalPagadoMap) {
         ReciboResponseDTO reciboResponseDTO = modelMapper.map(recibo, ReciboResponseDTO.class);
 
         // Mapear DocumentoCobranza (padre del recibo)
@@ -194,52 +202,64 @@ public class ReciboMapper {
             reciboResponseDTO.setDetalles(detallesDTO);
         }
 
-        calcularEstadoDeCuenta(recibo, reciboResponseDTO);
-        
+        calcularEstadoDeCuenta(recibo, reciboResponseDTO, totalDeudaMap, totalPagadoMap);
+
         return reciboResponseDTO;
     }
 
-    private void calcularEstadoDeCuenta(Recibo recibo, ReciboResponseDTO dto) {
+    private void calcularEstadoDeCuenta(Recibo recibo, ReciboResponseDTO dto,
+            Map<Long, java.math.BigDecimal> totalDeudaMap,
+            Map<Long, java.math.BigDecimal> totalPagadoMap) {
         if (recibo.getDocumentoCobranza() == null || recibo.getDocumentoCobranza().getId() == null) {
             return;
         }
 
         Long documentoId = recibo.getDocumentoCobranza().getId();
 
-        // 1. Total Deuda Original
-        List<DetalleDocumentoCobranza> detallesDoc = detalleDocumentoCobranzaRepository
-                .findByDocumentoCobranzaId(documentoId);
-
-        BigDecimal totalDeuda = BigDecimal.ZERO;
-        if (detallesDoc != null) {
-            for (DetalleDocumentoCobranza detalle : detallesDoc) {
-                BigDecimal cantidad = detalle.getCantidad() != null
-                        ? BigDecimal.valueOf(detalle.getCantidad())
-                        : BigDecimal.ZERO;
-                BigDecimal precio = detalle.getPrecio() != null ? detalle.getPrecio() : BigDecimal.ZERO;
-                totalDeuda = totalDeuda.add(cantidad.multiply(precio));
+        // 1. Total Deuda Original: usar mapa pre-calculado si está disponible
+        java.math.BigDecimal totalDeuda;
+        if (totalDeudaMap != null) {
+            totalDeuda = totalDeudaMap.getOrDefault(documentoId, java.math.BigDecimal.ZERO);
+        } else {
+            // fallback para llamadas individuales
+            List<DetalleDocumentoCobranza> detallesDoc = detalleDocumentoCobranzaRepository
+                    .findByDocumentoCobranzaId(documentoId);
+            totalDeuda = java.math.BigDecimal.ZERO;
+            if (detallesDoc != null) {
+                for (DetalleDocumentoCobranza detalle : detallesDoc) {
+                    java.math.BigDecimal cantidad = detalle.getCantidad() != null
+                            ? java.math.BigDecimal.valueOf(detalle.getCantidad())
+                            : java.math.BigDecimal.ZERO;
+                    java.math.BigDecimal precio = detalle.getPrecio() != null ? detalle.getPrecio() : java.math.BigDecimal.ZERO;
+                    totalDeuda = totalDeuda.add(cantidad.multiply(precio));
+                }
             }
         }
 
-        // 2. Total Pagado Acumulado (incluyendo recibos anteriores y ESTE recibo)
-        List<Recibo> recibosHermanos = reciboRepository.findByDocumentoCobranzaId(documentoId);
-        BigDecimal totalPagadoAcumulado = BigDecimal.ZERO;
-
-        if (recibosHermanos != null) {
-            for (Recibo r : recibosHermanos) {
-                List<DetalleRecibo> detallesR = detalleReciboRepository.findByReciboId(r.getId());
-                if (detallesR != null) {
-                    for (DetalleRecibo dr : detallesR) {
-                        BigDecimal c = dr.getCantidad() != null ? BigDecimal.valueOf(dr.getCantidad()) : BigDecimal.ZERO;
-                        BigDecimal p = dr.getPrecio() != null ? dr.getPrecio() : BigDecimal.ZERO;
-                        totalPagadoAcumulado = totalPagadoAcumulado.add(c.multiply(p));
+        // 2. Total Pagado Acumulado: usar mapa pre-calculado si está disponible
+        java.math.BigDecimal totalPagadoAcumulado;
+        if (totalPagadoMap != null) {
+            totalPagadoAcumulado = totalPagadoMap.getOrDefault(documentoId, java.math.BigDecimal.ZERO);
+        } else {
+            // fallback: sumar todos los recibos del documento
+            List<Recibo> recibosHermanos = reciboRepository.findByDocumentoCobranzaId(documentoId);
+            totalPagadoAcumulado = java.math.BigDecimal.ZERO;
+            if (recibosHermanos != null) {
+                for (Recibo r : recibosHermanos) {
+                    List<DetalleRecibo> detallesR = detalleReciboRepository.findByReciboId(r.getId());
+                    if (detallesR != null) {
+                        for (DetalleRecibo dr : detallesR) {
+                            java.math.BigDecimal c = dr.getCantidad() != null ? java.math.BigDecimal.valueOf(dr.getCantidad()) : java.math.BigDecimal.ZERO;
+                            java.math.BigDecimal p = dr.getPrecio() != null ? dr.getPrecio() : java.math.BigDecimal.ZERO;
+                            totalPagadoAcumulado = totalPagadoAcumulado.add(c.multiply(p));
+                        }
                     }
                 }
             }
         }
 
         // 3. Saldo Pendiente Actual
-        BigDecimal saldoPendiente = totalDeuda.subtract(totalPagadoAcumulado);
+        java.math.BigDecimal saldoPendiente = totalDeuda.subtract(totalPagadoAcumulado);
 
         dto.setTotalDeudaDocumento(totalDeuda);
         dto.setTotalPagadoAcumulado(totalPagadoAcumulado);
