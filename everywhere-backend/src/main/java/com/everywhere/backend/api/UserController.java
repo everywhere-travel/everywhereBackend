@@ -83,4 +83,11 @@ public class UserController {
     public ResponseEntity<UserResponseDTO> toggleUserStatus(@PathVariable Integer id) {
         return ResponseEntity.ok(userService.toggleUserStatus(id));
     }
+
+    @RequirePermission(module = "USUARIOS", permission = "UPDATE")
+    @PatchMapping("/{id}/reset-login-count")
+    public ResponseEntity<Void> resetLoginCount(@PathVariable Integer id) {
+        userService.resetLoginCount(id);
+        return ResponseEntity.ok().build();
+    }
 }

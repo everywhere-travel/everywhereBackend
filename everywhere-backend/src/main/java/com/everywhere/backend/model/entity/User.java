@@ -36,6 +36,9 @@ public class User {
     @Column(name = "usr_est_bol", nullable = false, columnDefinition = "boolean default true")
     private Boolean estado = true;
 
+    @Column(name = "usr_log_cnt_int", columnDefinition = "integer default 0")
+    private Integer loginCount = 0;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "rol_id", nullable = false)
     private Role role;

@@ -33,6 +33,7 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
     private final PersonaRepository personaRepository;
     private final ViajeroRepository viajeroRepository;
     private final CategoriaPersonaRepository categoriaPersonaRepository;
+    private final com.everywhere.backend.repository.DetalleDocumentoRepository detalleDocumentoRepository;
     private final PersonaNaturalMapper personaNaturalMapper;
     private final PersonaMapper personaMapper;
 
@@ -192,6 +193,21 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
             
         Integer personaId = personaNatural.getPersonas() != null ? personaNatural.getPersonas().getId() : null;
         
+        if (personaNatural.getViajero() != null) {
+            Viajero viajero = personaNatural.getViajero();
+            viajero.setPersonaNatural(null);
+            personaNatural.setViajero(null);
+            viajeroRepository.delete(viajero);
+        }
+
+        List<com.everywhere.backend.model.entity.DetalleDocumento> detalles = detalleDocumentoRepository.findByPersonaNaturalId(id);
+        if (detalles != null && !detalles.isEmpty()) {
+            for (com.everywhere.backend.model.entity.DetalleDocumento detalle : detalles) {
+                detalle.setPersonaNatural(null);
+            }
+            detalleDocumentoRepository.saveAll(detalles);
+        }
+
         personaNaturalRepository.delete(personaNatural);
         
         if (personaId != null) {

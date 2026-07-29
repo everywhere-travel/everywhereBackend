@@ -17,6 +17,7 @@ public interface CotizacionRepository extends JpaRepository<Cotizacion, Integer>
     @EntityGraph(attributePaths = {
         "counter", "estadoCotizacion", "formaPago", "personas", "sucursal", "carpeta"
     })
+    @Query("SELECT c FROM Cotizacion c ORDER BY c.id DESC")
     List<Cotizacion> findAll();
 
     @EntityGraph(attributePaths = {

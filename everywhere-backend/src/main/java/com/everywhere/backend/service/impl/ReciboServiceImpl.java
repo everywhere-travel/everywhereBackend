@@ -22,6 +22,10 @@ import com.everywhere.backend.repository.FormaPagoRepository;
 import com.everywhere.backend.repository.NaturalJuridicoRepository;
 import com.everywhere.backend.model.entity.Carpeta;
 import com.everywhere.backend.repository.CarpetaRepository;
+import com.everywhere.backend.model.entity.Cotizacion;
+import com.everywhere.backend.repository.CotizacionRepository;
+import com.everywhere.backend.model.entity.DetalleCotizacion;
+import com.everywhere.backend.model.entity.User;
 import com.everywhere.backend.security.UserPrincipal;
 import com.everywhere.backend.service.AsientoContableService;
 import com.everywhere.backend.service.ReciboService;
@@ -29,6 +33,10 @@ import lombok.RequiredArgsConstructor;
 import com.everywhere.backend.model.entity.DocumentoCobranza;
 import com.everywhere.backend.repository.DocumentoCobranzaRepository;
 import org.springframework.security.core.Authentication;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,21 +68,20 @@ public class ReciboServiceImpl implements ReciboService {
     private final com.everywhere.backend.util.pdf.ReciboPdfGenerator reciboPdfGenerator;
     private final DocumentoCobranzaRepository documentoCobranzaRepository;
     private final DetalleDocumentoCobranzaRepository detalleDocumentoCobranzaRepository;
+    private final CotizacionRepository cotizacionRepository;
     private final AsientoContableService asientoContableService;
 
     @Override
     @Transactional
-    public ReciboResponseDTO createRecibo(Integer documentoCobranzaId, Integer personaJuridicaId, Integer sucursalId,
+    public ReciboResponseDTO createRecibo(Integer cotizacionId, Integer personaJuridicaId, Integer sucursalId,
             BigDecimal montoPago) {
-        if (documentoCobranzaId == null) {
-            throw new IllegalArgumentException("El ID del documento de cobranza no puede ser nulo");
+        if (cotizacionId == null) {
+            throw new IllegalArgumentException("El ID de la cotización no puede ser nulo");
         }
 
-        Long documentoId = documentoCobranzaId.longValue();
-
-        DocumentoCobranza documentoCobranza = documentoCobranzaRepository.findById(documentoId)
+        Cotizacion cotizacion = cotizacionRepository.findById(cotizacionId)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Documento de cobranza no encontrado con ID: " + documentoCobranzaId));
+                        "Cotización no encontrada con ID: " + cotizacionId));
 
         String[] serieCorrelativo = generateNextDocumentNumber();
 
@@ -82,15 +89,13 @@ public class ReciboServiceImpl implements ReciboService {
         recibo.setSerie(serieCorrelativo[0]);
         recibo.setCorrelativo(Integer.parseInt(serieCorrelativo[1]));
 
-        recibo.setDocumentoCobranza(documentoCobranza);
-        recibo.setCotizacion(documentoCobranza.getCotizacion());
-        recibo.setPersona(documentoCobranza.getPersona());
-        recibo.setPersonaJuridica(documentoCobranza.getPersonaJuridica());
-        recibo.setSucursal(documentoCobranza.getSucursal());
-        recibo.setFormaPago(documentoCobranza.getFormaPago());
-        recibo.setMoneda(documentoCobranza.getMoneda());
-        recibo.setCarpeta(documentoCobranza.getCarpeta());
-        recibo.setFechaEmision(documentoCobranza.getFechaEmision());
+        recibo.setCotizacion(cotizacion);
+        recibo.setPersona(cotizacion.getPersonas());
+        recibo.setSucursal(cotizacion.getSucursal());
+        recibo.setFormaPago(cotizacion.getFormaPago());
+        recibo.setMoneda(cotizacion.getMoneda());
+        recibo.setCarpeta(cotizacion.getCarpeta());
+        recibo.setFechaEmision(java.time.LocalDate.now());
 
         if (personaJuridicaId != null) {
             PersonaJuridica personaJuridica = personaJuridicaRepository.findById(personaJuridicaId)
@@ -107,9 +112,26 @@ public class ReciboServiceImpl implements ReciboService {
             recibo.setSucursal(sucursal);
         }
 
+        // Asignar el usuario que lo crea y la sucursal por defecto
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+                && authentication.getPrincipal() instanceof UserPrincipal) {
+            UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+            if (userPrincipal.getUser() != null) {
+                recibo.setUsuario(userPrincipal.getUser());
+                if (sucursalId == null && userPrincipal.getUser().getSucursal() != null) {
+                    recibo.setSucursal(userPrincipal.getUser().getSucursal());
+                }
+            }
+        }
+
+        if (recibo.getSucursal() == null) {
+            sucursalRepository.findAll().stream().findFirst().ifPresent(recibo::setSucursal);
+        }
+
         recibo = reciboRepository.save(recibo);
 
-        crearDetallesDesdeDocumentoCobranza(recibo, documentoId, montoPago, documentoCobranza);
+        crearDetallesDesdeCotizacion(recibo, montoPago, cotizacion);
 
         // Generar asiento contable: Caja/Banco (DEBE) vs Clientes (HABER)
         asientoContableService.generarAsientoPorRecibo(recibo);
@@ -148,7 +170,20 @@ public class ReciboServiceImpl implements ReciboService {
 
     @Override
     public List<ReciboResponseDTO> findAll() {
-        return mapToResponseList(reciboRepository.findAllForListing());
+        return mapToResponseList(reciboRepository.findAll());
+    }
+
+    @Override
+    public Page<ReciboResponseDTO> findPage(Pageable pageable) {
+        Page<Recibo> page = reciboRepository.findAll(pageable);
+        
+        List<ReciboResponseDTO> dtoList = mapToResponseList(page.getContent());
+        
+        return new PageImpl<>(
+            dtoList, 
+            pageable, 
+            page.getTotalElements()
+        );
     }
 
     @Override
@@ -263,40 +298,37 @@ public class ReciboServiceImpl implements ReciboService {
     }
 
     @Transactional
-    private void crearDetallesDesdeDocumentoCobranza(Recibo recibo, Long documentoCobranzaId, BigDecimal montoPago,
-            DocumentoCobranza documentoCobranza) {
+    private void crearDetallesDesdeCotizacion(Recibo recibo, BigDecimal montoPago,
+            Cotizacion cotizacion) {
         if (montoPago != null && montoPago.compareTo(BigDecimal.ZERO) > 0) {
             DetalleRecibo detalleRecibo = new DetalleRecibo();
             detalleRecibo.setRecibo(recibo);
             detalleRecibo.setCantidad(1);
 
-            String serie = documentoCobranza.getSerie() != null ? documentoCobranza.getSerie() + "-" : "";
-            String correlativo = documentoCobranza.getCorrelativo() != null
-                    ? String.valueOf(documentoCobranza.getCorrelativo())
-                    : "S/N";
-            detalleRecibo.setDescripcion("Pago a cuenta de Documento de Cobranza " + serie + correlativo);
+            String serie = cotizacion.getCodigoCotizacion() != null ? cotizacion.getCodigoCotizacion() : "S/N";
+            detalleRecibo.setDescripcion("Pago a cuenta de Cotización " + serie);
 
             detalleRecibo.setPrecio(montoPago);
             detalleReciboRepository.save(detalleRecibo);
         } else {
-            List<DetalleDocumentoCobranza> detallesDocumento = detalleDocumentoCobranzaRepository
-                    .findByDocumentoCobranzaId(documentoCobranzaId);
+            List<DetalleCotizacion> detallesCotizacion = cotizacion.getDetalles();
+            if (detallesCotizacion != null) {
+                for (DetalleCotizacion detalleCotizacion : detallesCotizacion) {
+                    DetalleRecibo detalleRecibo = new DetalleRecibo();
 
-            for (DetalleDocumentoCobranza detalleDocumento : detallesDocumento) {
-                DetalleRecibo detalleRecibo = new DetalleRecibo();
+                    detalleRecibo.setRecibo(recibo);
+                    detalleRecibo.setCantidad(detalleCotizacion.getCantidad() != null ? detalleCotizacion.getCantidad() : 1);
+                    detalleRecibo.setDescripcion(detalleCotizacion.getDescripcion());
+                    detalleRecibo
+                            .setPrecio(
+                                    detalleCotizacion.getPrecioHistorico() != null ? detalleCotizacion.getPrecioHistorico() : BigDecimal.ZERO);
 
-                detalleRecibo.setRecibo(recibo);
-                detalleRecibo.setCantidad(detalleDocumento.getCantidad() != null ? detalleDocumento.getCantidad() : 1);
-                detalleRecibo.setDescripcion(detalleDocumento.getDescripcion());
-                detalleRecibo
-                        .setPrecio(
-                                detalleDocumento.getPrecio() != null ? detalleDocumento.getPrecio() : BigDecimal.ZERO);
+                    if (detalleCotizacion.getProducto() != null) {
+                        detalleRecibo.setProducto(detalleCotizacion.getProducto());
+                    }
 
-                if (detalleDocumento.getProducto() != null) {
-                    detalleRecibo.setProducto(detalleDocumento.getProducto());
+                    detalleReciboRepository.save(detalleRecibo);
                 }
-
-                detalleReciboRepository.save(detalleRecibo);
             }
         }
     }
@@ -326,8 +358,31 @@ public class ReciboServiceImpl implements ReciboService {
             });
         }
 
+        // Precargar totales de deuda y pagos en UNA sola query cada uno (evita N+1)
+        List<Long> documentoIds = recibos.stream()
+                .filter(r -> r.getDocumentoCobranza() != null && r.getDocumentoCobranza().getId() != null)
+                .map(r -> r.getDocumentoCobranza().getId())
+                .distinct()
+                .toList();
+
+        Map<Long, java.math.BigDecimal> totalDeudaMap = new HashMap<>();
+        Map<Long, java.math.BigDecimal> totalPagadoMap = new HashMap<>();
+
+        if (!documentoIds.isEmpty()) {
+            detalleDocumentoCobranzaRepository.findTotalDeudaByDocumentoIds(documentoIds).forEach(row -> {
+                Long docId = ((Number) row[0]).longValue();
+                java.math.BigDecimal total = (java.math.BigDecimal) row[1];
+                totalDeudaMap.put(docId, total);
+            });
+            detalleReciboRepository.findTotalPagadoByDocumentoCobranzaIds(documentoIds).forEach(row -> {
+                Long docId = ((Number) row[0]).longValue();
+                java.math.BigDecimal total = (java.math.BigDecimal) row[1];
+                totalPagadoMap.put(docId, total);
+            });
+        }
+
         return recibos.stream()
-                .map(recibo -> reciboMapper.toResponseDTO(recibo, naturalesMap, juridicasMap))
+                .map(recibo -> reciboMapper.toResponseDTO(recibo, naturalesMap, juridicasMap, totalDeudaMap, totalPagadoMap))
                 .toList();
     }
 

@@ -27,6 +27,7 @@ public interface LiquidacionRepository extends JpaRepository<Liquidacion, Intege
             "carpeta"
     })
     @NonNull
+    @org.springframework.data.jpa.repository.Query("SELECT l FROM Liquidacion l ORDER BY l.id DESC")
     List<Liquidacion> findAll();
 
     @EntityGraph(attributePaths = {

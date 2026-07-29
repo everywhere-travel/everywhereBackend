@@ -17,7 +17,10 @@ public interface UserService {
     UserProfileDTO updateUserName(Integer userId, String name);
 
     UserResponseDTO createUser(UserRequestDTO request);
+    void sendVerificationCode(String email);
+    void changePasswordWithCode(String email, String code, String newPassword);
     UserResponseDTO updateUser(Integer userId, UserRequestDTO request);
     UserResponseDTO toggleUserStatus(Integer userId);
     void deleteUser(Integer userId);
+    void resetLoginCount(Integer userId);
 }

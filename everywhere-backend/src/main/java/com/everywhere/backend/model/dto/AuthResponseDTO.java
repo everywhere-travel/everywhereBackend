@@ -12,4 +12,5 @@ public class AuthResponseDTO {
     private String role;
     // Formato: ["CLIENTES:READ", "COTIZACIONES:CREATE", "ALL_MODULES:DELETE", ...]
     private Set<String> permissions;
+    private Integer loginCount;
 }
