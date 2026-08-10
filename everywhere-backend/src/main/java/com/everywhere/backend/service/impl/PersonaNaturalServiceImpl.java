@@ -1,5 +1,8 @@
 package com.everywhere.backend.service.impl;
 
+import com.everywhere.backend.model.dto.NaturalJuridicoResponseDTO;
+import com.everywhere.backend.model.dto.PersonaJuridicaResponseDTO;
+import com.everywhere.backend.model.dto.PersonaNaturalDetalleDTO;
 import com.everywhere.backend.model.dto.PersonaNaturalRequestDTO;
 import com.everywhere.backend.model.dto.PersonaNaturalResponseDTO;
 import com.everywhere.backend.model.entity.PersonaNatural;
@@ -10,6 +13,8 @@ import com.everywhere.backend.repository.PersonaNaturalRepository;
 import com.everywhere.backend.repository.ViajeroRepository;
 import com.everywhere.backend.repository.PersonaRepository;
 import com.everywhere.backend.repository.CategoriaPersonaRepository;
+import com.everywhere.backend.service.DetalleDocumentoService;
+import com.everywhere.backend.service.NaturalJuridicoService;
 import com.everywhere.backend.service.PersonaNaturalService;
 
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
@@ -23,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -36,6 +42,8 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
     private final com.everywhere.backend.repository.DetalleDocumentoRepository detalleDocumentoRepository;
     private final PersonaNaturalMapper personaNaturalMapper;
     private final PersonaMapper personaMapper;
+    private final NaturalJuridicoService naturalJuridicoService;
+    private final DetalleDocumentoService detalleDocumentoService;
 
     @Override
     @Transactional(readOnly = true)
@@ -91,6 +99,23 @@ public class PersonaNaturalServiceImpl implements PersonaNaturalService {
         PersonaNatural personaNatural = personaNaturalRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Persona natural no encontrada con ID: " + id));
         return personaNaturalMapper.toResponseDTO(personaNatural);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PersonaNaturalDetalleDTO getDetalle(Integer id) {
+        PersonaNaturalResponseDTO personaNatural = findById(id);
+
+        List<PersonaJuridicaResponseDTO> empresasAsociadas = naturalJuridicoService.findByPersonaNaturalId(id).stream()
+                .map(NaturalJuridicoResponseDTO::getPersonaJuridica)
+                .filter(Objects::nonNull)
+                .toList();
+
+        return PersonaNaturalDetalleDTO.builder()
+                .personaNatural(personaNatural)
+                .empresasAsociadas(empresasAsociadas)
+                .documentos(detalleDocumentoService.findByPersonaNaturalId(id))
+                .build();
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.everywhere.backend.api;
 
+import com.everywhere.backend.model.dto.PersonaJuridicaDetalleDTO;
 import com.everywhere.backend.model.dto.PersonaJuridicaRequestDTO;
 import com.everywhere.backend.model.dto.PersonaJuridicaResponseDTO;
 import com.everywhere.backend.security.RequirePermission;
@@ -44,8 +45,14 @@ public class PersonaJuridicaController {
 
     @GetMapping("/{id}")
     @RequirePermission(module = "CLIENTES", permission = "READ")
-    public ResponseEntity<PersonaJuridicaResponseDTO> getPersonaJuridicaById(@PathVariable Integer id) { 
+    public ResponseEntity<PersonaJuridicaResponseDTO> getPersonaJuridicaById(@PathVariable Integer id) {
         return ResponseEntity.ok(personaJuridicaService.findById(id));
+    }
+
+    @GetMapping("/{id}/detalle")
+    @RequirePermission(module = "CLIENTES", permission = "READ")
+    public ResponseEntity<PersonaJuridicaDetalleDTO> getDetalle(@PathVariable Integer id) {
+        return ResponseEntity.ok(personaJuridicaService.getDetalle(id));
     }
 
     @PostMapping

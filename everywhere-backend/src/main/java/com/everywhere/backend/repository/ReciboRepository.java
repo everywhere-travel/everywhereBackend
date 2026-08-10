@@ -75,28 +75,47 @@ public interface ReciboRepository extends JpaRepository<Recibo, Integer> {
                         "LEFT JOIN FETCH r.documentoCobranza")
         List<Recibo> findAllWithRelations();
 
-        @EntityGraph(attributePaths = {
-            "formaPago",
-            "sucursal",
-            "persona",
-            "personaJuridica",
-            "cotizacion",
-            "documentoCobranza"
-    })
-    @NonNull
-    @Query("SELECT r FROM Recibo r ORDER BY r.id DESC")
-    List<Recibo> findAll();
+        @NonNull
+        @Query("SELECT r FROM Recibo r " +
+               "LEFT JOIN FETCH r.formaPago " +
+               "LEFT JOIN FETCH r.sucursal " +
+               "LEFT JOIN FETCH r.persona " +
+               "LEFT JOIN FETCH r.personaJuridica " +
+               "LEFT JOIN FETCH r.cotizacion " +
+               "LEFT JOIN FETCH r.documentoCobranza " +
+               "LEFT JOIN FETCH r.carpeta " +
+               "ORDER BY r.id DESC")
+        List<Recibo> findAll();
 
-    @EntityGraph(attributePaths = {
-            "formaPago",
-            "sucursal",
-            "persona",
-            "personaJuridica",
-            "cotizacion",
-            "documentoCobranza"
-    })
+
+    @Query("SELECT r.id FROM Recibo r ORDER BY r.id DESC")
     @NonNull
-    Page<Recibo> findAll(@NonNull Pageable pageable);
+    Page<Integer> findPageIds(@NonNull Pageable pageable);
+
+
+    @Query("SELECT r FROM Recibo r " +
+           "LEFT JOIN FETCH r.formaPago " +
+           "LEFT JOIN FETCH r.sucursal " +
+           "LEFT JOIN FETCH r.persona " +
+           "LEFT JOIN FETCH r.personaJuridica " +
+           "LEFT JOIN FETCH r.cotizacion " +
+           "LEFT JOIN FETCH r.documentoCobranza " +
+           "LEFT JOIN FETCH r.carpeta " +
+           "LEFT JOIN FETCH r.detalleDocumento dd " +
+           "LEFT JOIN FETCH dd.documento " +
+           "WHERE r.id IN :ids " +
+           "ORDER BY r.id DESC")
+    List<Recibo> findByIds(@Param("ids") List<Integer> ids);
+
+    @Query("SELECT DISTINCT r.id FROM Recibo r " +
+            "LEFT JOIN PersonaNatural pn ON pn.personas = r.persona " +
+            "LEFT JOIN r.personaJuridica pj " +
+            "WHERE LOWER(CONCAT(r.serie, '-', r.correlativo)) LIKE LOWER(CONCAT('%', :search, '%')) " +
+            "   OR LOWER(CONCAT(COALESCE(pn.nombres, ''), ' ', COALESCE(pn.apellidosPaterno, ''), ' ', COALESCE(pn.apellidosMaterno, ''))) LIKE LOWER(CONCAT('%', :search, '%')) " +
+            "   OR LOWER(pn.documento) LIKE LOWER(CONCAT('%', :search, '%')) " +
+            "   OR LOWER(pj.razonSocial) LIKE LOWER(CONCAT('%', :search, '%')) " +
+            "   OR LOWER(pj.ruc) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<Integer> searchPageIds(@Param("search") String search, Pageable pageable);
 
         @Query("SELECT DISTINCT r FROM Recibo r " +
                         "LEFT JOIN FETCH r.detalleRecibo det " +

@@ -27,7 +27,6 @@ import com.everywhere.backend.repository.CotizacionRepository;
 import com.everywhere.backend.model.entity.DetalleCotizacion;
 import com.everywhere.backend.model.entity.User;
 import com.everywhere.backend.security.UserPrincipal;
-import com.everywhere.backend.service.AsientoContableService;
 import com.everywhere.backend.service.ReciboService;
 import lombok.RequiredArgsConstructor;
 import com.everywhere.backend.model.entity.DocumentoCobranza;
@@ -69,7 +68,6 @@ public class ReciboServiceImpl implements ReciboService {
     private final DocumentoCobranzaRepository documentoCobranzaRepository;
     private final DetalleDocumentoCobranzaRepository detalleDocumentoCobranzaRepository;
     private final CotizacionRepository cotizacionRepository;
-    private final AsientoContableService asientoContableService;
 
     @Override
     @Transactional
@@ -133,9 +131,6 @@ public class ReciboServiceImpl implements ReciboService {
 
         crearDetallesDesdeCotizacion(recibo, montoPago, cotizacion);
 
-        // Generar asiento contable: Caja/Banco (DEBE) vs Clientes (HABER)
-        asientoContableService.generarAsientoPorRecibo(recibo);
-
         return reciboMapper.toResponseDTO(recibo);
     }
 
@@ -175,16 +170,33 @@ public class ReciboServiceImpl implements ReciboService {
 
     @Override
     public Page<ReciboResponseDTO> findPage(Pageable pageable) {
-        Page<Recibo> page = reciboRepository.findAll(pageable);
-        
-        List<ReciboResponseDTO> dtoList = mapToResponseList(page.getContent());
-        
-        return new PageImpl<>(
-            dtoList, 
-            pageable, 
-            page.getTotalElements()
-        );
+        return findPage(pageable, null);
     }
+
+    @Override
+    public Page<ReciboResponseDTO> findPage(Pageable pageable, String search) {
+        Page<Integer> idPage = (search == null || search.isBlank())
+            ? reciboRepository.findPageIds(pageable)
+            : reciboRepository.searchPageIds(search.trim(), pageable);
+
+        if (idPage.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        List<Integer> ids = idPage.getContent();
+        List<Recibo> recibos = reciboRepository.findByIds(ids);
+
+        Map<Integer, Recibo> byId = recibos.stream()
+            .collect(java.util.stream.Collectors.toMap(Recibo::getId, r -> r));
+        List<Recibo> ordered = ids.stream()
+            .map(byId::get)
+            .filter(java.util.Objects::nonNull)
+            .toList();
+
+        List<ReciboResponseDTO> dtoList = mapToResponseList(ordered);
+        return new PageImpl<>(dtoList, pageable, idPage.getTotalElements());
+    }
+
 
     @Override
     public List<ReciboResponseDTO> findByDocumentoCobranzaId(Integer documentoCobranzaId) {
@@ -273,7 +285,6 @@ public class ReciboServiceImpl implements ReciboService {
         }
 
         recibo = reciboRepository.save(recibo);
-        asientoContableService.actualizarAsientoPorRecibo(recibo);
 
         return reciboMapper.toResponseDTO(recibo);
     }
@@ -437,19 +448,10 @@ public class ReciboServiceImpl implements ReciboService {
     @Override
     public BigDecimal calcularTotalPagado(Integer documentoCobranzaId) {
         Long documentoId = documentoCobranzaId.longValue();
-        List<Recibo> recibos = reciboRepository.findByDocumentoCobranzaId(documentoId);
 
-        BigDecimal totalPagado = BigDecimal.ZERO;
-        for (Recibo recibo : recibos) {
-            List<DetalleRecibo> detalles = detalleReciboRepository.findByReciboId(recibo.getId());
-            for (DetalleRecibo detalle : detalles) {
-                BigDecimal cantidad = detalle.getCantidad() != null
-                        ? BigDecimal.valueOf(detalle.getCantidad())
-                        : BigDecimal.ZERO;
-                BigDecimal precio = detalle.getPrecio() != null ? detalle.getPrecio() : BigDecimal.ZERO;
-                totalPagado = totalPagado.add(cantidad.multiply(precio));
-            }
-        }
-        return totalPagado;
+        return detalleReciboRepository.findTotalPagadoByDocumentoCobranzaIds(List.of(documentoId)).stream()
+                .findFirst()
+                .map(row -> (BigDecimal) row[1])
+                .orElse(BigDecimal.ZERO);
     }
 }

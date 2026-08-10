@@ -1,11 +1,12 @@
 package com.everywhere.backend.utils;
 
+import com.everywhere.backend.model.dto.PermissionResponseDTO;
 import com.everywhere.backend.model.dto.RolePermissionRequestDTO;
 import com.everywhere.backend.model.dto.RoleRequestDTO;
 import com.everywhere.backend.model.dto.RoleResponseDTO;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.List;
 
 public class RoleTestData {
 
@@ -19,7 +20,10 @@ public class RoleTestData {
         RoleResponseDTO response = new RoleResponseDTO();
         response.setId(1);
         response.setName("ADMIN");
-        response.setPermissions(Collections.singleton("CLIENTES:READ"));
+        PermissionResponseDTO permission = new PermissionResponseDTO();
+        permission.setId(1);
+        permission.setName("CLIENTES:READ");
+        response.setPermissions(List.of(permission));
         response.setCreatedAt(LocalDateTime.now());
         response.setUpdatedAt(LocalDateTime.now());
         return response;

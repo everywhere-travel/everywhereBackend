@@ -36,13 +36,6 @@ public class ProveedorServiceImpl implements ProveedorService {
 
         Proveedor proveedor = proveedorMapper.toEntity(proveedorRequestDTO);
 
-        com.everywhere.backend.model.entity.CuentaContable cuenta = new com.everywhere.backend.model.entity.CuentaContable();
-        cuenta.setCodigo("5.PROV." + System.currentTimeMillis());
-        cuenta.setNombre("Proveedor: " + proveedor.getNombre());
-        cuenta.setTipo("PASIVO");
-        cuenta.setActivo(true);
-        proveedor.setCuentaContable(cuenta);
-
         return proveedorMapper.toResponseDTO(proveedorRepository.save(proveedor));
     }
 

@@ -1,15 +1,19 @@
 package com.everywhere.backend.service;
 
+import com.everywhere.backend.model.dto.PersonaNaturalDetalleDTO;
 import com.everywhere.backend.model.dto.PersonaNaturalRequestDTO;
 import com.everywhere.backend.model.dto.PersonaNaturalResponseDTO;
 
-import java.util.List; 
+import java.util.List;
 
 public interface PersonaNaturalService {
     List<PersonaNaturalResponseDTO> findAll();
     List<PersonaNaturalResponseDTO> getDropdown();
     List<PersonaNaturalResponseDTO> getDropdown(String search);
     PersonaNaturalResponseDTO findById(Integer id);
+
+
+    PersonaNaturalDetalleDTO getDetalle(Integer id);
     List<PersonaNaturalResponseDTO> findByDocumento(String documento);
     List<PersonaNaturalResponseDTO> findByNombres(String nombres);
     List<PersonaNaturalResponseDTO> findByApellidosPaternos(String apellidosPaternos);

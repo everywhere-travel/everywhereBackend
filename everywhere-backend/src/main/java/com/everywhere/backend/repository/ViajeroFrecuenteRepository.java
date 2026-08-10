@@ -2,6 +2,7 @@ package com.everywhere.backend.repository;
 
 import com.everywhere.backend.model.entity.ViajeroFrecuente;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -10,4 +11,9 @@ import java.util.List;
 public interface ViajeroFrecuenteRepository extends JpaRepository<ViajeroFrecuente, Integer> {
     List<ViajeroFrecuente> findByViajero_Id(Integer viajeroId);
     boolean existsByAreolineaAndCodigo(String areolinea, String codigo);
+
+
+    @Override
+    @Query("SELECT vf FROM ViajeroFrecuente vf LEFT JOIN FETCH vf.viajero")
+    List<ViajeroFrecuente> findAll();
 }

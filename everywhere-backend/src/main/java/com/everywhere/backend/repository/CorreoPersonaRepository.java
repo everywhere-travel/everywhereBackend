@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface CorreoPersonaRepository extends JpaRepository<CorreoPersona,Integer> {
     List<CorreoPersona> findByPersonaId(Integer personaId);
+    List<CorreoPersona> findByPersonaIdIn(List<Integer> personaIds);
     boolean existsByEmail(String email);
 
 }

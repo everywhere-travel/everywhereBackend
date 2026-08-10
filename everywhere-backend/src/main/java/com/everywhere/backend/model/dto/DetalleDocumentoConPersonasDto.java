@@ -24,5 +24,9 @@ public class DetalleDocumentoConPersonasDto {
     public static class PersonaInfo {
         private Integer personaId;
         private String nombreCompleto;
+        private String documento;
+        private String direccion;
+        private String email;
+        private String telefono;
     }
 }

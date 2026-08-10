@@ -1,13 +1,17 @@
 package com.everywhere.backend.service.impl;
  
 import com.everywhere.backend.model.dto.DropdownResponseDTO;
+import com.everywhere.backend.model.dto.NaturalJuridicoResponseDTO;
+import com.everywhere.backend.model.dto.PersonaJuridicaDetalleDTO;
 import com.everywhere.backend.model.dto.PersonaJuridicaRequestDTO;
 import com.everywhere.backend.model.dto.PersonaJuridicaResponseDTO;
+import com.everywhere.backend.model.dto.PersonaNaturalResponseDTO;
 import com.everywhere.backend.model.entity.PersonaJuridica;
 import com.everywhere.backend.model.entity.Personas;
 import com.everywhere.backend.repository.PersonaJuridicaRepository;
 import com.everywhere.backend.repository.PersonaRepository;
-import com.everywhere.backend.service.PersonaJuridicaService; 
+import com.everywhere.backend.service.NaturalJuridicoService;
+import com.everywhere.backend.service.PersonaJuridicaService;
 
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
 import com.everywhere.backend.mapper.PersonaJuridicaMapper;
@@ -16,9 +20,10 @@ import com.everywhere.backend.mapper.PersonaMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
-import lombok.RequiredArgsConstructor; 
+import lombok.RequiredArgsConstructor;
 import java.util.List;
-import java.util.Optional; 
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -58,6 +63,7 @@ public class PersonaJuridicaServiceImpl implements PersonaJuridicaService {
     private final com.everywhere.backend.repository.NaturalJuridicoRepository naturalJuridicoRepository;
     private final PersonaJuridicaMapper personaJuridicaMapper;
     private final PersonaMapper personaMapper;
+    private final NaturalJuridicoService naturalJuridicoService;
 
     @Override
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
@@ -83,6 +89,22 @@ public class PersonaJuridicaServiceImpl implements PersonaJuridicaService {
         PersonaJuridica personaJuridica = personaJuridicaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Persona jurídica no encontrada con ID: " + id));
         return personaJuridicaMapper.toResponseDTO(personaJuridica);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PersonaJuridicaDetalleDTO getDetalle(Integer id) {
+        PersonaJuridicaResponseDTO personaJuridica = findById(id);
+
+        List<PersonaNaturalResponseDTO> clientesAsociados = naturalJuridicoService.findByPersonaJuridicaId(id).stream()
+                .map(NaturalJuridicoResponseDTO::getPersonaNatural)
+                .filter(Objects::nonNull)
+                .toList();
+
+        return PersonaJuridicaDetalleDTO.builder()
+                .personaJuridica(personaJuridica)
+                .clientesAsociados(clientesAsociados)
+                .build();
     }
 
     @Override
