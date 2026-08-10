@@ -11,7 +11,6 @@ import com.everywhere.backend.model.entity.PersonaJuridica;
 import com.everywhere.backend.model.entity.PersonaNatural;
 import com.everywhere.backend.model.entity.Personas;
 import com.everywhere.backend.model.entity.Sucursal;
-import com.everywhere.backend.model.entity.DetalleDocumentoCobranza;
 import com.everywhere.backend.repository.DetalleDocumentoCobranzaRepository;
 import com.everywhere.backend.repository.PersonaJuridicaRepository;
 import com.everywhere.backend.repository.PersonaNaturalRepository;
@@ -99,7 +98,12 @@ public class DocumentoCobranzaMapper {
     }
 
     public DocumentoCobranzaResponseDTO toResponseDTO(DocumentoCobranza documentoCobranza) {
-        return toResponseDTO(documentoCobranza, null, null, null, null);
+        DocumentoCobranzaResponseDTO dto = toResponseDTO(documentoCobranza, null, null, null, null);
+        if (documentoCobranza.getDetalles() != null && !documentoCobranza.getDetalles().isEmpty()) {
+            dto.setDetalles(documentoCobranza.getDetalles().stream()
+                    .map(detalleDocumentoCobranzaMapper::toResponseDTO).toList());
+        }
+        return dto;
     }
 
     public DocumentoCobranzaResponseDTO toResponseDTO(DocumentoCobranza documentoCobranza,
@@ -195,6 +199,11 @@ public class DocumentoCobranzaMapper {
             }
         }
 
+        if (documentoCobranza.getCarpeta() != null) {
+            documentoCobranzaResponseDTO.setCarpetaId(documentoCobranza.getCarpeta().getId());
+            documentoCobranzaResponseDTO.setCarpetaNombre(documentoCobranza.getCarpeta().getNombre());
+        }
+
         if (documentoCobranza.getSucursal() != null) {
             documentoCobranzaResponseDTO.setSucursalId(documentoCobranza.getSucursal().getId());
             documentoCobranzaResponseDTO.setSucursalDescripcion(documentoCobranza.getSucursal().getDescripcion());
@@ -204,12 +213,6 @@ public class DocumentoCobranzaMapper {
             documentoCobranzaResponseDTO.setFormaPagoDescripcion(documentoCobranza.getFormaPago().getDescripcion());
         }
 
-        // Mapear los detalles con el DetalleDocumentoCobranzaMapper
-        if (documentoCobranza.getDetalles() != null && !documentoCobranza.getDetalles().isEmpty()) {
-            List<DetalleDocumentoCobranzaResponseDTO> detallesDTO = documentoCobranza.getDetalles().stream()
-                    .map(detalleDocumentoCobranzaMapper::toResponseDTO).toList();
-            documentoCobranzaResponseDTO.setDetalles(detallesDTO);
-        }
 
         // Calcular totalDeuda, totalPagado y saldoPendiente
         calcularSaldos(documentoCobranza, documentoCobranzaResponseDTO, totalDeudaMap, totalPagadoMap);
@@ -226,19 +229,12 @@ public class DocumentoCobranzaMapper {
         if (totalDeudaMap != null && docId != null) {
             totalDeuda = totalDeudaMap.getOrDefault(docId, BigDecimal.ZERO);
         } else {
-            // fallback (usado solo en llamadas individuales: findById, PDF)
-            List<DetalleDocumentoCobranza> detallesDoc = detalleDocumentoCobranzaRepository
-                    .findByDocumentoCobranzaId(docId);
-            totalDeuda = BigDecimal.ZERO;
-            if (detallesDoc != null) {
-                for (DetalleDocumentoCobranza detalle : detallesDoc) {
-                    BigDecimal cantidad = detalle.getCantidad() != null
-                            ? BigDecimal.valueOf(detalle.getCantidad())
-                            : BigDecimal.ZERO;
-                    BigDecimal precio = detalle.getPrecio() != null ? detalle.getPrecio() : BigDecimal.ZERO;
-                    totalDeuda = totalDeuda.add(cantidad.multiply(precio));
-                }
-            }
+
+            totalDeuda = detalleDocumentoCobranzaRepository.findTotalDeudaByDocumentoIds(List.of(docId))
+                    .stream()
+                    .findFirst()
+                    .map(row -> (BigDecimal) row[1])
+                    .orElse(BigDecimal.ZERO);
         }
 
         // 2. Total pagado: usar mapa pre-calculado si está disponible
@@ -246,7 +242,7 @@ public class DocumentoCobranzaMapper {
         if (totalPagadoMap != null && docId != null) {
             totalPagado = totalPagadoMap.getOrDefault(docId, BigDecimal.ZERO);
         } else {
-            // fallback individual
+
             try {
                 totalPagado = reciboService.calcularTotalPagado(docId.intValue());
             } catch (Exception e) {

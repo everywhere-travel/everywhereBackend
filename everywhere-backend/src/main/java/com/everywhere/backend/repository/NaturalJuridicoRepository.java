@@ -12,10 +12,32 @@ import java.util.Optional;
 @Repository
 public interface NaturalJuridicoRepository extends JpaRepository<NaturalJuridico, Integer> {
 
-    @Query("SELECT nj FROM NaturalJuridico nj WHERE nj.personaNatural.id = :personaNaturalId")
+    @Override
+    @Query("SELECT nj FROM NaturalJuridico nj " +
+           "LEFT JOIN FETCH nj.personaNatural pn " +
+           "LEFT JOIN FETCH pn.personas " +
+           "LEFT JOIN FETCH pn.viajero " +
+           "LEFT JOIN FETCH nj.personaJuridica pj " +
+           "LEFT JOIN FETCH pj.personas")
+    List<NaturalJuridico> findAll();
+
+
+    @Query("SELECT nj FROM NaturalJuridico nj " +
+           "LEFT JOIN FETCH nj.personaNatural pn " +
+           "LEFT JOIN FETCH pn.personas " +
+           "LEFT JOIN FETCH pn.viajero " +
+           "LEFT JOIN FETCH nj.personaJuridica pj " +
+           "LEFT JOIN FETCH pj.personas " +
+           "WHERE nj.personaNatural.id = :personaNaturalId")
     List<NaturalJuridico> findByPersonaNaturalId(@Param("personaNaturalId") Integer personaNaturalId);
 
-    @Query("SELECT nj FROM NaturalJuridico nj WHERE nj.personaJuridica.id = :personaJuridicaId")
+    @Query("SELECT nj FROM NaturalJuridico nj " +
+           "LEFT JOIN FETCH nj.personaNatural pn " +
+           "LEFT JOIN FETCH pn.personas " +
+           "LEFT JOIN FETCH pn.viajero " +
+           "LEFT JOIN FETCH nj.personaJuridica pj " +
+           "LEFT JOIN FETCH pj.personas " +
+           "WHERE nj.personaJuridica.id = :personaJuridicaId")
     List<NaturalJuridico> findByPersonaJuridicaId(@Param("personaJuridicaId") Integer personaJuridicaId);
 
     @Query("SELECT nj FROM NaturalJuridico nj WHERE nj.personaNatural.id = :personaNaturalId AND nj.personaJuridica.id = :personaJuridicaId")

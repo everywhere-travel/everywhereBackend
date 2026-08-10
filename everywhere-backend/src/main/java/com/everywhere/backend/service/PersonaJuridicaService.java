@@ -1,5 +1,6 @@
 package com.everywhere.backend.service;
 
+import com.everywhere.backend.model.dto.PersonaJuridicaDetalleDTO;
 import com.everywhere.backend.model.dto.PersonaJuridicaRequestDTO;
 import com.everywhere.backend.model.dto.PersonaJuridicaResponseDTO;
 
@@ -10,6 +11,9 @@ public interface PersonaJuridicaService {
     List<PersonaJuridicaResponseDTO> getDropdown(String search);
     List<PersonaJuridicaResponseDTO> findAll();
     PersonaJuridicaResponseDTO findById(Integer id);
+
+
+    PersonaJuridicaDetalleDTO getDetalle(Integer id);
     List<PersonaJuridicaResponseDTO> findByRuc(String ruc);
     List<PersonaJuridicaResponseDTO> findByRazonSocial(String razonSocial);
     PersonaJuridicaResponseDTO save(PersonaJuridicaRequestDTO personaJuridicaRequestDTO);

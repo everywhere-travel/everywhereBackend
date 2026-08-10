@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,13 +47,13 @@ public class ViajeroServiceImpl implements ViajeroService {
     @Override
     @Transactional(readOnly = true)
     public List<ViajeroResponseDTO> findByNacionalidad(String nacionalidad) {
-        return mapToResponseList(viajeroRepository.findByNacionalidadIgnoreAccents(nacionalidad));
+        return mapToResponseListBatched(viajeroRepository.findByNacionalidadIgnoreAccents(nacionalidad));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ViajeroResponseDTO> findByResidencia(String residencia) {
-        return mapToResponseList(viajeroRepository.findByResidenciaIgnoreAccents(residencia));
+        return mapToResponseListBatched(viajeroRepository.findByResidenciaIgnoreAccents(residencia));
     }
 
     @Override
@@ -101,7 +102,23 @@ public class ViajeroServiceImpl implements ViajeroService {
     }
 
     private List<ViajeroResponseDTO> mapToResponseList(List<Viajero> viajeros) {
+
         return viajeros.stream().map(viajeroMapper::toResponseDTO).toList();
+    }
+
+
+    private List<ViajeroResponseDTO> mapToResponseListBatched(List<Viajero> viajeros) {
+        if (viajeros.isEmpty()) {
+            return List.of();
+        }
+
+        List<Integer> viajeroIds = viajeros.stream().map(Viajero::getId).toList();
+        Map<Integer, PersonaNatural> personaNaturalPorViajeroId = personaNaturalRepository.findByViajeroIdIn(viajeroIds).stream()
+                .collect(Collectors.toMap(pn -> pn.getViajero().getId(), pn -> pn, (a, b) -> a));
+
+        return viajeros.stream()
+                .map(v -> viajeroMapper.toResponseDTO(v, personaNaturalPorViajeroId.get(v.getId())))
+                .toList();
     }
 
     @Override

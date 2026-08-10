@@ -12,23 +12,14 @@ import org.springframework.stereotype.Component;
 public class PagoPaxMapper {
 
     private final ModelMapper modelMapper;
-    private final LiquidacionMapper liquidacionMapper;
     private final FormaPagoMapper formaPagoMapper;
 
-    /**
-     * Convierte una entidad PagoPax a PagoPaxResponseDTO
-     */
     public PagoPaxResponseDTO toResponseDTO(PagoPax pagoPax) {
         if (pagoPax == null) {
             return null;
         }
 
         PagoPaxResponseDTO dto = modelMapper.map(pagoPax, PagoPaxResponseDTO.class);
-
-        // Mapear relaciones si existen
-        if (pagoPax.getLiquidacion() != null) {
-            dto.setLiquidacion(liquidacionMapper.toResponseDTO(pagoPax.getLiquidacion()));
-        }
 
         if (pagoPax.getFormaPago() != null) {
             dto.setFormaPago(formaPagoMapper.toResponseDTO(pagoPax.getFormaPago()));

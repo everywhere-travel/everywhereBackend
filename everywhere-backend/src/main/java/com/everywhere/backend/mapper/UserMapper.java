@@ -94,7 +94,7 @@ public class UserMapper {
             roleDto.setName(user.getRole().getName());
             roleDto.setCreatedAt(user.getRole().getCreatedAt());
             roleDto.setUpdatedAt(user.getRole().getUpdatedAt());
-            roleDto.setPermissions(rolePermissionRepository.findPermissionNamesByRoleId(user.getRole().getId()));
+
             dto.setRole(roleDto);
         }
 

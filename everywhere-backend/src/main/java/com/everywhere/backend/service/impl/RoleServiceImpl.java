@@ -1,6 +1,7 @@
 package com.everywhere.backend.service.impl;
 
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
+import com.everywhere.backend.model.dto.PermissionResponseDTO;
 import com.everywhere.backend.model.dto.RoleRequestDTO;
 import com.everywhere.backend.model.dto.RoleResponseDTO;
 import com.everywhere.backend.model.entity.Permission;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,9 +30,19 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional(readOnly = true)
     public List<RoleResponseDTO> findAll() {
-        return roleRepository.findAll().stream()
-                .map(this::toResponseDTO)
-                .collect(Collectors.toList());
+        List<Role> roles = roleRepository.findAll();
+        List<Integer> roleIds = roles.stream().map(Role::getId).toList();
+
+
+        Map<Integer, List<PermissionResponseDTO>> permisosPorRol = rolePermissionRepository.findByRoleIdIn(roleIds).stream()
+                .collect(Collectors.groupingBy(
+                        rp -> rp.getRole().getId(),
+                        Collectors.mapping(rp -> toPermissionResponseDTO(rp.getPermission()), Collectors.toList())
+                ));
+
+        return roles.stream()
+                .map(role -> toResponseDTO(role, permisosPorRol.getOrDefault(role.getId(), List.of())))
+                .toList();
     }
 
     @Override
@@ -104,16 +115,32 @@ public class RoleServiceImpl implements RoleService {
                 .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con ID: " + id));
     }
 
+
     private RoleResponseDTO toResponseDTO(Role role) {
+        List<PermissionResponseDTO> permissions = rolePermissionRepository.findByRoleId(role.getId()).stream()
+                .map(rp -> toPermissionResponseDTO(rp.getPermission()))
+                .toList();
+        return toResponseDTO(role, permissions);
+    }
+
+
+    private RoleResponseDTO toResponseDTO(Role role, List<PermissionResponseDTO> permissions) {
         RoleResponseDTO dto = new RoleResponseDTO();
         dto.setId(role.getId());
         dto.setName(role.getName());
         dto.setCreatedAt(role.getCreatedAt());
         dto.setUpdatedAt(role.getUpdatedAt());
-
-        Set<String> permissions = rolePermissionRepository.findPermissionNamesByRoleId(role.getId());
         dto.setPermissions(permissions);
+        return dto;
+    }
 
+    private PermissionResponseDTO toPermissionResponseDTO(Permission permission) {
+        PermissionResponseDTO dto = new PermissionResponseDTO();
+        dto.setId(permission.getId());
+        dto.setName(permission.getName());
+        dto.setDescription(permission.getDescription());
+        dto.setCreatedAt(permission.getCreatedAt());
+        dto.setUpdatedAt(permission.getUpdatedAt());
         return dto;
     }
 }

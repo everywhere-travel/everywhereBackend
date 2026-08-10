@@ -1,6 +1,7 @@
 package com.everywhere.backend.api;
 
 import com.everywhere.backend.exceptions.BadRequestException;
+import com.everywhere.backend.model.dto.CarpetaContenidoDTO;
 import com.everywhere.backend.model.dto.CarpetaRequestDto;
 import com.everywhere.backend.model.dto.CarpetaResponseDto;
 import com.everywhere.backend.security.RequirePermission;
@@ -113,6 +114,12 @@ public class CarpetaController {
     @RequirePermission(module = "CARPETA", permission = "READ")
     public ResponseEntity<List<CarpetaResponseDto>> findHijos(@PathVariable Integer id) {
         return ResponseEntity.ok(carpetaService.findByCarpetaPadreId(id));
+    }
+
+    @GetMapping("/{id}/contenido")
+    @RequirePermission(module = "CARPETA", permission = "READ")
+    public ResponseEntity<CarpetaContenidoDTO> getContenido(@PathVariable Integer id) {
+        return ResponseEntity.ok(carpetaService.getContenido(id));
     }
 
 }

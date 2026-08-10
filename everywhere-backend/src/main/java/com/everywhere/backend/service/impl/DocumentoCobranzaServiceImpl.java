@@ -40,7 +40,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageImpl;
-import com.everywhere.backend.service.AsientoContableService;
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
 import java.util.List;
@@ -67,7 +66,6 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
     private final DetalleCotizacionService detalleCotizacionService;
     private final CarpetaRepository carpetaRepository;
     private final com.everywhere.backend.util.pdf.DocumentoCobranzaPdfGenerator documentoCobranzaPdfGenerator;
-    private final AsientoContableService asientoContableService;
     private final DetalleReciboRepository detalleReciboRepository;
     @Override
     @Transactional
@@ -143,7 +141,6 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         // Crear detalles desde cotización con repartición por cantidad
         crearDetallesDesdeCotizacion(documentoCobranza, cotizacionId);
 
-        asientoContableService.generarAsientoPorDocumentoCobranza(documentoCobranza);
         return documentoCobranzaMapper.toResponseDTO(documentoCobranza);
     }
 
@@ -184,16 +181,25 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
 
     @Override
     public Page<DocumentoCobranzaResponseDTO> findPage(Pageable pageable) {
-        Page<DocumentoCobranza> page = documentoCobranzaRepository.findAll(pageable);
-        
-        List<DocumentoCobranzaResponseDTO> dtoList = mapToResponseList(page.getContent());
-        
-        return new PageImpl<>(
-            dtoList, 
-            pageable, 
-            page.getTotalElements()
-        );
+        Page<Long> idPage = documentoCobranzaRepository.findPageIds(pageable);
+        if (idPage.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        List<Long> ids = idPage.getContent();
+        List<DocumentoCobranza> documentos = documentoCobranzaRepository.findByIds(ids);
+
+        Map<Long, DocumentoCobranza> byId = documentos.stream()
+            .collect(java.util.stream.Collectors.toMap(DocumentoCobranza::getId, d -> d));
+        List<DocumentoCobranza> ordered = ids.stream()
+            .map(byId::get)
+            .filter(java.util.Objects::nonNull)
+            .toList();
+
+        List<DocumentoCobranzaResponseDTO> dtoList = mapToResponseList(ordered);
+        return new PageImpl<>(dtoList, pageable, idPage.getTotalElements());
     }
+
 
     @Override
     public DocumentoCobranzaResponseDTO findByCotizacionId(Integer cotizacionId) {
@@ -275,8 +281,7 @@ public class DocumentoCobranzaServiceImpl implements DocumentoCobranzaService {
         }
 
         documentoCobranza = documentoCobranzaRepository.save(documentoCobranza);
-        asientoContableService.actualizarAsientoPorDocumentoCobranza(documentoCobranza);
-        
+
         return documentoCobranzaMapper.toResponseDTO(documentoCobranza);
     }
 

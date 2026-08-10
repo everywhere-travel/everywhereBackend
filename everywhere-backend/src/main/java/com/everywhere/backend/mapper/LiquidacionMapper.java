@@ -10,11 +10,15 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+import java.util.Map;
+
 @Component
 @RequiredArgsConstructor
 public class LiquidacionMapper {
 
     private final ModelMapper modelMapper;
+    private final CotizacionMapper cotizacionMapper;
 
     @PostConstruct
     public void configureMapping() {
@@ -27,7 +31,17 @@ public class LiquidacionMapper {
     }
 
     public LiquidacionResponseDTO toResponseDTO(Liquidacion liquidacion) {
+        Map<Integer, CotizacionMapper.ClienteInfo> clienteInfoMap = liquidacion.getCotizacion() != null
+                ? cotizacionMapper.resolveClienteInfo(List.of(liquidacion.getCotizacion()))
+                : Map.of();
+        return toResponseDTO(liquidacion, clienteInfoMap);
+    }
+
+    public LiquidacionResponseDTO toResponseDTO(Liquidacion liquidacion, Map<Integer, CotizacionMapper.ClienteInfo> clienteInfoMap) {
         LiquidacionResponseDTO liquidacionResponseDTO = modelMapper.map(liquidacion, LiquidacionResponseDTO.class);
+        if (liquidacion.getCotizacion() != null) {
+            liquidacionResponseDTO.setCotizacion(cotizacionMapper.toResponse(liquidacion.getCotizacion(), clienteInfoMap));
+        }
         return liquidacionResponseDTO;
     }
 

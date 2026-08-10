@@ -1,10 +1,6 @@
 package com.everywhere.backend.model.dto;
 
-import com.everywhere.backend.model.entity.Categoria;
 import com.everywhere.backend.model.entity.Cotizacion;
-import com.everywhere.backend.model.entity.Operador;
-import com.everywhere.backend.model.entity.Producto;
-import com.everywhere.backend.model.entity.Proveedor;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -21,9 +17,9 @@ public class DetalleCotizacionResponseDto {
     private LocalDateTime creado;
     private LocalDateTime actualizado;
     private BigDecimal comision;
-    private Categoria categoria;
+    private CategoriaResponseDto categoria;
     private Cotizacion cotizacion;
-    private Producto producto;
-    private Proveedor proveedor;
-    private Operador operador;
+    private ProductoResponseDTO producto;
+    private ProveedorResponseDTO proveedor;
+    private OperadorResponseDTO operador;
 }

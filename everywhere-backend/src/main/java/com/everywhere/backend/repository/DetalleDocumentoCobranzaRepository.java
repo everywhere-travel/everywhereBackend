@@ -15,9 +15,6 @@ import java.util.stream.Collectors;
 @Repository
 public interface DetalleDocumentoCobranzaRepository extends JpaRepository<DetalleDocumentoCobranza, Long> {
 
-    @Query("SELECT d FROM DetalleDocumentoCobranza d WHERE d.documentoCobranza.id = :documentoId")
-    List<DetalleDocumentoCobranza> findByDocumentoCobranzaId(Long documentoId);
-
     @Query("SELECT d FROM DetalleDocumentoCobranza d WHERE d.producto.id = :productoId")
     List<DetalleDocumentoCobranza> findByProductoId(Long productoId);
 

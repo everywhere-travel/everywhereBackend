@@ -26,6 +26,8 @@ public interface ReciboService {
 
     Page<ReciboResponseDTO> findPage(Pageable pageable);
 
+    Page<ReciboResponseDTO> findPage(Pageable pageable, String search);
+
     /** Retorna todos los recibos vinculados a un DocumentoCobranza. */
     List<ReciboResponseDTO> findByDocumentoCobranzaId(Integer documentoCobranzaId);
 
