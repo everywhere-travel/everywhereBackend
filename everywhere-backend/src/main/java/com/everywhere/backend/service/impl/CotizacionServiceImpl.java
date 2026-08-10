@@ -16,6 +16,7 @@ import org.apache.poi.xwpf.usermodel.*;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.io.ByteArrayInputStream;
@@ -43,7 +44,6 @@ public class CotizacionServiceImpl implements CotizacionService {
     private final CarpetaRepository carpetaRepository;
     private final PersonaRepository personasRepository;
     private final DetalleCotizacionService detalleCotizacionService;
-    private final PersonaNaturalRepository personaNaturalRepository;
     private final HistorialCotizacionService historialCotizacionService;
 
     // Diccionario de tipos de productos
@@ -129,7 +129,29 @@ public class CotizacionServiceImpl implements CotizacionService {
     @Override
     @Transactional(readOnly = true)
     public Page<CotizacionResponseDto> findPage(Pageable pageable) {
-        return cotizacionRepository.findAll(pageable).map(cotizacionMapper::toResponse);
+        Page<Integer> idPage = cotizacionRepository.findPageIds(pageable);
+        if (idPage.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        List<Integer> ids = idPage.getContent();
+        List<Cotizacion> cotizaciones = cotizacionRepository.findByIds(ids);
+
+        Map<Integer, Cotizacion> byId = cotizaciones.stream()
+            .collect(Collectors.toMap(Cotizacion::getId, c -> c));
+        List<Cotizacion> ordered = ids.stream()
+            .map(byId::get)
+            .filter(java.util.Objects::nonNull)
+            .toList();
+
+
+        Map<Integer, CotizacionMapper.ClienteInfo> clienteInfoMap =
+            cotizacionMapper.resolveClienteInfo(ordered);
+        List<CotizacionResponseDto> dtos = ordered.stream()
+            .map(c -> cotizacionMapper.toResponse(c, clienteInfoMap))
+            .toList();
+
+        return new PageImpl<>(dtos, pageable, idPage.getTotalElements());
     }
 
     @Override
@@ -237,21 +259,20 @@ public class CotizacionServiceImpl implements CotizacionService {
     @Override
     @Transactional(readOnly = true)
     public List<CotizacionResponseDto> findCotizacionesSinLiquidacion() {
-        return cotizacionRepository.findCotizacionesSinLiquidacion().stream()
-                .map(cotizacionMapper::toResponse)
-                .toList();
+        return mapToResponseList(cotizacionRepository.findCotizacionesSinLiquidacion());
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<CotizacionResponseDto> findCotizacionesSinDocumentoCobranza() {
-        return cotizacionRepository.findCotizacionesSinDocumentoCobranza().stream()
-                .map(cotizacionMapper::toResponse)
-                .toList();
+        return mapToResponseList(cotizacionRepository.findCotizacionesSinDocumentoCobranza());
     }
 
     private List<CotizacionResponseDto> mapToResponseList(List<Cotizacion> cotizaciones) {
-        return cotizaciones.stream().map(cotizacionMapper::toResponse).toList();
+        Map<Integer, CotizacionMapper.ClienteInfo> clienteInfoMap = cotizacionMapper.resolveClienteInfo(cotizaciones);
+        return cotizaciones.stream()
+                .map(cotizacion -> cotizacionMapper.toResponse(cotizacion, clienteInfoMap))
+                .toList();
     }
 
     private void registrarHistorialSiTieneEstado(Cotizacion cotizacion, String observacion) {
@@ -479,38 +500,10 @@ public class CotizacionServiceImpl implements CotizacionService {
         infoRun.setText("Fecha Vencimiento: " + formatFechaEmision(cotizacion.getFechaVencimiento()));
         infoRun.addBreak();
 
-        // Obtener nombre completo del cliente
-        String clienteInfo = "N/A";
-        if (cotizacion.getPersonas() != null) {
-            try {
-                PersonaNatural personaNatural = personaNaturalRepository
-                        .findByPersonasId(cotizacion.getPersonas().getId()).orElse(null);
-                if (personaNatural != null) {
-                    StringBuilder nombreCompleto = new StringBuilder();
-                    if (personaNatural.getNombres() != null) {
-                        nombreCompleto.append(personaNatural.getNombres());
-                    }
-                    if (personaNatural.getApellidosPaterno() != null) {
-                        if (nombreCompleto.length() > 0)
-                            nombreCompleto.append(" ");
-                        nombreCompleto.append(personaNatural.getApellidosPaterno());
-                    }
-                    if (personaNatural.getApellidosMaterno() != null) {
-                        if (nombreCompleto.length() > 0)
-                            nombreCompleto.append(" ");
-                        nombreCompleto.append(personaNatural.getApellidosMaterno());
-                    }
-                    clienteInfo = nombreCompleto.length() > 0 ? nombreCompleto.toString()
-                            : cotizacion.getPersonas().getEmail();
-                } else {
-                    clienteInfo = cotizacion.getPersonas().getEmail() != null ? cotizacion.getPersonas().getEmail()
-                            : "ID: " + cotizacion.getPersonas().getId();
-                }
-            } catch (Exception e) {
-                clienteInfo = cotizacion.getPersonas().getEmail() != null ? cotizacion.getPersonas().getEmail()
-                        : "ID: " + cotizacion.getPersonas().getId();
-            }
-        }
+
+        String clienteInfo = cotizacion.getClienteNombre() != null && !cotizacion.getClienteNombre().isBlank()
+                ? cotizacion.getClienteNombre()
+                : (cotizacion.getPersonas() != null ? "ID: " + cotizacion.getPersonas().getId() : "N/A");
         infoRun.setText("Cliente: " + clienteInfo);
         infoRun.addBreak();
         infoRun.setText("Adultos: " + cotizacion.getCantAdultos() + " | Niños: " + cotizacion.getCantNinos());

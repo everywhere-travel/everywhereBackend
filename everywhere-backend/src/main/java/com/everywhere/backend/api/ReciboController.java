@@ -52,13 +52,14 @@ public class ReciboController {
     public ResponseEntity<Page<ReciboResponseDTO>> getRecibosPage(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id,desc") String[] sort) {
+            @RequestParam(defaultValue = "id,desc") String[] sort,
+            @RequestParam(required = false) String search) {
         int safePage = Math.max(page, 0);
         int safeSize = Math.max(size, 1);
         Direction direction = Direction.fromString(sort[1]);
         Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by(direction, sort[0]));
-        
-        return ResponseEntity.ok(reciboService.findPage(pageable));
+
+        return ResponseEntity.ok(reciboService.findPage(pageable, search));
     }
 
     @GetMapping("/{id}")

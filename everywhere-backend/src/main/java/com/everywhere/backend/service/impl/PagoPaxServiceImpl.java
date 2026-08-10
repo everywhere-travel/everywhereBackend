@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.everywhere.backend.service.AsientoContableService;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,7 +27,6 @@ public class PagoPaxServiceImpl implements PagoPaxService {
     private final FormaPagoRepository formaPagoRepository;
     private final ProveedorRepository proveedorRepository;
     private final PagoPaxMapper pagoPaxMapper;
-    private final AsientoContableService asientoContableService;
 
     @Override
     @Transactional
@@ -48,7 +46,6 @@ public class PagoPaxServiceImpl implements PagoPaxService {
 
         // Guardar
         pagoPax = pagoPaxRepository.save(pagoPax);
-        asientoContableService.generarAsientoPorPagoPax(pagoPax);
 
         return pagoPaxMapper.toResponseDTO(pagoPax);
     }
@@ -153,10 +150,7 @@ public class PagoPaxServiceImpl implements PagoPaxService {
             }
             
             pagoPax = pagoPaxRepository.save(pagoPax);
-            if (dto.getId() == null) {
-                asientoContableService.generarAsientoPorPagoPax(pagoPax);
-            }
-            
+
             pagosParaGuardar.add(pagoPax);
         }
     }

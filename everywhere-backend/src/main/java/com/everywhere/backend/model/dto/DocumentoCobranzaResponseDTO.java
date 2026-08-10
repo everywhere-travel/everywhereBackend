@@ -35,6 +35,9 @@ public class DocumentoCobranzaResponseDTO {
     private String personaJuridicaRuc;
     private String personaJuridicaRazonSocial;
 
+    private Integer carpetaId;
+    private String carpetaNombre;
+
     private Integer detalleDocumentoId;
 
     private LocalDateTime createdAt;

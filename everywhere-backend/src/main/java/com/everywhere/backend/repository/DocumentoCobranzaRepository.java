@@ -59,26 +59,37 @@ public interface DocumentoCobranzaRepository extends JpaRepository<DocumentoCobr
                      "LEFT JOIN FETCH d.cotizacion")
        List<DocumentoCobranza> findAllWithRelations();
 
-       @EntityGraph(attributePaths = {
-            "formaPago",
-            "sucursal",
-            "persona",
-            "personaJuridica",
-            "cotizacion"
-    })
-    @NonNull
-    @Query("SELECT d FROM DocumentoCobranza d ORDER BY d.id DESC")
-    List<DocumentoCobranza> findAll();
+       @NonNull
+       @Query("SELECT d FROM DocumentoCobranza d " +
+              "LEFT JOIN FETCH d.formaPago " +
+              "LEFT JOIN FETCH d.sucursal " +
+              "LEFT JOIN FETCH d.persona " +
+              "LEFT JOIN FETCH d.personaJuridica " +
+              "LEFT JOIN FETCH d.cotizacion " +
+              "LEFT JOIN FETCH d.carpeta " +
+              "ORDER BY d.id DESC")
+       List<DocumentoCobranza> findAll();
 
-    @EntityGraph(attributePaths = {
-            "formaPago",
-            "sucursal",
-            "persona",
-            "personaJuridica",
-            "cotizacion"
-    })
     @NonNull
-    Page<DocumentoCobranza> findAll(@NonNull Pageable pageable);
+    @Query("SELECT d.id FROM DocumentoCobranza d ORDER BY d.id DESC")
+    Page<Long> findPageIds(@NonNull Pageable pageable);
+
+
+    @Query("SELECT d FROM DocumentoCobranza d " +
+           "LEFT JOIN FETCH d.formaPago " +
+           "LEFT JOIN FETCH d.sucursal " +
+           "LEFT JOIN FETCH d.persona " +
+           "LEFT JOIN FETCH d.personaJuridica " +
+           "LEFT JOIN FETCH d.cotizacion " +
+           "LEFT JOIN FETCH d.carpeta " +
+           "LEFT JOIN FETCH d.detalleDocumento dd " +
+           "LEFT JOIN FETCH dd.documento " +
+           "WHERE d.id IN :ids " +
+           "ORDER BY d.id DESC")
+    List<DocumentoCobranza> findByIds(@Param("ids") List<Long> ids);
+
+
+
 
        @Query("SELECT DISTINCT d FROM DocumentoCobranza d " +
                      "LEFT JOIN FETCH d.detalles det " +

@@ -5,16 +5,30 @@ import org.springframework.stereotype.Component;
 
 import com.everywhere.backend.model.dto.*;
 import com.everywhere.backend.model.entity.Cotizacion;
+import com.everywhere.backend.model.entity.Personas;
+import com.everywhere.backend.model.entity.PersonaJuridica;
+import com.everywhere.backend.model.entity.PersonaNatural;
 import lombok.RequiredArgsConstructor;
 
 import jakarta.annotation.PostConstruct;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import com.everywhere.backend.repository.PersonaNaturalRepository;
+import com.everywhere.backend.repository.PersonaJuridicaRepository;
 
 @Component
 @RequiredArgsConstructor
 public class CotizacionMapper {
 
     private final ModelMapper modelMapper;
+    private final PersonaNaturalRepository personaNaturalRepository;
+    private final PersonaJuridicaRepository personaJuridicaRepository;
+
+    public record ClienteInfo(String nombre, String identificador) {}
 
     @PostConstruct
     public void configureMapping() {
@@ -27,8 +41,59 @@ public class CotizacionMapper {
         });
     }
 
-    public CotizacionResponseDto toResponse(Cotizacion cotizacion) { 
-        return modelMapper.map(cotizacion, CotizacionResponseDto.class);
+    public Map<Integer, ClienteInfo> resolveClienteInfo(List<Cotizacion> cotizaciones) {
+        List<Integer> personaIds = cotizaciones.stream()
+                .map(Cotizacion::getPersonas)
+                .filter(Objects::nonNull)
+                .map(Personas::getId)
+                .distinct()
+                .toList();
+
+        if (personaIds.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<Integer, PersonaNatural> naturales = personaNaturalRepository.findByPersonasIdIn(personaIds).stream()
+                .collect(Collectors.toMap(pn -> pn.getPersonas().getId(), pn -> pn, (a, b) -> a));
+        Map<Integer, PersonaJuridica> juridicas = personaJuridicaRepository.findByPersonasIdIn(personaIds).stream()
+                .collect(Collectors.toMap(pj -> pj.getPersonas().getId(), pj -> pj, (a, b) -> a));
+
+        Map<Integer, ClienteInfo> result = new HashMap<>();
+        naturales.forEach((personaId, natural) ->
+                result.put(personaId, new ClienteInfo(construirNombreCompleto(natural), natural.getDocumento())));
+        juridicas.forEach((personaId, juridica) ->
+                result.putIfAbsent(personaId, new ClienteInfo(juridica.getRazonSocial(), juridica.getRuc())));
+        return result;
+    }
+
+    private String construirNombreCompleto(PersonaNatural natural) {
+        String nombres = natural.getNombres() != null ? natural.getNombres().trim() : "";
+        String paterno = natural.getApellidosPaterno() != null ? natural.getApellidosPaterno().trim() : "";
+        String materno = natural.getApellidosMaterno() != null ? natural.getApellidosMaterno().trim() : "";
+        String fullName = nombres;
+        if (!paterno.isEmpty()) fullName += (fullName.isEmpty() ? "" : " ") + paterno;
+        if (!materno.isEmpty()) fullName += (fullName.isEmpty() ? "" : " ") + materno;
+        return fullName;
+    }
+
+
+    public CotizacionResponseDto toResponse(Cotizacion cotizacion) {
+        Map<Integer, ClienteInfo> clienteInfoMap = cotizacion.getPersonas() != null
+                ? resolveClienteInfo(List.of(cotizacion))
+                : Map.of();
+        return toResponse(cotizacion, clienteInfoMap);
+    }
+
+    public CotizacionResponseDto toResponse(Cotizacion cotizacion, Map<Integer, ClienteInfo> clienteInfoMap) {
+        CotizacionResponseDto dto = modelMapper.map(cotizacion, CotizacionResponseDto.class);
+        if (cotizacion.getPersonas() != null) {
+            ClienteInfo info = clienteInfoMap.get(cotizacion.getPersonas().getId());
+            if (info != null) {
+                dto.setClienteNombre(info.nombre());
+                dto.setClienteIdentificador(info.identificador());
+            }
+        }
+        return dto;
     }
 
     public Cotizacion toEntity(CotizacionRequestDto cotizacionRequestDto) { 
@@ -65,11 +130,26 @@ public class CotizacionMapper {
         }
     }
 
-    public CotizacionConDetallesResponseDTO toResponseWithDetalles(CotizacionResponseDto cotizacionResponseDto, 
+    public CotizacionConDetallesResponseDTO toResponseWithDetalles(CotizacionResponseDto cotizacionResponseDto,
         List<DetalleCotizacionSimpleDTO> detalleCotizacionSimpleDTOs) {
         CotizacionConDetallesResponseDTO cotizacionConDetallesResponseDTO = modelMapper.map(cotizacionResponseDto, CotizacionConDetallesResponseDTO.class);
         cotizacionConDetallesResponseDTO.setDetalles(detalleCotizacionSimpleDTOs);
+        cotizacionConDetallesResponseDTO.setGrupoSeleccionadoId(resolveGrupoSeleccionado(detalleCotizacionSimpleDTOs));
         return cotizacionConDetallesResponseDTO;
+    }
+
+    private Integer resolveGrupoSeleccionado(List<DetalleCotizacionSimpleDTO> detalles) {
+        if (detalles == null) {
+            return null;
+        }
+        return detalles.stream()
+                .filter(d -> Boolean.TRUE.equals(d.getSeleccionado()))
+                .map(DetalleCotizacionSimpleDTO::getCategoria)
+                .filter(Objects::nonNull)
+                .filter(categoria -> categoria.getId() != 1)
+                .map(CategoriaResponseDto::getId)
+                .findFirst()
+                .orElse(null);
     }
 
     public DetalleCotizacionSimpleDTO toDetalleSimple(DetalleCotizacionResponseDto detalleCotizacionResponseDto) {

@@ -16,18 +16,18 @@ public class PersonaNaturalMapper {
     private final ModelMapper modelMapper;
     private final PersonaMapper personaMapper;
     private final ViajeroMapper viajeroMapper;
-    private final CategoriaPersonaMapper categoriaPersonaMapper; // ✅ Agregado
+    private final CategoriaPersonaMapper categoriaPersonaMapper;
 
     public PersonaNaturalResponseDTO toResponseDTO(PersonaNatural personaNatural) {
         PersonaNaturalResponseDTO personaNaturalResponseDTO = modelMapper.map(personaNatural, PersonaNaturalResponseDTO.class);
 
-        // ✅ Corregido: getPersonas() en lugar de getPersona()
         if (personaNatural.getPersonas() != null) {
             personaNaturalResponseDTO.setPersona(personaMapper.toResponseDTO(personaNatural.getPersonas()));
         }
 
         if (personaNatural.getViajero() != null) {
-            personaNaturalResponseDTO.setViajero(viajeroMapper.toResponseDTO(personaNatural.getViajero()));
+
+            personaNaturalResponseDTO.setViajero(viajeroMapper.toResponseDTO(personaNatural.getViajero(), personaNatural));
         }
 
         return personaNaturalResponseDTO;

@@ -37,6 +37,9 @@ public class ReciboResponseDTO {
     private String personaJuridicaRuc;
     private String personaJuridicaRazonSocial;
 
+    private Integer carpetaId;
+    private String carpetaNombre;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

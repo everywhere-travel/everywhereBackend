@@ -13,6 +13,7 @@ public interface TelefonoPersonaRepository extends JpaRepository<TelefonoPersona
     List<TelefonoPersona> findByNumeroContaining(String numero);
     List<TelefonoPersona> findByCodigoPais(String codigoPais);
     List<TelefonoPersona> findByPersonaId(Integer personaId);
+    List<TelefonoPersona> findByPersonaIdIn(List<Integer> personaIds);
     Optional<TelefonoPersona> findByIdAndPersonaId(Integer telefonoId, Integer personaId);
     boolean existsByIdAndPersonaId(Integer telefonoId, Integer personaId);
 }

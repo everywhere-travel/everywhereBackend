@@ -1,5 +1,6 @@
 package com.everywhere.backend.service;
 
+import com.everywhere.backend.model.dto.CarpetaContenidoDTO;
 import com.everywhere.backend.model.dto.CarpetaRequestDto;
 import com.everywhere.backend.model.dto.CarpetaResponseDto;
 
@@ -22,4 +23,5 @@ public interface CarpetaService {
     List<CarpetaResponseDto> findRaices();
     List<CarpetaResponseDto> findCamino(Integer carpetaId);
     List<CarpetaResponseDto> findHijosByPadreId(Integer carpetaPadreId);
+    CarpetaContenidoDTO getContenido(Integer carpetaId);
 }

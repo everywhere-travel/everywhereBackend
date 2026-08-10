@@ -21,12 +21,14 @@ import com.everywhere.backend.repository.DetalleLiquidacionRepository;
 import com.everywhere.backend.repository.FormaPagoRepository;
 import com.everywhere.backend.repository.LiquidacionRepository;
 import com.everywhere.backend.repository.ProductoRepository;
+import com.everywhere.backend.repository.ProveedorRepository;
 import com.everywhere.backend.service.DetalleCotizacionService;
 import com.everywhere.backend.service.LiquidacionService;
 import com.everywhere.backend.service.DetalleLiquidacionService;
 import com.everywhere.backend.service.ObservacionLiquidacionService;
 import com.everywhere.backend.service.PagoPaxService;
 import com.everywhere.backend.exceptions.ResourceNotFoundException;
+import com.everywhere.backend.mapper.CotizacionMapper;
 import com.everywhere.backend.mapper.LiquidacionMapper;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -52,9 +54,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
-import com.everywhere.backend.service.AsientoContableService;
 
 @Service
 @RequiredArgsConstructor
@@ -66,6 +68,7 @@ public class LiquidacionServiceImpl implements LiquidacionService {
 
     private final LiquidacionRepository liquidacionRepository;
     private final LiquidacionMapper liquidacionMapper;
+    private final CotizacionMapper cotizacionMapper;
     private final DetalleLiquidacionService detalleLiquidacionService;
     private final DetalleLiquidacionRepository detalleLiquidacionRepository;
     private final DetalleCotizacionService detalleCotizacionService;
@@ -75,16 +78,53 @@ public class LiquidacionServiceImpl implements LiquidacionService {
     private final PagoPaxService pagoPaxService;
     private final FormaPagoRepository formaPagoRepository;
     private final ProductoRepository productoRepository;
-    private final AsientoContableService asientoContableService;
+    private final ProveedorRepository proveedorRepository;
 
     @Override
     public List<LiquidacionResponseDTO> findAll() {
-        return liquidacionRepository.findAll().stream().map(liquidacionMapper::toResponseDTO).toList();
+        return mapToResponseList(liquidacionRepository.findAll());
     }
 
     @Override
     public Page<LiquidacionResponseDTO> findPage(Pageable pageable) {
-        return liquidacionRepository.findAll(pageable).map(liquidacionMapper::toResponseDTO);
+        org.springframework.data.domain.Page<Integer> idPage =
+            liquidacionRepository.findPageIds(pageable);
+        if (idPage.isEmpty()) {
+            return org.springframework.data.domain.Page.empty(pageable);
+        }
+
+        List<Integer> ids = idPage.getContent();
+        List<Liquidacion> liquidaciones = liquidacionRepository.findByIds(ids);
+
+        java.util.Map<Integer, Liquidacion> byId = liquidaciones.stream()
+            .collect(java.util.stream.Collectors.toMap(Liquidacion::getId, l -> l));
+        List<Liquidacion> ordered = ids.stream()
+            .map(byId::get)
+            .filter(java.util.Objects::nonNull)
+            .toList();
+
+        Map<Integer, CotizacionMapper.ClienteInfo> clienteInfoMap = resolveClienteInfo(ordered);
+        List<LiquidacionResponseDTO> dtos = ordered.stream()
+            .map(l -> liquidacionMapper.toResponseDTO(l, clienteInfoMap))
+            .toList();
+
+        return new org.springframework.data.domain.PageImpl<>(dtos, pageable, idPage.getTotalElements());
+    }
+
+
+    private Map<Integer, CotizacionMapper.ClienteInfo> resolveClienteInfo(List<Liquidacion> liquidaciones) {
+        List<Cotizacion> cotizaciones = liquidaciones.stream()
+                .map(Liquidacion::getCotizacion)
+                .filter(Objects::nonNull)
+                .toList();
+        return cotizacionMapper.resolveClienteInfo(cotizaciones);
+    }
+
+    private List<LiquidacionResponseDTO> mapToResponseList(List<Liquidacion> liquidaciones) {
+        Map<Integer, CotizacionMapper.ClienteInfo> clienteInfoMap = resolveClienteInfo(liquidaciones);
+        return liquidaciones.stream()
+                .map(liquidacion -> liquidacionMapper.toResponseDTO(liquidacion, clienteInfoMap))
+                .toList();
     }
 
     @Override
@@ -574,8 +614,6 @@ public class LiquidacionServiceImpl implements LiquidacionService {
 liquidacion = liquidacionRepository.save(liquidacion);
 crearDetallesDesdeCotizacion(liquidacion, cotizacionId);
 
-asientoContableService.generarAsientoPorLiquidacion(liquidacion);
-
 return liquidacionMapper.toResponseDTO(liquidacion);
     }
 
@@ -611,12 +649,13 @@ return liquidacionMapper.toResponseDTO(liquidacion);
                 detalleLiq.setCargoServicio(
                         detalleCot.getComision() != null ? detalleCot.getComision() : BigDecimal.ZERO);
 
-                // Asignar producto y proveedor si existen
+
+
                 if (detalleCot.getProducto() != null) {
-                    detalleLiq.setProducto(detalleCot.getProducto());
+                    detalleLiq.setProducto(productoRepository.getReferenceById(detalleCot.getProducto().getId()));
                 }
                 if (detalleCot.getProveedor() != null) {
-                    detalleLiq.setProveedor(detalleCot.getProveedor());
+                    detalleLiq.setProveedor(proveedorRepository.getReferenceById(detalleCot.getProveedor().getId()));
                 }
 
                 // Inicializar otros campos con valores por defecto (se llenarán después)
@@ -654,16 +693,12 @@ return liquidacionMapper.toResponseDTO(liquidacion);
         if (!carpetaRepository.existsById(carpetaId))
             throw new ResourceNotFoundException("Carpeta no encontrada con ID: " + carpetaId);
 
-        return liquidacionRepository.findByCarpetaId(carpetaId).stream()
-                .map(liquidacionMapper::toResponseDTO)
-                .toList();
+        return mapToResponseList(liquidacionRepository.findByCarpetaId(carpetaId));
     }
 
     @Override
     public List<LiquidacionResponseDTO> findSinCarpeta() {
-        return liquidacionRepository.findByCarpetaIsNull().stream()
-                .map(liquidacionMapper::toResponseDTO)
-                .toList();
+        return mapToResponseList(liquidacionRepository.findByCarpetaIsNull());
     }
 
     @Override

@@ -30,20 +30,28 @@ public interface LiquidacionRepository extends JpaRepository<Liquidacion, Intege
     @org.springframework.data.jpa.repository.Query("SELECT l FROM Liquidacion l ORDER BY l.id DESC")
     List<Liquidacion> findAll();
 
-    @EntityGraph(attributePaths = {
-            "producto",
-            "formaPago",
-            "cotizacion",
-            "cotizacion.counter",
-            "cotizacion.estadoCotizacion",
-            "cotizacion.formaPago",
-            "cotizacion.personas",
-            "cotizacion.sucursal",
-            "cotizacion.carpeta",
-            "carpeta"
-    })
-    @NonNull
-    Page<Liquidacion> findAll(@NonNull Pageable pageable);
+
+
+    @org.springframework.data.jpa.repository.Query("SELECT l.id FROM Liquidacion l ORDER BY l.id DESC")
+    Page<Integer> findPageIds(Pageable pageable);
+
+
+    @org.springframework.data.jpa.repository.Query("SELECT l FROM Liquidacion l " +
+           "LEFT JOIN FETCH l.producto " +
+           "LEFT JOIN FETCH l.formaPago " +
+           "LEFT JOIN FETCH l.cotizacion cot " +
+           "LEFT JOIN FETCH cot.counter " +
+           "LEFT JOIN FETCH cot.estadoCotizacion " +
+           "LEFT JOIN FETCH cot.formaPago " +
+           "LEFT JOIN FETCH cot.personas " +
+           "LEFT JOIN FETCH cot.sucursal " +
+           "LEFT JOIN FETCH cot.carpeta " +
+           "LEFT JOIN FETCH l.carpeta " +
+           "WHERE l.id IN :ids " +
+           "ORDER BY l.id DESC")
+    List<Liquidacion> findByIds(@org.springframework.data.repository.query.Param("ids") List<Integer> ids);
+
+
 
     @EntityGraph(attributePaths = {
             "producto",

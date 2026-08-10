@@ -1,8 +1,9 @@
 package com.everywhere.backend.api;
 
+import com.everywhere.backend.model.dto.PersonaNaturalDetalleDTO;
 import com.everywhere.backend.model.dto.PersonaNaturalRequestDTO;
 import com.everywhere.backend.model.dto.PersonaNaturalResponseDTO;
-import com.everywhere.backend.model.dto.PersonaNaturalViajeroDTO; 
+import com.everywhere.backend.model.dto.PersonaNaturalViajeroDTO;
 import com.everywhere.backend.security.RequirePermission;
 import com.everywhere.backend.service.PersonaNaturalService;
 import jakarta.validation.Valid;
@@ -57,8 +58,14 @@ public class PersonaNaturalController {
 
     @GetMapping("/{id}")
     @RequirePermission(module = "CLIENTES", permission = "READ")
-    public ResponseEntity<PersonaNaturalResponseDTO> getPersonaNaturalById(@PathVariable Integer id) { 
+    public ResponseEntity<PersonaNaturalResponseDTO> getPersonaNaturalById(@PathVariable Integer id) {
         return ResponseEntity.ok(personaNaturalService.findById(id));
+    }
+
+    @GetMapping("/{id}/detalle")
+    @RequirePermission(module = "CLIENTES", permission = "READ")
+    public ResponseEntity<PersonaNaturalDetalleDTO> getDetalle(@PathVariable Integer id) {
+        return ResponseEntity.ok(personaNaturalService.getDetalle(id));
     }
 
     @PostMapping
