@@ -145,4 +145,11 @@ public interface ReciboRepository extends JpaRepository<Recibo, Integer> {
                         "LEFT JOIN FETCH r.documentoCobranza " +
                         "WHERE r.carpeta IS NULL")
         List<Recibo> findByCarpetaIsNull();
+
+        @Query("SELECT r FROM Recibo r " +
+               "LEFT JOIN FETCH r.usuario u " +
+               "LEFT JOIN FETCH r.detalleRecibo det " +
+               "LEFT JOIN FETCH det.producto " +
+               "WHERE r.fechaEmision BETWEEN :startDate AND :endDate")
+        List<Recibo> findByFechaEmisionBetween(@Param("startDate") java.time.LocalDate startDate, @Param("endDate") java.time.LocalDate endDate);
 }
