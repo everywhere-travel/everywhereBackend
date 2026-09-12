@@ -23,6 +23,8 @@ public interface PersonaJuridicaRepository extends JpaRepository<PersonaJuridica
     // Método original mantenido para compatibilidad
     List<PersonaJuridica> findByRazonSocialIgnoreCase(String razonSocial);
     Optional<PersonaJuridica> findByPersonasId(Integer personaId);
+    
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"personas"})
     List<PersonaJuridica> findByPersonasIdIn(List<Integer> personasIds);
     Optional<PersonaJuridica> findByRucIgnoreCaseAndIdNot(String ruc, Integer id);
 

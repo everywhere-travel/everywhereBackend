@@ -19,6 +19,8 @@ public interface PersonaNaturalRepository extends JpaRepository<PersonaNatural, 
     List<PersonaNatural> findAll();
     Optional<PersonaNatural> findByDocumentoIgnoreCase(String documento);
     Optional<PersonaNatural> findByPersonasId(Integer personaId);
+    
+    @EntityGraph(attributePaths = {"personas", "viajero", "categoriaPersona"})
     List<PersonaNatural> findByPersonasIdIn(List<Integer> personasIds);
 
 

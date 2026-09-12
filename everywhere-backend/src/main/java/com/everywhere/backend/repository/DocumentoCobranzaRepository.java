@@ -122,6 +122,9 @@ public interface DocumentoCobranzaRepository extends JpaRepository<DocumentoCobr
               "LEFT JOIN FETCH d.usuario u " +
               "LEFT JOIN FETCH d.detalles det " +
               "LEFT JOIN FETCH det.producto " +
+              "LEFT JOIN FETCH d.sucursal " +
+              "LEFT JOIN FETCH d.cotizacion c " +
+              "LEFT JOIN FETCH c.personas " +
               "WHERE d.fechaEmision BETWEEN :startDate AND :endDate")
        List<DocumentoCobranza> findByFechaEmisionBetween(@Param("startDate") java.time.LocalDate startDate, @Param("endDate") java.time.LocalDate endDate);
 }
