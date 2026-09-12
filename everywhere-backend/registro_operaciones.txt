@@ -912,6 +912,11 @@ N°	Fecha	Hora de inicio	Hora de fin	Tiempo de respuesta (ms)	Tipo de operación
 911	07/09/2026	04:21:31.305	04:22:23.082	51777	AnalyticsController.getDashboard	Exitosa	Respuesta dentro del rango esperado
 912	07/09/2026	04:26:38.386	04:27:27.498	49112	AnalyticsController.getDashboard	Exitosa	Respuesta dentro del rango esperado
 913	07/09/2026	04:31:57.010	04:32:46.241	49231	AnalyticsController.getDashboard	Exitosa	Respuesta dentro del rango esperado
+914	12/09/2026	20:46:36.533	20:46:39.052	2519	ExchangeController.getTipoDeCambio	Exitosa	Respuesta dentro del rango esperado
+915	12/09/2026	20:46:47.259	20:46:48.505	1246	AuthController.login	Exitosa	Respuesta dentro del rango esperado
+916	12/09/2026	20:46:49.761	20:46:51.817	2056	ExchangeController.getTipoDeCambio	Exitosa	Respuesta dentro del rango esperado
+917	12/09/2026	20:48:08.122	20:48:11.257	3135	AsistenteController.chat	Exitosa	Respuesta dentro del rango esperado
+918	12/09/2026	20:48:41.134	20:48:43.451	2317	AsistenteController.chat	Exitosa	Respuesta dentro del rango esperado
 914	12/09/2026	16:19:34.848	16:19:35.550	702	AuthController.login	Fallida	Excepción: BadCredentialsException - Credenciales erróneas
 915	12/09/2026	16:19:38.072	16:19:39.002	930	AuthController.login	Exitosa	Respuesta dentro del rango esperado
 916	12/09/2026	16:19:58.988	16:20:01.686	2698	AnalyticsController.getDashboard	Exitosa	Respuesta dentro del rango esperado
