@@ -31,8 +31,8 @@ jobs:
           context: ./everywhere-backend
           push: true
           tags: |
-            eddyacv/taller-backend:latest
-            eddyacv/taller-backend:${{ github.sha }}
+            eddyacv/everywhere-backend:latest
+            eddyacv/everywhere-backend:${{ github.sha }}
 
       - name: Decode SSH Key
         run: |
