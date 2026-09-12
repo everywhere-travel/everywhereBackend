@@ -5,4 +5,5 @@ import java.time.LocalDate;
 
 public interface AnalyticsService {
     AnalyticsDashboardDTO getDashboardData(LocalDate startDate, LocalDate endDate);
+    AnalyticsDashboardDTO getDashboardData(LocalDate startDate, LocalDate endDate, Integer counterId, Integer sucursalId);
 }

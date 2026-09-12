@@ -18,4 +18,8 @@ public class AnalyticsDashboardDTO {
     private List<DemographyDTO> clientDemographics;
     private List<TopDestinationDTO> topDestinations;
     private List<NewClientsChartDataDTO> newClientsChart;
+
+    // Nuevos: Análisis de Conversión
+    private QuoteFunnelDTO quoteFunnel;
+    private List<ConversionByVendorDTO> conversionByVendor;
 }
