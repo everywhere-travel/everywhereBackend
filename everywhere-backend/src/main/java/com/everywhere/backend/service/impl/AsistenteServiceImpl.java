@@ -14,7 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -32,16 +31,17 @@ public class AsistenteServiceImpl implements AsistenteService {
     private String geminiApiKey;
 
     @Value("${gemini.api.url:https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent}")
-private String geminiApiUrl;
+    private String geminiApiUrl;
 
     @Override
     public ChatMessageResponseDTO procesarMensaje(ChatMessageRequestDTO request) {
         String mensajeUsuario = request.getMessage() != null ? request.getMessage().trim() : "";
 
-        // 1. Recopilar datos reales de cotizaciones y tareas pendientes
-        String contextoPendientes = recopilarContextoPendientes();
+        // 1. Recopilar datos reales de cotizaciones (ordenados)
+        List<Cotizacion> todas = cotizacionRepository.findAll();
+        String contextoPendientes = recopilarContextoPendientes(todas);
 
-        // 2. Si hay API Key de Gemini configurada, intentar procesar con IA
+        // 2. Procesar con Gemini API si la API Key está presente
         if (geminiApiKey != null && !geminiApiKey.isBlank()) {
             try {
                 String respuestaIA = llamarGeminiAPI(mensajeUsuario, contextoPendientes);
@@ -53,12 +53,12 @@ private String geminiApiUrl;
                             .build();
                 }
             } catch (Exception e) {
-                log.error("Error al comunicarse con Gemini API, usando respuesta asistida local: {}", e.getMessage());
+                log.error("Error al comunicarse con Gemini API, usando fallback local: {}", e.getMessage());
             }
         }
 
-        // 3. Fallback inteligente / respuesta asistida si no hay IA o falla la conexión
-        String respuestaLocal = generarRespuestaLocal(mensajeUsuario, contextoPendientes);
+        // 3. Fallback inteligente si no hay IA o falla la conexión
+        String respuestaLocal = generarRespuestaLocal(mensajeUsuario, todas, contextoPendientes);
         return ChatMessageResponseDTO.builder()
                 .reply(respuestaLocal)
                 .suggestions(generarSugerencias())
@@ -66,17 +66,16 @@ private String geminiApiUrl;
                 .build();
     }
 
-    private String recopilarContextoPendientes() {
+    private String recopilarContextoPendientes(List<Cotizacion> todas) {
         StringBuilder sb = new StringBuilder();
         try {
-            List<Cotizacion> todas = cotizacionRepository.findAll();
             List<Cotizacion> sinLiquidacion = cotizacionRepository.findCotizacionesSinLiquidacion();
             List<Cotizacion> sinCobranza = cotizacionRepository.findCotizacionesSinDocumentoCobranza();
 
             LocalDateTime ahora = LocalDateTime.now();
             LocalDateTime en7Dias = ahora.plusDays(7);
 
-            // Filtrar cotizaciones pendientes o próximas a vencer
+            // Filtrar cotizaciones próximas a vencer
             List<Cotizacion> proximasVencer = todas.stream()
                     .filter(c -> c.getFechaVencimiento() != null &&
                             c.getFechaVencimiento().isAfter(ahora.minusDays(2)) &&
@@ -84,18 +83,19 @@ private String geminiApiUrl;
                     .limit(5)
                     .collect(Collectors.toList());
 
-            // Últimas cotizaciones
+            // Ordenar descendentemente por ID o fecha para obtener verdaderamente las más recientes
             List<Cotizacion> recientes = todas.stream()
+                    .sorted((c1, c2) -> Long.compare(c2.getId(), c1.getId()))
                     .limit(6)
                     .collect(Collectors.toList());
 
-            sb.append("ESTADO ACTUAL DEL SISTEMA EVERYWHERE:\n");
-            sb.append("- Total de cotizaciones registradas: ").append(todas.size()).append("\n");
-            sb.append("- Cotizaciones pendientes de liquidación: ").append(sinLiquidacion.size()).append("\n");
-            sb.append("- Cotizaciones pendientes de documento de cobranza: ").append(sinCobranza.size()).append("\n\n");
+            sb.append("ESTADO GENERAL DEL SISTEMA:\n");
+            sb.append("- Total registradas: ").append(todas.size()).append("\n");
+            sb.append("- Sin liquidación: ").append(sinLiquidacion.size()).append("\n");
+            sb.append("- Sin documento de cobranza: ").append(sinCobranza.size()).append("\n\n");
 
             if (!proximasVencer.isEmpty()) {
-                sb.append("COTIZACIONES PRÓXIMAS A VENCER O RECIENTES:\n");
+                sb.append("COTIZACIONES PRÓXIMAS A VENCER:\n");
                 for (Cotizacion c : proximasVencer) {
                     sb.append("• [").append(c.getCodigoCotizacion() != null ? c.getCodigoCotizacion() : "ID: " + c.getId()).append("] ")
                             .append(c.getNombreCotizacion() != null ? c.getNombreCotizacion() : "Sin título")
@@ -108,7 +108,7 @@ private String geminiApiUrl;
             }
 
             if (!recientes.isEmpty()) {
-                sb.append("COTIZACIONES RECIENTES EN SEGUIMIENTO:\n");
+                sb.append("ÚLTIMAS COTIZACIONES CREADAS (De más nueva a más antigua):\n");
                 for (Cotizacion c : recientes) {
                     sb.append("• [").append(c.getCodigoCotizacion() != null ? c.getCodigoCotizacion() : "ID: " + c.getId()).append("] ")
                             .append(c.getNombreCotizacion() != null ? c.getNombreCotizacion() : "Cotización")
@@ -127,15 +127,13 @@ private String geminiApiUrl;
     private String llamarGeminiAPI(String mensajeUsuario, String contexto) {
         String endpoint = geminiApiUrl + "?key=" + geminiApiKey;
 
-        String systemInstruction = "Eres 'EveryBot', el copiloto inteligente de EveryWhere Travel (agencia de viajes en Perú).\n" +
-                "Tu misión es ayudar a los asesores y administradores a gestionar sus cotizaciones, clientes, vencimientos y tareas administrativas pendientes.\n" +
-                "Tienes acceso en tiempo real a los siguientes datos de la base de datos:\n\n" +
-                contexto + "\n\n" +
-                "Reglas de respuesta:\n" +
-                "1. Sé conciso, profesional, amable y directo al grano.\n" +
-                "2. Usa formato Markdown (negritas, viñetas, emojis relevantes como 📋, ⏳, ✈️).\n" +
-                "3. Si el usuario pregunta por tareas o cotizaciones pendientes, prioriza aquellas que vencen pronto o requieren liquidación/cobranza.\n" +
-                "4. Si te piden redactar un mensaje para un cliente o sugerir un itinerario, hazlo con un tono comercial impecable.";
+        String systemInstruction = "Eres 'EveryBot', el asistente de EveryWhere Travel.\n" +
+                "Tienes acceso a estos datos en tiempo real:\n\n" + contexto + "\n\n" +
+                "REGLAS OBLIGATORIAS:\n" +
+                "1. Responde DE FORMA DIRECTA a lo que pregunta el usuario.\n" +
+                "2. Si pide 'la última cotización' o 'la más reciente', menciona ÚNICAMENTE la primera cotización de la lista de recientes (su código, nombre, moneda y estado).\n" +
+                "3. PROHIBIDO imprimir el resumen general ('ESTADO GENERAL DEL SISTEMA') a menos que el usuario use palabras como 'resumen', 'estado global', 'reporte' o 'hola'.\n" +
+                "4. Sé conciso, directo y usa formato Markdown amigable.";
 
         Map<String, Object> requestBody = Map.of(
                 "contents", List.of(
@@ -148,8 +146,8 @@ private String geminiApiUrl;
                         "parts", List.of(Map.of("text", systemInstruction))
                 ),
                 "generationConfig", Map.of(
-                        "temperature", 0.6,
-                        "maxOutputTokens", 1000
+                        "temperature", 0.3,
+                        "maxOutputTokens", 800
                 )
         );
 
@@ -181,31 +179,52 @@ private String geminiApiUrl;
         return null;
     }
 
-    private String generarRespuestaLocal(String mensajeUsuario, String contexto) {
+    private String generarRespuestaLocal(String mensajeUsuario, List<Cotizacion> todas, String contexto) {
+        String msg = mensajeUsuario.toLowerCase();
+
+        // Responder específicamente a la solicitud de última cotización en modo offline
+        if (msg.contains("ultima") || msg.contains("última") || msg.contains("reciente")) {
+            Optional<Cotizacion> ultimaOpt = todas.stream()
+                    .max(Comparator.comparing(Cotizacion::getId));
+
+            if (ultimaOpt.isPresent()) {
+                Cotizacion c = ultimaOpt.get();
+                String codigo = c.getCodigoCotizacion() != null ? c.getCodigoCotizacion() : "ID: " + c.getId();
+                String nombre = c.getNombreCotizacion() != null ? c.getNombreCotizacion() : "Cotización sin título";
+                String estado = c.getEstadoCotizacion() != null ? c.getEstadoCotizacion().getDescripcion() : "Sin estado";
+                String moneda = c.getMoneda() != null ? c.getMoneda() : "USD";
+
+                return String.format("📋 **Última Cotización Registrada:**\n\n" +
+                        "• **Código:** %s\n" +
+                        "• **Nombre:** %s\n" +
+                        "• **Moneda:** %s\n" +
+                        "• **Estado:** %s", codigo, nombre, moneda, estado);
+            }
+        }
+
         StringBuilder sb = new StringBuilder();
         sb.append("¡Hola! Soy **EveryBot**, tu asistente de **EveryWhere Travel**.\n\n");
 
-        if (mensajeUsuario.toLowerCase().contains("venc") || mensajeUsuario.toLowerCase().contains("urgent")) {
+        if (msg.contains("venc") || msg.contains("urgent")) {
             sb.append("⏳ **Prioridades y Vencimientos:**\n");
-            sb.append("Te sugiero revisar las cotizaciones que tienen fecha límite esta semana para evitar que expiren las tarifas aéreas o de hotel.\n\n");
-        } else if (mensajeUsuario.toLowerCase().contains("liquid") || mensajeUsuario.toLowerCase().contains("tarea")) {
-            sb.append("📑 **Tareas Administrativas Pendientes:**\n");
-            sb.append("Recuerda que tienes cotizaciones aprobadas pendientes de liquidación y generación de documentos de cobranza.\n\n");
+            sb.append("Revisa las cotizaciones con fecha límite esta semana para evitar vencimientos de tarifa.\n\n");
+        } else if (msg.contains("liquid") || msg.contains("tarea")) {
+            sb.append("📑 **Tareas Pendientes:**\n");
+            sb.append("Tienes cotizaciones pendientes de liquidación y documentos de cobranza por generar.\n\n");
         } else {
             sb.append("Aquí tienes tu resumen operativo actual:\n\n");
+            sb.append(contexto);
         }
 
-        sb.append(contexto);
-        sb.append("\n\n💡 *Puedes preguntarme por cotizaciones específicas, tareas pendientes o redactar mensajes para clientes.*");
         return sb.toString();
     }
 
     private List<String> generarSugerencias() {
         return List.of(
-                "¿Qué cotizaciones tengo pendientes?",
-                "¿Cuáles vencen pronto?",
-                "¿Qué cotizaciones faltan liquidar?",
-                "Ayúdame a redactar un seguimiento"
+                "Dame la última cotización",
+                "¿Qué cotizaciones vencen pronto?",
+                "¿Cuáles faltan liquidar?",
+                "Redactar un mensaje de seguimiento"
         );
     }
 
