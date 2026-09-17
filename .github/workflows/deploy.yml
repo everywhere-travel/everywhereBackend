@@ -47,7 +47,7 @@ jobs:
           key_path: /tmp/vps_key
           port: 22
           script: |
-            cd /apps/everywhereBackend
-            docker compose pull
-            docker compose up -d
+            cd ~/api-everywhere
+            docker compose -p api-everywhere pull
+            docker compose -p api-everywhere up -d --remove-orphans
             docker image prune -f
