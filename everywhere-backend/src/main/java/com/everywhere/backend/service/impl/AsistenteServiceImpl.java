@@ -31,8 +31,8 @@ public class AsistenteServiceImpl implements AsistenteService {
     @Value("${gemini.api.key:}")
     private String geminiApiKey;
 
-    @Value("${gemini.api.url:https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent}")
-    private String geminiApiUrl;
+    @Value("${gemini.api.url:https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent}")
+private String geminiApiUrl;
 
     @Override
     public ChatMessageResponseDTO procesarMensaje(ChatMessageRequestDTO request) {
