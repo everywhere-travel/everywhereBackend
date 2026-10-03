@@ -1070,3 +1070,5 @@ N°	Fecha	Hora de inicio	Hora de fin	Tiempo de respuesta (ms)	Tipo de operación
 1069	03/10/2026	13:05:57.137	13:05:59.657	2520	ExchangeController.getTipoDeCambio	Exitosa	Respuesta dentro del rango esperado
 1070	03/10/2026	13:06:01.138	13:06:03.632	2494	ExchangeController.getTipoDeCambio	Exitosa	Respuesta dentro del rango esperado
 1071	03/10/2026	13:06:07.868	13:06:08.890	1022	ConsultaPeruController.consultarRuc	Exitosa	Respuesta dentro del rango esperado
+1072	03/10/2026	18:35:22.061	18:35:23.461	1399	AuthController.login	Exitosa	Respuesta dentro del rango esperado
+1073	03/10/2026	18:35:27.056	18:35:29.831	2775	ExchangeController.getTipoDeCambio	Exitosa	Respuesta dentro del rango esperado
