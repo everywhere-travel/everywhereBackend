@@ -1,5 +1,6 @@
 package com.everywhere.backend.model.entity;
 
+import com.everywhere.backend.util.crypto.DniEncryptionConverter;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -19,6 +20,7 @@ public class DetalleDocumento {
     @Column(name = "dtdoc_id_int")
     private Integer id;
 
+    @Convert(converter = DniEncryptionConverter.class)
     @Column(name = "dtdoc_numero_vac")
     private String numero;
 

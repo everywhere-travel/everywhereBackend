@@ -475,8 +475,8 @@ public class CotizacionServiceImpl implements CotizacionService {
             // 8. Condiciones de Tarifa
             addCondicionesTarifa(document);
 
-            // 9. Política de Privacidad
-            addPoliticaPrivacidad(document);
+            // 9. Política de Privacidad (Ley N° 29733)
+            addPoliticaPrivacidad(document, cotizacion);
 
             document.write(out);
             document.close();
@@ -1104,26 +1104,41 @@ public class CotizacionServiceImpl implements CotizacionService {
         spaceParagraph.setSpacingAfter(300);
     }
 
-    private void addPoliticaPrivacidad(XWPFDocument document) {
+    private void addPoliticaPrivacidad(XWPFDocument document, CotizacionConDetallesResponseDTO cotizacion) {
         XWPFParagraph titleParagraph = document.createParagraph();
         titleParagraph.setSpacingBefore(300);
         XWPFRun titleRun = titleParagraph.createRun();
-        titleRun.setText("POLÍTICA DE PRIVACIDAD");
+        titleRun.setText("POLÍTICA DE PRIVACIDAD Y PROTECCIÓN DE DATOS (LEY N° 29733)");
         titleRun.setBold(true);
-        titleRun.setFontSize(12);
+        titleRun.setFontSize(11);
+
+        boolean esClientesVarios = cotizacion != null && (
+                (cotizacion.getClienteNombre() != null && cotizacion.getClienteNombre().toUpperCase().contains("CLIENTES VARIOS")) ||
+                "00000000".equals(cotizacion.getClienteIdentificador())
+        );
 
         String[] parrafos = {
-                "EVERYWHERE TRAVEL S.A.C. te informa sobre su Política de Privacidad respecto al tratamiento y protección de los datos de carácter personal en los usuarios y clientes que puedan ser recabados por la navegación o contratación de servicios a través de cualquier medio digital o del sitio Web https://everywhereviajes.com/.",
-                "En este sentido, el Titular garantiza el cumplimiento de la normativa vigente en materia de protección de datos personales, reflejada en la Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos Personales y de Garantía de Derechos Digitales (LOPD GDD). Cumple también con el Reglamento (UE) 2016/679 del Parlamento Europeo y del Consejo de 27 de abril de 2016 relativo a la protección de las personas físicas (RGPD).",
-                "El uso de sitio Web y él envió de la foto del DNI o Pasaporte implica la aceptación de esta Política de Privacidad, así como las condiciones incluidas en el Aviso Legal."
+                "EVERYWHERE TRAVEL S.A.C. informa que el tratamiento de los datos personales se efectúa en estricto cumplimiento de la Ley N° 29733 (Ley de Protección de Datos Personales del Perú) y su Reglamento aprobado por D.S. N° 003-2013-JUS.",
+                "Los datos personales recabados son tratados de manera confidencial y utilizados exclusivamente para la elaboración y envío de la presente cotización, así como para la consulta y reserva de servicios turísticos ante operadores, aerolíneas y hoteles.",
+                "El titular de los datos personales puede ejercer en cualquier momento sus derechos ARCO (Acceso, Rectificación, Cancelación y Oposición) ante EveryWhere Travel."
         };
 
         for (String parrafo : parrafos) {
             XWPFParagraph p = document.createParagraph();
-            p.setSpacingAfter(100);
+            p.setSpacingAfter(80);
             XWPFRun r = p.createRun();
             r.setText(parrafo);
-            r.setFontSize(9);
+            r.setFontSize(8.5);
+        }
+
+        if (esClientesVarios) {
+            XWPFParagraph cvP = document.createParagraph();
+            cvP.setSpacingBefore(60);
+            cvP.setSpacingAfter(80);
+            XWPFRun cvR = cvP.createRun();
+            cvR.setText("CLÁUSULA DE PRIVACIDAD (CLIENTES VARIOS / COTIZACIÓN INFORMATIVA): La presente cotización ha sido expedida a nombre de CLIENTES VARIOS como cotización transúnte a solicitud del interesado. No se almacena información de carácter personal en bases de datos comerciales sin consentimiento previo.");
+            cvR.setBold(true);
+            cvR.setFontSize(8.5);
         }
 
         // Términos y Condiciones

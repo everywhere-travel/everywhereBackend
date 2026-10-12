@@ -118,4 +118,15 @@ public class PersonaController {
     public ResponseEntity<PersonaDisplayDto> findPersonaNaturalOrJuridicaByIdDropdown(@PathVariable Integer personaId) {
         return ResponseEntity.ok(personaService.findPersonaNaturalOrJuridicaById(personaId));
     }
+
+    @GetMapping("/dropdown/clientes-varios")
+    public ResponseEntity<PersonaDisplayDto> getClientesVariosDropdown() {
+        return ResponseEntity.ok(personaService.getOrCreateClientesVarios());
+    }
+
+    @GetMapping("/clientes-varios")
+    @RequirePermission(module = "CLIENTES", permission = "READ")
+    public ResponseEntity<PersonaDisplayDto> getClientesVarios() {
+        return ResponseEntity.ok(personaService.getOrCreateClientesVarios());
+    }
 }

@@ -73,7 +73,10 @@ public class ConsultaPeruServiceImpl implements ConsultaPeruService {
                     .build();
         }
 
-        List<DetalleDocumento> detalles = detalleDocumentoRepository.findByNumeroContainingIgnoreCase(cleanDni);
+        List<DetalleDocumento> detalles = detalleDocumentoRepository.findByNumero(cleanDni);
+        if (detalles.isEmpty()) {
+            detalles = detalleDocumentoRepository.findByNumeroContainingIgnoreCase(cleanDni);
+        }
         for (DetalleDocumento det : detalles) {
             if (det.getNumero() != null && det.getNumero().trim().equalsIgnoreCase(cleanDni) && det.getPersonaNatural() != null) {
                 PersonaNatural pn = det.getPersonaNatural();

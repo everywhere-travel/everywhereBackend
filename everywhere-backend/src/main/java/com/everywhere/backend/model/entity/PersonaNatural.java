@@ -1,5 +1,6 @@
 package com.everywhere.backend.model.entity;
 
+import com.everywhere.backend.util.crypto.DniEncryptionConverter;
 import com.fasterxml.jackson.annotation.JsonManagedReference; 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -20,6 +21,7 @@ public class PersonaNatural {
     @Column(name = "per_nat_id_int")
     private Integer id;
 
+    @Convert(converter = DniEncryptionConverter.class)
     @Column(name = "per_nat_doc_int")
     private String documento;
 
