@@ -52,7 +52,12 @@ public class PersonaServiceImpl implements PersonaService {
     @Override
     @Transactional(readOnly = true)
     public Page<PersonaTablaDTO> findPersonasPage(String searchTerm, String typeFilter, Pageable pageable) {
-        return personaRepository.findPersonasPage(searchTerm, typeFilter, pageable);
+        String encryptedSearch = null;
+        if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+            encryptedSearch = com.everywhere.backend.util.crypto.DniEncryptionUtil.encrypt(searchTerm.trim());
+        }
+        Page<PersonaTablaDTO> rawPage = personaRepository.findPersonasPage(searchTerm, encryptedSearch, typeFilter, pageable);
+        return rawPage.map(PersonaTablaDTOImpl::fromProjection);
     }
 
     @Override
@@ -110,5 +115,40 @@ public class PersonaServiceImpl implements PersonaService {
             "totalNaturales", totalNaturales,
             "totalJuridicas", totalJuridicas
         );
+    }
+
+    @Override
+    @Transactional
+    public PersonaDisplayDto getOrCreateClientesVarios() {
+        return personaNaturalRepository.findByDocumentoIgnoreCase("00000000")
+                .map(pn -> new PersonaDisplayDto(
+                        pn.getPersonas().getId(),
+                        "natural",
+                        "00000000",
+                        "CLIENTES VARIOS (TRANSÚNTE)"
+                ))
+                .orElseGet(() -> {
+                    Personas persona = new Personas();
+                    persona.setEmail("clientesvarios@everywheretravel.com");
+                    persona.setDireccion("Sin dirección (Clientes Varios)");
+                    persona.setObservacion("Cliente genérico del sistema para cotizaciones y operaciones rápidas sin almacenamiento de datos personales (Ley N° 29733).");
+                    Personas savedPersona = personaRepository.save(persona);
+
+                    com.everywhere.backend.model.entity.PersonaNatural pn = new com.everywhere.backend.model.entity.PersonaNatural();
+                    pn.setPersonas(savedPersona);
+                    pn.setDocumento("00000000");
+                    pn.setNombres("CLIENTES");
+                    pn.setApellidosPaterno("VARIOS");
+                    pn.setApellidosMaterno("(TRANSÚNTE)");
+                    pn.setSexo("M");
+                    personaNaturalRepository.save(pn);
+
+                    return new PersonaDisplayDto(
+                            savedPersona.getId(),
+                            "natural",
+                            "00000000",
+                            "CLIENTES VARIOS (TRANSÚNTE)"
+                    );
+                });
     }
 }

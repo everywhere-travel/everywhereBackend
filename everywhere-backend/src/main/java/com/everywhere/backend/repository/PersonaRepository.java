@@ -51,6 +51,7 @@ public interface PersonaRepository extends JpaRepository<Personas, Integer> {
                LOWER(CONCAT(COALESCE(pn.per_nat_nomb_vac, ''), ' ', COALESCE(pn.per_nat_apell_pat_vac, ''), ' ', COALESCE(pn.per_nat_apell_mat_vac, ''))) LIKE LOWER(CONCAT('%', CAST(:searchTerm AS text), '%')) OR 
                LOWER(pj.per_jurd_raz_social_vac) LIKE LOWER(CONCAT('%', CAST(:searchTerm AS text), '%')) OR 
                CAST(pn.per_nat_doc_int AS text) LIKE LOWER(CONCAT('%', CAST(:searchTerm AS text), '%')) OR 
+               (CAST(:encryptedSearch AS text) IS NOT NULL AND CAST(pn.per_nat_doc_int AS text) = CAST(:encryptedSearch AS text)) OR 
                CAST(pj.per_jurd_ruc_int AS text) LIKE LOWER(CONCAT('%', CAST(:searchTerm AS text), '%')))
         AND (CAST(:typeFilter AS text) IS NULL OR CAST(:typeFilter AS text) = 'todos' OR 
              (CAST(:typeFilter AS text) = 'natural' AND pn.per_nat_id_int IS NOT NULL) OR 
@@ -64,11 +65,12 @@ public interface PersonaRepository extends JpaRepository<Personas, Integer> {
                LOWER(CONCAT(COALESCE(pn.per_nat_nomb_vac, ''), ' ', COALESCE(pn.per_nat_apell_pat_vac, ''), ' ', COALESCE(pn.per_nat_apell_mat_vac, ''))) LIKE LOWER(CONCAT('%', CAST(:searchTerm AS text), '%')) OR 
                LOWER(pj.per_jurd_raz_social_vac) LIKE LOWER(CONCAT('%', CAST(:searchTerm AS text), '%')) OR 
                CAST(pn.per_nat_doc_int AS text) LIKE LOWER(CONCAT('%', CAST(:searchTerm AS text), '%')) OR 
+               (CAST(:encryptedSearch AS text) IS NOT NULL AND CAST(pn.per_nat_doc_int AS text) = CAST(:encryptedSearch AS text)) OR 
                CAST(pj.per_jurd_ruc_int AS text) LIKE LOWER(CONCAT('%', CAST(:searchTerm AS text), '%')))
         AND (CAST(:typeFilter AS text) IS NULL OR CAST(:typeFilter AS text) = 'todos' OR 
              (CAST(:typeFilter AS text) = 'natural' AND pn.per_nat_id_int IS NOT NULL) OR 
              (CAST(:typeFilter AS text) = 'juridica' AND pn.per_nat_id_int IS NULL))
         """,
         nativeQuery = true)
-    Page<PersonaTablaDTO> findPersonasPage(@Param("searchTerm") String searchTerm, @Param("typeFilter") String typeFilter, Pageable pageable);
-}
+    Page<PersonaTablaDTO> findPersonasPage(@Param("searchTerm") String searchTerm, @Param("encryptedSearch") String encryptedSearch, @Param("typeFilter") String typeFilter, Pageable pageable);
+}

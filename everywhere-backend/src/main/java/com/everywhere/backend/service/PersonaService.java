@@ -20,4 +20,5 @@ public interface PersonaService {
     void deleteById(Integer id);
     PersonaDisplayDto findPersonaNaturalOrJuridicaById(Integer id);
     java.util.Map<String, Long> getPersonaStats();
+    PersonaDisplayDto getOrCreateClientesVarios();
 }

@@ -246,6 +246,14 @@ public class LiquidacionServiceImpl implements LiquidacionService {
         addResumenValue(sheet, rowIndex++, "Número de Pasajeros", toText(liquidacion.getNumeroPasajeros()));
         addResumenValue(sheet, rowIndex++, "Producto", getLiquidacionProducto(liquidacion));
         addResumenValue(sheet, rowIndex++, "Forma de Pago", getLiquidacionFormaPago(liquidacion));
+        if (liquidacion.getCotizacion() != null) {
+            addResumenValue(sheet, rowIndex++, "Cotización Base", toText(liquidacion.getCotizacion().getCodigoCotizacion()));
+            addResumenValue(sheet, rowIndex++, "Cliente", toText(liquidacion.getCotizacion().getClienteNombre()));
+            if (liquidacion.getCotizacion().getClienteNombre() != null &&
+                    liquidacion.getCotizacion().getClienteNombre().contains("CLIENTES VARIOS")) {
+                addResumenValue(sheet, rowIndex++, "Privacidad (Ley N° 29733)", "Modalidad Clientes Varios (Sin persistencia de datos personales)");
+            }
+        }
         addResumenValue(sheet, rowIndex++, "Creado", formatDateTime(liquidacion.getCreado()));
         addResumenValue(sheet, rowIndex++, "Actualizado", formatDateTime(liquidacion.getActualizado()));
 
@@ -263,7 +271,16 @@ public class LiquidacionServiceImpl implements LiquidacionService {
                 sumPagosPaxByMoneda(pagosPax, "USD"), moneyStyle);
         addResumenMoneyValue(sheet, rowIndex++, "Total Pagos a Proveedor PEN",
                 sumPagosPaxByMoneda(pagosPax, "PEN"), moneyStyle);
-        addResumenValue(sheet, rowIndex, "Cantidad de Pagos a Proveedores", toText(pagosPax == null ? 0 : pagosPax.size()));
+        addResumenValue(sheet, rowIndex++, "Cantidad de Pagos a Proveedores", toText(pagosPax == null ? 0 : pagosPax.size()));
+
+        if (liquidacion.getCotizacion() != null &&
+                liquidacion.getCotizacion().getClienteNombre() != null &&
+                liquidacion.getCotizacion().getClienteNombre().contains("CLIENTES VARIOS")) {
+            rowIndex++;
+            Row legalRow = sheet.createRow(rowIndex++);
+            Cell legalCell = legalRow.createCell(0);
+            legalCell.setCellValue("NOTA LEGAL (Ley N° 29733): Operación registrada como cliente transúnte. La emisión de comprobantes de pago debe ceñirse a la normativa SUNAT (Res. 007-99/SUNAT: boletas < S/ 700 sin exigencia de DNI). La emisión de boletos aéreos nominativos definitivos requerirá los datos oficiales del pasajero según la regulación de aviación civil.");
+        }
 
         autoSizeColumns(sheet, 2);
     }

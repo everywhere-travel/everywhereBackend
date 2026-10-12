@@ -44,3 +44,5 @@ build/
 # Configuración de IDE
 .idea/
 
+# Logs operacionales
+registro_operaciones.txt

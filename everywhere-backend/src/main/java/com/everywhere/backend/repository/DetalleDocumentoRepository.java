@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface DetalleDocumentoRepository extends JpaRepository<DetalleDocumento, Integer> {
+    List<DetalleDocumento> findByNumero(String numero);
     List<DetalleDocumento> findByDocumentoId(Integer documentoId);
     List<DetalleDocumento> findByNumeroContainingIgnoreCase(String numero);
     List<DetalleDocumento> findByPersonaNaturalId(Integer personaNaturalId);
