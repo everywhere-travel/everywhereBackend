@@ -26,4 +26,11 @@ public interface DetalleCotizacionRepository extends JpaRepository<DetalleCotiza
     @Query("SELECT COUNT(dc) FROM DetalleCotizacion dc WHERE dc.categoria.id = :categoriaId")
     long countByCategoriaId(@Param("categoriaId") Integer categoriaId);
 
+    @Query("SELECT d.cotizacion.id, " +
+           "SUM(CASE WHEN d.seleccionado = true THEN (COALESCE(d.precioHistorico, 0) * COALESCE(d.cantidad, 1)) ELSE 0 END), " +
+           "SUM(COALESCE(d.precioHistorico, 0) * COALESCE(d.cantidad, 1)) " +
+           "FROM DetalleCotizacion d " +
+           "GROUP BY d.cotizacion.id")
+    List<Object[]> findTotalesPorCotizacion();
+
 }

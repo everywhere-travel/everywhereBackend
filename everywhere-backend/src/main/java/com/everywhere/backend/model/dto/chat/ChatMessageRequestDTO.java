@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -13,4 +15,6 @@ import lombok.NoArgsConstructor;
 public class ChatMessageRequestDTO {
     @NotBlank(message = "El mensaje no puede estar vacío")
     private String message;
+
+    private List<ChatHistoryItemDTO> history;
 }
