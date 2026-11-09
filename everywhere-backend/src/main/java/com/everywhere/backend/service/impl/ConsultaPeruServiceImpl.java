@@ -11,17 +11,20 @@ import com.everywhere.backend.repository.DetalleDocumentoRepository;
 import com.everywhere.backend.repository.PersonaJuridicaRepository;
 import com.everywhere.backend.repository.PersonaNaturalRepository;
 import com.everywhere.backend.service.ConsultaPeruService;
+import com.everywhere.backend.service.FinOpsCostService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -36,9 +39,18 @@ public class ConsultaPeruServiceImpl implements ConsultaPeruService {
     private final PersonaJuridicaRepository personaJuridicaRepository;
     private final DetalleDocumentoRepository detalleDocumentoRepository;
     private final ConfiguracionApiRepository configuracionApiRepository;
+    private final FinOpsCostService finOpsCostService;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    // Resiliencia en Integracion: Timeout de conexion 4s y de lectura 5s para evitar hilos colgados
+    private final RestTemplate restTemplate = crearRestTemplateResiliente();
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static RestTemplate crearRestTemplateResiliente() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(4000);
+        factory.setReadTimeout(5000);
+        return new RestTemplate(factory);
+    }
 
     @Value("${apiperu.url:https://api.apiperu.dev}")
     private String apiperuUrl;
@@ -57,6 +69,7 @@ public class ConsultaPeruServiceImpl implements ConsultaPeruService {
         // 1. Búsqueda local: ¿Existe ya en persona_natural o detalle_documento?
         Optional<PersonaNatural> naturalOpt = personaNaturalRepository.findByDocumentoIgnoreCase(cleanDni);
         if (naturalOpt.isPresent()) {
+            finOpsCostService.registrarConsultaLocalDni();
             PersonaNatural pn = naturalOpt.get();
             String nombreCompleto = construirNombreCompleto(pn.getNombres(), pn.getApellidosPaterno(), pn.getApellidosMaterno());
             return DniConsultaResponseDTO.builder()
@@ -79,6 +92,7 @@ public class ConsultaPeruServiceImpl implements ConsultaPeruService {
         }
         for (DetalleDocumento det : detalles) {
             if (det.getNumero() != null && det.getNumero().trim().equalsIgnoreCase(cleanDni) && det.getPersonaNatural() != null) {
+                finOpsCostService.registrarConsultaLocalDni();
                 PersonaNatural pn = det.getPersonaNatural();
                 String nombreCompleto = construirNombreCompleto(pn.getNombres(), pn.getApellidosPaterno(), pn.getApellidosMaterno());
                 return DniConsultaResponseDTO.builder()
@@ -129,6 +143,7 @@ public class ConsultaPeruServiceImpl implements ConsultaPeruService {
                     String nombreCompleto = data.path("nombre_completo").asText(construirNombreCompleto(nombres, apellidoPat, apellidoMat));
                     Integer codVerif = data.has("codigo_verificacion") ? data.path("codigo_verificacion").asInt() : null;
 
+                    finOpsCostService.registrarConsultaExternaDni(true);
                     return DniConsultaResponseDTO.builder()
                             .dni(cleanDni)
                             .nombres(nombres)
@@ -141,6 +156,7 @@ public class ConsultaPeruServiceImpl implements ConsultaPeruService {
                             .mensaje("Datos obtenidos exitosamente de RENIEC / Padrón")
                             .build();
                 } else {
+                    finOpsCostService.registrarConsultaExternaDni(false);
                     String msg = root.path("message").asText("El DNI no fue encontrado en los registros oficiales.");
                     log.warn("[ApiPeru] Consulta no exitosa (success=false) para DNI {}: msg='{}' | RawBody={}", cleanDni, msg, response.getBody());
                     return DniConsultaResponseDTO.builder()
@@ -151,7 +167,17 @@ public class ConsultaPeruServiceImpl implements ConsultaPeruService {
                             .build();
                 }
             }
+        } catch (ResourceAccessException e) {
+            finOpsCostService.registrarConsultaExternaDni(false);
+            log.warn("[ApiPeru] Timeout de red o servicio inaccesible al consultar DNI {}: {}", cleanDni, e.getMessage());
+            return DniConsultaResponseDTO.builder()
+                    .dni(cleanDni)
+                    .encontrado(false)
+                    .origen("APIPERU")
+                    .mensaje("El servicio de RENIEC/ApiPeru no respondió a tiempo (Timeout). Puede ingresar los datos manualmente.")
+                    .build();
         } catch (HttpClientErrorException.NotFound e) {
+            finOpsCostService.registrarConsultaExternaDni(false);
             log.warn("[ApiPeru] DNI {} no encontrado (404 Not Found): Body={}", cleanDni, e.getResponseBodyAsString());
             return DniConsultaResponseDTO.builder()
                     .dni(cleanDni)
@@ -212,6 +238,7 @@ public class ConsultaPeruServiceImpl implements ConsultaPeruService {
         // 1. Búsqueda local: ¿Existe ya en persona_juridica?
         Optional<PersonaJuridica> juridicaOpt = personaJuridicaRepository.findByRucIgnoreCase(cleanRuc);
         if (juridicaOpt.isPresent()) {
+            finOpsCostService.registrarConsultaLocalRuc();
             PersonaJuridica pj = juridicaOpt.get();
             String direccion = pj.getPersonas() != null ? pj.getPersonas().getDireccion() : null;
             return RucConsultaResponseDTO.builder()
@@ -261,6 +288,7 @@ public class ConsultaPeruServiceImpl implements ConsultaPeruService {
                     String direccion = data.path("direccion").asText("");
                     String departamento = data.path("departamento").asText("");
 
+                    finOpsCostService.registrarConsultaExternaRuc(true);
                     return RucConsultaResponseDTO.builder()
                             .ruc(cleanRuc)
                             .razonSocial(razonSocial)
@@ -273,6 +301,7 @@ public class ConsultaPeruServiceImpl implements ConsultaPeruService {
                             .mensaje("Datos obtenidos exitosamente de SUNAT")
                             .build();
                 } else {
+                    finOpsCostService.registrarConsultaExternaRuc(false);
                     String msg = root.path("message").asText("El RUC no fue encontrado en los registros de SUNAT.");
                     log.warn("[ApiPeru] Consulta no exitosa (success=false) para RUC {}: msg='{}' | RawBody={}", cleanRuc, msg, response.getBody());
                     return RucConsultaResponseDTO.builder()
@@ -283,7 +312,17 @@ public class ConsultaPeruServiceImpl implements ConsultaPeruService {
                             .build();
                 }
             }
+        } catch (ResourceAccessException e) {
+            finOpsCostService.registrarConsultaExternaRuc(false);
+            log.warn("[ApiPeru] Timeout de red o servicio inaccesible al consultar RUC {}: {}", cleanRuc, e.getMessage());
+            return RucConsultaResponseDTO.builder()
+                    .ruc(cleanRuc)
+                    .encontrado(false)
+                    .origen("APIPERU")
+                    .mensaje("El servicio de SUNAT/ApiPeru no respondió a tiempo (Timeout). Puede ingresar los datos manualmente.")
+                    .build();
         } catch (HttpClientErrorException.NotFound e) {
+            finOpsCostService.registrarConsultaExternaRuc(false);
             log.warn("[ApiPeru] RUC {} no encontrado (404 Not Found): Body={}", cleanRuc, e.getResponseBodyAsString());
             return RucConsultaResponseDTO.builder()
                     .ruc(cleanRuc)

@@ -10,12 +10,14 @@ import com.everywhere.backend.repository.CotizacionRepository;
 import com.everywhere.backend.repository.DetalleCotizacionRepository;
 import com.everywhere.backend.service.AnalyticsService;
 import com.everywhere.backend.service.AsistenteService;
+import com.everywhere.backend.service.FinOpsCostService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -36,6 +38,7 @@ public class AsistenteServiceImpl implements AsistenteService {
     private final DetalleCotizacionRepository detalleCotizacionRepository;
     private final CotizacionMapper cotizacionMapper;
     private final AnalyticsService analyticsService;
+    private final FinOpsCostService finOpsCostService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${gemini.api.key:}")
@@ -108,6 +111,8 @@ public class AsistenteServiceImpl implements AsistenteService {
             try {
                 String respuestaIA = llamarGeminiAPI(request, contexto);
                 if (respuestaIA != null && !respuestaIA.isBlank()) {
+                    int tokensEstimados = respuestaIA.length() / 4;
+                    finOpsCostService.registrarLlamadaGemini(tokensEstimados);
                     return ChatMessageResponseDTO.builder()
                             .reply(respuestaIA)
                             .suggestions(generarSugerencias(mensajeUsuario))
@@ -118,6 +123,9 @@ public class AsistenteServiceImpl implements AsistenteService {
                 log.error("Error al comunicarse con Gemini API, usando motor local enriquecido: {}", e.getMessage());
             }
         }
+
+        // FinOps OPEX Guard: Registro de consulta resuelta por motor local determinista sin costo cloud
+        finOpsCostService.registrarFallbackGemini();
 
         // 3. Motor local enriquecido (fallback dinámico inteligente con datos reales)
         String respuestaLocal = generarRespuestaLocal(
@@ -327,7 +335,12 @@ public class AsistenteServiceImpl implements AsistenteService {
                 )
         );
 
-        RestClient restClient = RestClient.builder().build();
+        // Resiliencia en Integracion: Timeout de conexion 4s y de lectura 7s para evitar hilos colgados
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(4000);
+        requestFactory.setReadTimeout(7000);
+
+        RestClient restClient = RestClient.builder().requestFactory(requestFactory).build();
 
         String rawResponse = restClient.post()
                 .uri(endpoint)

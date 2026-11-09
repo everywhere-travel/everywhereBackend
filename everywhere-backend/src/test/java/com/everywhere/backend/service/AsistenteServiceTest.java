@@ -40,6 +40,9 @@ public class AsistenteServiceTest {
     @Mock
     private AnalyticsService analyticsService;
 
+    @Mock
+    private FinOpsCostService finOpsCostService;
+
     @InjectMocks
     private AsistenteServiceImpl asistenteService;
 

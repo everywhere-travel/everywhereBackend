@@ -80,7 +80,8 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // Soporta rutas con y sin el prefijo /api/v1
                         .requestMatchers("/api/v1/auth/**", "/auth/**").permitAll()
-                        .requestMatchers("/api/v1/health", "/health").permitAll()
+                        .requestMatchers("/api/v1/health/**", "/health/**").permitAll()
+                        .requestMatchers("/api/v1/telemetria/**", "/telemetria/**").permitAll()
                         // Swagger / OpenAPI
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()

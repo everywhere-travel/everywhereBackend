@@ -4,9 +4,11 @@ import java.util.TimeZone;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import jakarta.annotation.PostConstruct;
 
-@SpringBootApplication 
+@SpringBootApplication
+@EnableCaching
 public class EverywhereBackendApplication {
 
     @PostConstruct
